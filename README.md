@@ -27,13 +27,18 @@ A cross-platform habit tracker that gamifies personal development through XP pro
 ## Development Setup
 
 ### Prerequisites
-- Flutter 3.32+ (managed via FVM)
-- Dart 3.8.1+
-- iOS development: Xcode 15+ for iOS 17+ target
-- Android development: Android Studio with SDK 34
+- Flutter 3.32+ (managed via FVM) ✅
+- Dart 3.8.1+ ✅
+- iOS development: Xcode 15+ for iOS 17+ target (⚠️ needs full Xcode install)
+- Android development: Android Studio with SDK 34 ✅
+- CocoaPods for iOS dependencies ✅
 
 ### Getting Started
 ```bash
+# Clone the repository
+git clone git@github.com:BrigBryu/habit_level_up.git
+cd habit_level_up
+
 # Install FVM if not already installed
 dart pub global activate fvm
 
@@ -43,9 +48,17 @@ fvm use stable
 # Install dependencies
 fvm flutter pub get
 
-# Run the app
+# Run the app (Android requires emulator or device)
 fvm flutter run
 ```
+
+### Android Studio Setup
+1. **Install Flutter & Dart plugins**: 
+   - Go to Plugins → Install → Search "Flutter" and "Dart"
+2. **Install Android Command Line Tools**:
+   - SDK Manager → SDK Tools → Android SDK Command-line Tools
+3. **Create Android Virtual Device**:
+   - AVD Manager → Create Virtual Device → Choose API 34+ device
 
 ### Project Structure
 ```
