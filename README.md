@@ -29,8 +29,10 @@ A cross-platform habit tracker that gamifies personal development through XP pro
 ### Prerequisites
 - Flutter 3.32+ (managed via FVM) ✅
 - Dart 3.8.1+ ✅
+- Java OpenJDK 21+ ✅
 - iOS development: Xcode 15+ for iOS 17+ target (⚠️ needs full Xcode install)
 - Android development: Android Studio with SDK 34 ✅
+- Android Command Line Tools ✅
 - CocoaPods for iOS dependencies ✅
 
 ### Getting Started
@@ -52,13 +54,24 @@ fvm flutter pub get
 fvm flutter run
 ```
 
-### Android Studio Setup
-1. **Install Flutter & Dart plugins**: 
-   - Go to Plugins → Install → Search "Flutter" and "Dart"
-2. **Install Android Command Line Tools**:
-   - SDK Manager → SDK Tools → Android SDK Command-line Tools
-3. **Create Android Virtual Device**:
-   - AVD Manager → Create Virtual Device → Choose API 34+ device
+### Android Development Status ✅
+- **Android Studio 2024.3** installed
+- **Java OpenJDK 21** configured  
+- **Android Command Line Tools** installed via Homebrew
+- **Android SDK API 34** with platform-tools, build-tools
+- **Pixel 8 API 34 emulator** created and functional
+- **Flutter doctor** passes for Android toolchain
+
+### Testing the App
+```bash
+# Start Android emulator
+fvm flutter emulators --launch Pixel_8_API_34
+
+# Run the app (or use convenience script)
+fvm flutter run -d emulator-5554
+# OR
+./flutter.sh run -d emulator-5554
+```
 
 ### Project Structure
 ```
