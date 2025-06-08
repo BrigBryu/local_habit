@@ -2,17 +2,21 @@
 import 'base_habit.dart';
 import 'basic_habit.dart';
 import 'habit_stack.dart';
-import 'alarm_habit.dart';
-import 'timed_session_habit.dart';
-import 'time_window_habit.dart';
+// TODO(bridger): Re-enable when time-based habits are ready
+// import 'alarm_habit.dart';
+// import 'timed_session_habit.dart';
+// import 'time_window_habit.dart';
+// TODO(bridger): TimeOfDay import disabled to resolve conflicts
+// import 'time_of_day.dart';
 
 /// Enum for different habit types
 enum HabitType {
   basic('Basic Habit'),
-  stack('Habit Stack'),
-  alarmHabit('Alarm Habit'),
-  timedSession('Timed Session'),
-  timeWindow('Time Window');
+  stack('Habit Stack');
+  // TODO(bridger): Re-enable when time-based habits are ready
+  // alarmHabit('Alarm Habit'),
+  // timedSession('Timed Session'),
+  // timeWindow('Time Window');
 
   const HabitType(this.displayName);
   final String displayName;
@@ -44,53 +48,36 @@ class HabitFactory {
     );
   }
 
-  /// Create an alarm habit
-  static AlarmHabit createAlarm({
+  /// TODO(bridger): Create an alarm habit (DISABLED - time-based habits temporarily disabled)
+  static Never createAlarm({
     required String name,
     required String description,
     required String stackedOnHabitId,
-    required TimeOfDay alarmTime,
+    // required TimeOfDay alarmTime,
     required int windowMinutes,
   }) {
-    return AlarmHabit.create(
-      name: name,
-      description: description,
-      stackedOnHabitId: stackedOnHabitId,
-      alarmTime: alarmTime,
-      windowMinutes: windowMinutes,
-    );
+    throw UnimplementedError('AlarmHabit is temporarily disabled');
   }
 
-  /// Create a timed session habit
-  static TimedSessionHabit createTimedSession({
+  /// TODO(bridger): Create a timed session habit (DISABLED - time-based habits temporarily disabled)
+  static Never createTimedSession({
     required String name,
     required String description,
     required int sessionMinutes,
     int graceMinutes = 15,
   }) {
-    return TimedSessionHabit.create(
-      name: name,
-      description: description,
-      sessionMinutes: sessionMinutes,
-      graceMinutes: graceMinutes,
-    );
+    throw UnimplementedError('TimedSessionHabit is temporarily disabled');
   }
 
-  /// Create a time window habit
-  static TimeWindowHabit createTimeWindow({
+  /// TODO(bridger): Create a time window habit (DISABLED - time-based habits temporarily disabled)
+  static Never createTimeWindow({
     required String name,
     required String description,
-    required TimeOfDay windowStartTime,
-    required TimeOfDay windowEndTime,
+    // required TimeOfDay windowStartTime,
+    // required TimeOfDay windowEndTime,
     required List<int> availableDays,
   }) {
-    return TimeWindowHabit.create(
-      name: name,
-      description: description,
-      windowStartTime: windowStartTime,
-      windowEndTime: windowEndTime,
-      availableDays: availableDays,
-    );
+    throw UnimplementedError('TimeWindowHabit is temporarily disabled');
   }
 
   /// Create a habit from parameters (for backward compatibility)
@@ -99,12 +86,12 @@ class HabitFactory {
     required String name,
     required String description,
     String? stackedOnHabitId,
-    TimeOfDay? alarmTime,
+    // TimeOfDay? alarmTime,
     int? windowMinutes,
     int? sessionMinutes,
     int? graceMinutes,
-    TimeOfDay? windowStartTime,
-    TimeOfDay? windowEndTime,
+    // TimeOfDay? windowStartTime,
+    // TimeOfDay? windowEndTime,
     List<int>? availableDays,
   }) {
     switch (type) {
@@ -121,40 +108,41 @@ class HabitFactory {
           stackedOnHabitId: stackedOnHabitId,
         );
       
-      case HabitType.alarmHabit:
-        if (stackedOnHabitId == null || alarmTime == null || windowMinutes == null) {
-          throw ArgumentError('Alarm habit requires stackedOnHabitId, alarmTime, and windowMinutes');
-        }
-        return createAlarm(
-          name: name,
-          description: description,
-          stackedOnHabitId: stackedOnHabitId,
-          alarmTime: alarmTime,
-          windowMinutes: windowMinutes,
-        );
-      
-      case HabitType.timedSession:
-        if (sessionMinutes == null) {
-          throw ArgumentError('Timed session requires sessionMinutes');
-        }
-        return createTimedSession(
-          name: name,
-          description: description,
-          sessionMinutes: sessionMinutes,
-          graceMinutes: graceMinutes ?? 15,
-        );
-      
-      case HabitType.timeWindow:
-        if (windowStartTime == null || windowEndTime == null || availableDays == null) {
-          throw ArgumentError('Time window requires windowStartTime, windowEndTime, and availableDays');
-        }
-        return createTimeWindow(
-          name: name,
-          description: description,
-          windowStartTime: windowStartTime,
-          windowEndTime: windowEndTime,
-          availableDays: availableDays,
-        );
+      // TODO(bridger): Disabled time-based habit types
+      // case HabitType.alarmHabit:
+      //   if (stackedOnHabitId == null || alarmTime == null || windowMinutes == null) {
+      //     throw ArgumentError('Alarm habit requires stackedOnHabitId, alarmTime, and windowMinutes');
+      //   }
+      //   return createAlarm(
+      //     name: name,
+      //     description: description,
+      //     stackedOnHabitId: stackedOnHabitId,
+      //     alarmTime: alarmTime,
+      //     windowMinutes: windowMinutes,
+      //   );
+      // 
+      // case HabitType.timedSession:
+      //   if (sessionMinutes == null) {
+      //     throw ArgumentError('Timed session requires sessionMinutes');
+      //   }
+      //   return createTimedSession(
+      //     name: name,
+      //     description: description,
+      //     sessionMinutes: sessionMinutes,
+      //     graceMinutes: graceMinutes ?? 15,
+      //   );
+      // 
+      // case HabitType.timeWindow:
+      //   if (windowStartTime == null || windowEndTime == null || availableDays == null) {
+      //     throw ArgumentError('Time window requires windowStartTime, windowEndTime, and availableDays');
+      //   }
+      //   return createTimeWindow(
+      //     name: name,
+      //     description: description,
+      //     windowStartTime: windowStartTime,
+      //     windowEndTime: windowEndTime,
+      //     availableDays: availableDays,
+      //   );
     }
   }
 }

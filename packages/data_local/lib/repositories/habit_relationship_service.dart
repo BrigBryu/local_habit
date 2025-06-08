@@ -1,4 +1,4 @@
-import '../models/habit.dart';
+import 'package:domain/entities/habit.dart';
 
 /// Generic service for managing parent-child relationships between habits
 /// Supports bundles, stacks, and future grouping types

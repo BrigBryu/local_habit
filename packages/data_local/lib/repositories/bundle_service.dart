@@ -1,5 +1,5 @@
-import '../models/habit.dart';
-import 'time_service.dart';
+import 'package:domain/entities/habit.dart';
+import 'package:domain/services/time_service.dart';
 
 /// Service to manage bundle habits and their children
 class BundleService {
@@ -83,17 +83,21 @@ class BundleService {
       case HabitType.avoidance:
         return true; // Basic and avoidance habits can always be completed
       
-      case HabitType.timedSession:
-        return child.sessionCompletedToday; // Only if timer finished
+      case HabitType.stack:
+        return true; // Habit stacks can be completed
       
-      case HabitType.timeWindow:
-      case HabitType.dailyTimeWindow:
-        // Would need access to timed habit service for validation
-        return true; // For now, allow completion
-      
-      case HabitType.alarmHabit:
-        // Would need access to timed habit service for validation
-        return true; // For now, allow completion
+      // TODO(bridger): Disabled time-based habit types
+      // case HabitType.timedSession:
+      //   return child.sessionCompletedToday; // Only if timer finished
+      // 
+      // case HabitType.timeWindow:
+      // case HabitType.dailyTimeWindow:
+      //   // Would need access to timed habit service for validation
+      //   return true; // For now, allow completion
+      // 
+      // case HabitType.alarmHabit:
+      //   // Would need access to timed habit service for validation
+      //   return true; // For now, allow completion
       
       case HabitType.bundle:
         return false; // Cannot nest bundles
@@ -134,7 +138,7 @@ class BundleService {
       throw ArgumentError('Not a bundle habit');
     }
 
-    final newChildIds = [...(bundle.bundleChildIds ?? []), habitId];
+    final newChildIds = <String>[...(bundle.bundleChildIds ?? []), habitId];
     final validationError = validateBundleCreation(newChildIds, allHabits);
     
     if (validationError != null) {
@@ -149,10 +153,11 @@ class BundleService {
       stackedOnHabitId: bundle.stackedOnHabitId,
       bundleChildIds: newChildIds,
       parentBundleId: bundle.parentBundleId,
-      alarmTime: bundle.alarmTime,
+      // TODO(bridger): TimeOfDay fields disabled
+      // alarmTime: bundle.alarmTime,
       timeoutMinutes: bundle.timeoutMinutes,
-      windowStartTime: bundle.windowStartTime,
-      windowEndTime: bundle.windowEndTime,
+      // windowStartTime: bundle.windowStartTime,
+      // windowEndTime: bundle.windowEndTime,
       availableDays: bundle.availableDays,
       createdAt: bundle.createdAt,
       lastCompleted: bundle.lastCompleted,
@@ -211,10 +216,11 @@ class BundleService {
           stackedOnHabitId: habit.stackedOnHabitId,
           bundleChildIds: habit.bundleChildIds,
           parentBundleId: bundleId,
-          alarmTime: habit.alarmTime,
+          // TODO(bridger): TimeOfDay fields disabled
+          // alarmTime: habit.alarmTime,
           timeoutMinutes: habit.timeoutMinutes,
-          windowStartTime: habit.windowStartTime,
-          windowEndTime: habit.windowEndTime,
+          // windowStartTime: habit.windowStartTime,
+          // windowEndTime: habit.windowEndTime,
           availableDays: habit.availableDays,
           createdAt: habit.createdAt,
           lastCompleted: habit.lastCompleted,

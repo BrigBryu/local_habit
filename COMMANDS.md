@@ -1,6 +1,25 @@
-# 🎮 Habit Level Up - Keyboard Commands
+# 🎮 Habit Level Up - Development Commands
 
-This file contains all available keyboard shortcuts for testing and using the Habit Level Up app.
+This file contains all available keyboard shortcuts and workspace commands for the Habit Level Up app.
+
+## 🏗️ Workspace Commands
+
+```bash
+# Install dependencies and link packages
+melos bootstrap
+
+# Run analysis on all packages  
+melos run analyze
+
+# Run tests on all packages
+melos run test
+
+# Clean all packages
+melos clean
+
+# Launch Flutter app
+cd app && flutter run
+```
 
 ## ⌨️ Testing Commands
 

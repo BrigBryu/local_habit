@@ -1,11 +1,13 @@
 import '../entities/base_habit.dart';
 import '../entities/basic_habit.dart';
 import '../entities/habit_stack.dart';
-import '../entities/alarm_habit.dart';
-import '../entities/timed_session_habit.dart';
-import '../entities/time_window_habit.dart';
+// TODO(bridger): Disabled time-based habit imports
+// import '../entities/alarm_habit.dart';
+// import '../entities/timed_session_habit.dart';
+// import '../entities/time_window_habit.dart';
 import '../entities/habit_factory.dart';
-import '../entities/time_of_day.dart' as domain;
+// TODO(bridger): TimeOfDay import disabled
+// import '../entities/time_of_day.dart' as domain;
 import '../services/time_service.dart';
 
 /// Habit use cases for the new inheritance-based habit system
@@ -62,95 +64,95 @@ class HabitUseCases {
     return habit.id;
   }
 
-  /// Add a new alarm habit
-  Future<String> addAlarmHabit({
-    required String name,
-    required String description,
-    required String stackedOnHabitId,
-    required domain.TimeOfDay alarmTime,
-    required int windowMinutes,
-  }) async {
-    _validateCommonFields(name, description);
-    
-    if (windowMinutes <= 0) {
-      throw ArgumentError('Window minutes must be positive');
-    }
-    
-    // Validate base habit exists
-    final baseHabit = getHabitById(stackedOnHabitId);
-    if (baseHabit == null) {
-      throw ArgumentError('Base habit not found');
-    }
-    
-    final habit = HabitFactory.createAlarm(
-      name: name.trim(),
-      description: description.trim(),
-      stackedOnHabitId: stackedOnHabitId,
-      alarmTime: alarmTime,
-      windowMinutes: windowMinutes,
-    );
-    
-    _habits.add(habit);
-    return habit.id;
-  }
+  /// TODO(bridger): Add a new alarm habit (DISABLED - time-based habits temporarily disabled)
+  // Future<String> addAlarmHabit({
+  //   required String name,
+  //   required String description,
+  //   required String stackedOnHabitId,
+  //   required domain.TimeOfDay alarmTime,
+  //   required int windowMinutes,
+  // }) async {
+  //   _validateCommonFields(name, description);
+  //   
+  //   if (windowMinutes <= 0) {
+  //     throw ArgumentError('Window minutes must be positive');
+  //   }
+  //   
+  //   // Validate base habit exists
+  //   final baseHabit = getHabitById(stackedOnHabitId);
+  //   if (baseHabit == null) {
+  //     throw ArgumentError('Base habit not found');
+  //   }
+  //   
+  //   final habit = HabitFactory.createAlarm(
+  //     name: name.trim(),
+  //     description: description.trim(),
+  //     stackedOnHabitId: stackedOnHabitId,
+  //     alarmTime: alarmTime,
+  //     windowMinutes: windowMinutes,
+  //   );
+  //   
+  //   _habits.add(habit);
+  //   return habit.id;
+  // }
 
-  /// Add a new timed session habit
-  Future<String> addTimedSessionHabit({
-    required String name,
-    required String description,
-    required int sessionMinutes,
-    int graceMinutes = 15,
-  }) async {
-    _validateCommonFields(name, description);
-    
-    if (sessionMinutes <= 0) {
-      throw ArgumentError('Session minutes must be positive');
-    }
-    
-    if (graceMinutes < 0) {
-      throw ArgumentError('Grace minutes cannot be negative');
-    }
-    
-    final habit = HabitFactory.createTimedSession(
-      name: name.trim(),
-      description: description.trim(),
-      sessionMinutes: sessionMinutes,
-      graceMinutes: graceMinutes,
-    );
-    
-    _habits.add(habit);
-    return habit.id;
-  }
+  /// TODO(bridger): Add a new timed session habit (DISABLED - time-based habits temporarily disabled)
+  // Future<String> addTimedSessionHabit({
+  //   required String name,
+  //   required String description,
+  //   required int sessionMinutes,
+  //   int graceMinutes = 15,
+  // }) async {
+  //   _validateCommonFields(name, description);
+  //   
+  //   if (sessionMinutes <= 0) {
+  //     throw ArgumentError('Session minutes must be positive');
+  //   }
+  //   
+  //   if (graceMinutes < 0) {
+  //     throw ArgumentError('Grace minutes cannot be negative');
+  //   }
+  //   
+  //   final habit = HabitFactory.createTimedSession(
+  //     name: name.trim(),
+  //     description: description.trim(),
+  //     sessionMinutes: sessionMinutes,
+  //     graceMinutes: graceMinutes,
+  //   );
+  //   
+  //   _habits.add(habit);
+  //   return habit.id;
+  // }
 
-  /// Add a new time window habit
-  Future<String> addTimeWindowHabit({
-    required String name,
-    required String description,
-    required domain.TimeOfDay windowStartTime,
-    required domain.TimeOfDay windowEndTime,
-    required List<int> availableDays,
-  }) async {
-    _validateCommonFields(name, description);
-    
-    if (availableDays.isEmpty) {
-      throw ArgumentError('Must have at least one available day');
-    }
-    
-    if (availableDays.any((day) => day < 1 || day > 7)) {
-      throw ArgumentError('Available days must be between 1 (Monday) and 7 (Sunday)');
-    }
-    
-    final habit = HabitFactory.createTimeWindow(
-      name: name.trim(),
-      description: description.trim(),
-      windowStartTime: windowStartTime,
-      windowEndTime: windowEndTime,
-      availableDays: List.from(availableDays),
-    );
-    
-    _habits.add(habit);
-    return habit.id;
-  }
+  /// TODO(bridger): Add a new time window habit (DISABLED - time-based habits temporarily disabled)
+  // Future<String> addTimeWindowHabit({
+  //   required String name,
+  //   required String description,
+  //   required domain.TimeOfDay windowStartTime,
+  //   required domain.TimeOfDay windowEndTime,
+  //   required List<int> availableDays,
+  // }) async {
+  //   _validateCommonFields(name, description);
+  //   
+  //   if (availableDays.isEmpty) {
+  //     throw ArgumentError('Must have at least one available day');
+  //   }
+  //   
+  //   if (availableDays.any((day) => day < 1 || day > 7)) {
+  //     throw ArgumentError('Available days must be between 1 (Monday) and 7 (Sunday)');
+  //   }
+  //   
+  //   final habit = HabitFactory.createTimeWindow(
+  //     name: name.trim(),
+  //     description: description.trim(),
+  //     windowStartTime: windowStartTime,
+  //     windowEndTime: windowEndTime,
+  //     availableDays: List.from(availableDays),
+  //   );
+  //   
+  //   _habits.add(habit);
+  //   return habit.id;
+  // }
 
   /// Common field validation
   void _validateCommonFields(String name, String description) {
@@ -209,20 +211,20 @@ class HabitUseCases {
     _habits[index] = habit.complete();
   }
 
-  /// Start a timed session (for TimedSessionHabit only)
-  Future<void> startTimedSession(String habitId) async {
-    final habit = getHabitById(habitId);
-    if (habit == null) {
-      throw ArgumentError('Habit not found');
-    }
-    
-    if (habit is! TimedSessionHabit) {
-      throw ArgumentError('Not a timed session habit');
-    }
-    
-    final index = _habits.indexWhere((h) => h.id == habitId);
-    _habits[index] = habit.startSession(_timeService);
-  }
+  /// TODO(bridger): Start a timed session (DISABLED - time-based habits temporarily disabled)
+  // Future<void> startTimedSession(String habitId) async {
+  //   final habit = getHabitById(habitId);
+  //   if (habit == null) {
+  //     throw ArgumentError('Habit not found');
+  //   }
+  //   
+  //   if (habit is! TimedSessionHabit) {
+  //     throw ArgumentError('Not a timed session habit');
+  //   }
+  //   
+  //   final index = _habits.indexWhere((h) => h.id == habitId);
+  //   _habits[index] = habit.startSession(_timeService);
+  // }
 
   /// Check if habit is completed today
   bool isCompletedToday(String habitId) {
@@ -241,13 +243,16 @@ class HabitUseCases {
         if (isCompletedToday(habit.stackedOnHabitId)) {
           visibleHabits.add(habit);
         }
-      } else if (habit is AlarmHabit) {
-        // Only show alarm habits if their base habit is completed today
-        if (isCompletedToday(habit.stackedOnHabitId)) {
-          visibleHabits.add(habit);
-        }
-      } else {
-        // Always show basic habits, timed sessions, and time windows
+      }
+      // TODO(bridger): AlarmHabit disabled
+      // else if (habit is AlarmHabit) {
+      //   // Only show alarm habits if their base habit is completed today
+      //   if (isCompletedToday(habit.stackedOnHabitId)) {
+      //     visibleHabits.add(habit);
+      //   }
+      // }
+      else {
+        // Always show basic habits (and previously timed sessions, time windows)
         visibleHabits.add(habit);
       }
     }
@@ -280,9 +285,11 @@ class HabitUseCases {
     
     if (habit is HabitStack) {
       return 1 + getHabitChainDepth(habit.stackedOnHabitId);
-    } else if (habit is AlarmHabit) {
-      return 1 + getHabitChainDepth(habit.stackedOnHabitId);
     }
+    // TODO(bridger): AlarmHabit disabled
+    // else if (habit is AlarmHabit) {
+    //   return 1 + getHabitChainDepth(habit.stackedOnHabitId);
+    // }
     
     return 1;
   }
@@ -290,9 +297,10 @@ class HabitUseCases {
   /// Get base habits (for creating stacks)
   List<BaseHabit> getBaseHabits() {
     return _habits.where((habit) => 
-      habit is BasicHabit || 
-      habit is TimedSessionHabit || 
-      habit is TimeWindowHabit
+      habit is BasicHabit
+      // TODO(bridger): Disabled habit types
+      // || habit is TimedSessionHabit 
+      // || habit is TimeWindowHabit
     ).toList();
   }
 

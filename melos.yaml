@@ -2,7 +2,7 @@ name: habit_level_up_workspace
 
 packages:
   - packages/**
-  - app
+  - .
 
 command:
   bootstrap:

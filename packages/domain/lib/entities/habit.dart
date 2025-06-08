@@ -1,16 +1,19 @@
 
 import '../services/time_service.dart';
+// TODO(bridger): TimeOfDay import disabled to resolve conflicts
+// import 'time_of_day.dart';
 
 /// Enum for different habit types
 enum HabitType {
   basic('Basic Habit'),
   avoidance('Avoidance Habit'),
   stack('Habit Stack'),
-  bundle('Bundle Habit'),
-  alarmHabit('Alarm Habit'),
-  timedSession('Timed Session'),
-  timeWindow('Time Window'),
-  dailyTimeWindow('Daily Time Window');
+  bundle('Bundle Habit');
+  // TODO(bridger): Re-enable when time-based habits are ready
+  // alarmHabit('Alarm Habit'),
+  // timedSession('Timed Session'),
+  // timeWindow('Time Window'),
+  // dailyTimeWindow('Daily Time Window');
 
   const HabitType(this.displayName);
   final String displayName;
@@ -25,17 +28,19 @@ class Habit {
   final String? stackedOnHabitId; // For habit stacks
   final List<String>? bundleChildIds; // For bundle habits - list of child habit IDs
   final String? parentBundleId; // For habits that belong to a bundle
-  final TimeOfDay? alarmTime; // For timed stacks
-  final int? timeoutMinutes; // For timed stacks/sessions - minutes after alarm/start
-  final TimeOfDay? windowStartTime; // For time windows - start of availability
-  final TimeOfDay? windowEndTime; // For time windows - end of availability  
-  final List<int>? availableDays; // For time windows - days of week (1=Monday, 7=Sunday)
+  // TODO(bridger): Time-based fields disabled temporarily due to TimeOfDay conflicts
+  // final TimeOfDay? alarmTime; // For timed stacks (DISABLED)
+  final int? timeoutMinutes; // For timed stacks/sessions - minutes after alarm/start (DISABLED)
+  // final TimeOfDay? windowStartTime; // For time windows - start of availability (DISABLED)
+  // final TimeOfDay? windowEndTime; // For time windows - end of availability (DISABLED)
+  final List<int>? availableDays; // For time windows - days of week (DISABLED)
   final DateTime createdAt;
   final DateTime? lastCompleted;
-  final DateTime? lastAlarmTriggered; // Track when alarm was last triggered
-  final DateTime? sessionStartTime; // For timed sessions - when session started
-  final DateTime? lastSessionStarted; // For timed sessions - when timer was last started
-  final bool sessionCompletedToday; // For timed sessions - if timer completed today
+  // TODO(bridger): Time-based session fields disabled temporarily
+  final DateTime? lastAlarmTriggered; // Track when alarm was last triggered (DISABLED)
+  final DateTime? sessionStartTime; // For timed sessions - when session started (DISABLED)
+  final DateTime? lastSessionStarted; // For timed sessions - when timer was last started (DISABLED)
+  final bool sessionCompletedToday; // For timed sessions - if timer completed today (DISABLED)
   final int dailyCompletionCount; // How many times completed today
   final DateTime? lastCompletionCountReset; // When daily count was last reset
   final int dailyFailureCount; // For avoidance habits - how many times failed today
@@ -51,10 +56,11 @@ class Habit {
     this.stackedOnHabitId,
     this.bundleChildIds,
     this.parentBundleId,
-    this.alarmTime,
+    // TODO(bridger): TimeOfDay fields disabled
+    // this.alarmTime,
     this.timeoutMinutes,
-    this.windowStartTime,
-    this.windowEndTime,
+    // this.windowStartTime,
+    // this.windowEndTime,
     this.availableDays,
     required this.createdAt,
     this.lastCompleted,
@@ -78,10 +84,11 @@ class Habit {
     String? stackedOnHabitId,
     List<String>? bundleChildIds,
     String? parentBundleId,
-    TimeOfDay? alarmTime,
+    // TODO(bridger): TimeOfDay parameters disabled
+    // TimeOfDay? alarmTime,
     int? timeoutMinutes,
-    TimeOfDay? windowStartTime,
-    TimeOfDay? windowEndTime,
+    // TimeOfDay? windowStartTime,
+    // TimeOfDay? windowEndTime,
     List<int>? availableDays,
   }) {
     return Habit(
@@ -92,10 +99,11 @@ class Habit {
       stackedOnHabitId: stackedOnHabitId,
       bundleChildIds: bundleChildIds,
       parentBundleId: parentBundleId,
-      alarmTime: alarmTime,
+      // TODO(bridger): TimeOfDay fields disabled in factory
+      // alarmTime: alarmTime,
       timeoutMinutes: timeoutMinutes,
-      windowStartTime: windowStartTime,
-      windowEndTime: windowEndTime,
+      // windowStartTime: windowStartTime,
+      // windowEndTime: windowEndTime,
       availableDays: availableDays,
       createdAt: TimeService().now(),
     );
@@ -111,10 +119,11 @@ class Habit {
       return this; // Already completed today for non-basic habits
     }
 
+    // TODO(bridger): Timed session logic disabled
     // For timed sessions, can only complete if session was completed today
-    if (type == HabitType.timedSession && !sessionCompletedToday) {
-      return this; // Cannot complete until timer has finished
-    }
+    // if (type == HabitType.timedSession && !sessionCompletedToday) {
+    //   return this; // Cannot complete until timer has finished
+    // }
 
     // Handle different completion logic for different habit types
     int newDailyCount = dailyCompletionCount;
@@ -145,10 +154,11 @@ class Habit {
       stackedOnHabitId: stackedOnHabitId,
       bundleChildIds: bundleChildIds,
       parentBundleId: parentBundleId,
-      alarmTime: alarmTime,
+      // TODO(bridger): TimeOfDay fields disabled in complete()
+      // alarmTime: alarmTime,
       timeoutMinutes: timeoutMinutes,
-      windowStartTime: windowStartTime,
-      windowEndTime: windowEndTime,
+      // windowStartTime: windowStartTime,
+      // windowEndTime: windowEndTime,
       availableDays: availableDays,
       createdAt: createdAt,
       lastCompleted: now,
@@ -202,10 +212,11 @@ class Habit {
       stackedOnHabitId: stackedOnHabitId,
       bundleChildIds: bundleChildIds,
       parentBundleId: parentBundleId,
-      alarmTime: alarmTime,
+      // TODO(bridger): TimeOfDay fields disabled in recordFailure()
+      // alarmTime: alarmTime,
       timeoutMinutes: timeoutMinutes,
-      windowStartTime: windowStartTime,
-      windowEndTime: windowEndTime,
+      // windowStartTime: windowStartTime,
+      // windowEndTime: windowEndTime,
       availableDays: availableDays,
       createdAt: createdAt,
       lastCompleted: lastCompleted,
@@ -240,113 +251,143 @@ class Habit {
         }
         return 0; // No XP for marking already successful day or after failures
       
-      case HabitType.timedSession:
-        return baseXP * 2; // Reward for completing timed sessions
-      
-      case HabitType.alarmHabit:
-        return baseXP * 2; // Reward for meeting alarm deadlines
-      
-      case HabitType.timeWindow:
-      case HabitType.dailyTimeWindow:
-        return baseXP; // Standard reward for time window habits
-      
       case HabitType.stack:
         return baseXP * 3; // Higher reward for habit stacks
       
       case HabitType.bundle:
         return 0; // Bundle itself gives no XP, children give XP individually + combo bonus
       
-      default:
-        return baseXP;
+      // TODO(bridger): Disabled time-based habit types
+      // case HabitType.timedSession:
+      //   return baseXP * 2; // Reward for completing timed sessions
+      // 
+      // case HabitType.alarmHabit:
+      //   return baseXP * 2; // Reward for meeting alarm deadlines
+      // 
+      // case HabitType.timeWindow:
+      // case HabitType.dailyTimeWindow:
+      //   return baseXP; // Standard reward for time window habits
     }
   }
 
   /// Get completion count for today
   int get todayCompletionCount => dailyCompletionCount;
 
-  /// Start a timed session (only allowed once per day)
-  Habit startTimedSession() {
-    if (type != HabitType.timedSession) return this;
-    
-    final timeService = TimeService();
-    final now = timeService.now();
-    
-    // Check if already started today
-    if (lastSessionStarted != null && timeService.isSameDay(lastSessionStarted!, now)) {
-      return this; // Already started today
+  /// TODO(bridger): Start a timed session (DISABLED - time-based habits temporarily disabled)
+  // Habit startTimedSession() {
+  //   if (type != HabitType.timedSession) return this;
+  //   
+  //   final timeService = TimeService();
+  //   final now = timeService.now();
+  //   
+  //   // Check if already started today
+  //   if (lastSessionStarted != null && timeService.isSameDay(lastSessionStarted!, now)) {
+  //     return this; // Already started today
+  //   }
+  //
+  //   return Habit(
+  //     id: id,
+  //     name: name,
+  //     description: description,
+  //     type: type,
+  //     stackedOnHabitId: stackedOnHabitId,
+  //     bundleChildIds: bundleChildIds,
+  //     parentBundleId: parentBundleId,
+  //     alarmTime: alarmTime,
+  //     timeoutMinutes: timeoutMinutes,
+  //     windowStartTime: windowStartTime,
+  //     windowEndTime: windowEndTime,
+  //     availableDays: availableDays,
+  //     createdAt: createdAt,
+  //     lastCompleted: lastCompleted,
+  //     lastAlarmTriggered: lastAlarmTriggered,
+  //     sessionStartTime: now,
+  //     lastSessionStarted: now,
+  //     sessionCompletedToday: false, // Reset until timer completes
+  //     dailyCompletionCount: dailyCompletionCount,
+  //     lastCompletionCountReset: lastCompletionCountReset,
+  //     dailyFailureCount: dailyFailureCount,
+  //     lastFailureCountReset: lastFailureCountReset,
+  //     avoidanceSuccessToday: avoidanceSuccessToday,
+  //     currentStreak: currentStreak,
+  //   );
+  // }
+
+  /// TODO(bridger): Mark timed session as completed (DISABLED - time-based habits temporarily disabled)
+  // Habit completeTimedSession() {
+  //   if (type != HabitType.timedSession) return this;
+  //
+  //   return Habit(
+  //     id: id,
+  //     name: name,
+  //     description: description,
+  //     type: type,
+  //     stackedOnHabitId: stackedOnHabitId,
+  //     bundleChildIds: bundleChildIds,
+  //     parentBundleId: parentBundleId,
+  //     alarmTime: alarmTime,
+  //     timeoutMinutes: timeoutMinutes,
+  //     windowStartTime: windowStartTime,
+  //     windowEndTime: windowEndTime,
+  //     availableDays: availableDays,
+  //     createdAt: createdAt,
+  //     lastCompleted: lastCompleted,
+  //     lastAlarmTriggered: lastAlarmTriggered,
+  //     sessionStartTime: sessionStartTime,
+  //     lastSessionStarted: lastSessionStarted,
+  //     sessionCompletedToday: true,
+  //     dailyCompletionCount: dailyCompletionCount,
+  //     lastCompletionCountReset: lastCompletionCountReset,
+  //     dailyFailureCount: dailyFailureCount,
+  //     lastFailureCountReset: lastFailureCountReset,
+  //     avoidanceSuccessToday: avoidanceSuccessToday,
+  //     currentStreak: currentStreak,
+  //   );
+  // }
+
+  /// TODO(bridger): Check if timed session has been started today (DISABLED - time-based habits temporarily disabled)
+  // bool hasStartedSessionToday() {
+  //   if (type != HabitType.timedSession || lastSessionStarted == null) return false;
+  //   
+  //   final timeService = TimeService();
+  //   return timeService.isSameDay(lastSessionStarted!, timeService.now());
+  // }
+
+  /// TODO(bridger): Check if timed session is ready to be checked off (DISABLED - time-based habits temporarily disabled)
+  // bool canCompleteTimedSession() {
+  //   return type == HabitType.timedSession && sessionCompletedToday && !_isCompletedToday();
+  // }
+
+  /// Check if this is a bundle habit
+  bool get isBundle => type == HabitType.bundle;
+
+  /// Check if this habit belongs to a bundle
+  bool get isInBundle => parentBundleId != null;
+
+  /// Get child habit IDs for bundle habits
+  List<String> get childHabitIds => bundleChildIds ?? [];
+
+  /// Create a new bundle habit
+  factory Habit.createBundle({
+    required String name,
+    required String description,
+    required List<String> childIds,
+  }) {
+    if (childIds.length < 2) {
+      throw ArgumentError('Bundle must contain at least 2 child habits');
     }
-
-    return Habit(
-      id: id,
-      name: name,
-      description: description,
-      type: type,
-      stackedOnHabitId: stackedOnHabitId,
-      bundleChildIds: bundleChildIds,
-      parentBundleId: parentBundleId,
-      alarmTime: alarmTime,
-      timeoutMinutes: timeoutMinutes,
-      windowStartTime: windowStartTime,
-      windowEndTime: windowEndTime,
-      availableDays: availableDays,
-      createdAt: createdAt,
-      lastCompleted: lastCompleted,
-      lastAlarmTriggered: lastAlarmTriggered,
-      sessionStartTime: now,
-      lastSessionStarted: now,
-      sessionCompletedToday: false, // Reset until timer completes
-      dailyCompletionCount: dailyCompletionCount,
-      lastCompletionCountReset: lastCompletionCountReset,
-      dailyFailureCount: dailyFailureCount,
-      lastFailureCountReset: lastFailureCountReset,
-      avoidanceSuccessToday: avoidanceSuccessToday,
-      currentStreak: currentStreak,
-    );
-  }
-
-  /// Mark timed session as completed (timer finished)
-  Habit completeTimedSession() {
-    if (type != HabitType.timedSession) return this;
-
-    return Habit(
-      id: id,
-      name: name,
-      description: description,
-      type: type,
-      stackedOnHabitId: stackedOnHabitId,
-      bundleChildIds: bundleChildIds,
-      parentBundleId: parentBundleId,
-      alarmTime: alarmTime,
-      timeoutMinutes: timeoutMinutes,
-      windowStartTime: windowStartTime,
-      windowEndTime: windowEndTime,
-      availableDays: availableDays,
-      createdAt: createdAt,
-      lastCompleted: lastCompleted,
-      lastAlarmTriggered: lastAlarmTriggered,
-      sessionStartTime: sessionStartTime,
-      lastSessionStarted: lastSessionStarted,
-      sessionCompletedToday: true,
-      dailyCompletionCount: dailyCompletionCount,
-      lastCompletionCountReset: lastCompletionCountReset,
-      dailyFailureCount: dailyFailureCount,
-      lastFailureCountReset: lastFailureCountReset,
-      avoidanceSuccessToday: avoidanceSuccessToday,
-      currentStreak: currentStreak,
-    );
-  }
-
-  /// Check if timed session has been started today
-  bool hasStartedSessionToday() {
-    if (type != HabitType.timedSession || lastSessionStarted == null) return false;
     
-    final timeService = TimeService();
-    return timeService.isSameDay(lastSessionStarted!, timeService.now());
+    return Habit.create(
+      name: name,
+      description: description,
+      type: HabitType.bundle,
+      bundleChildIds: List.from(childIds),
+    );
   }
 
-  /// Check if timed session is ready to be checked off
-  bool canCompleteTimedSession() {
-    return type == HabitType.timedSession && sessionCompletedToday && !_isCompletedToday();
+  /// Check if bundle can be completed (has incomplete children today)
+  bool canCompleteBundle() {
+    return type == HabitType.bundle && !_isCompletedToday();
   }
 
   bool _isCompletedToday() {
@@ -391,21 +432,23 @@ class Habit {
       return '$name 📦($childCount)'; // Bundle emoji with count
     } else if (type == HabitType.avoidance) {
       return '$name 🚫'; // Avoidance emoji
-    } else if (type == HabitType.alarmHabit) {
-      final timeStr = alarmTime != null ? '${alarmTime!.format24Hour()}' : '??:??';
-      return '$name ⏰$timeStr'; // Alarm emoji with time
-    } else if (type == HabitType.timedSession) {
-      final duration = timeoutMinutes ?? 0;
-      return '$name ⏱️${duration}m'; // Session timer with duration
-    } else if (type == HabitType.timeWindow) {
-      final startStr = windowStartTime?.format24Hour() ?? '??:??';
-      final endStr = windowEndTime?.format24Hour() ?? '??:??';
-      return '$name 🕐$startStr-$endStr'; // Window emoji with time range
-    } else if (type == HabitType.dailyTimeWindow) {
-      final startStr = windowStartTime?.format24Hour() ?? '??:??';
-      final endStr = windowEndTime?.format24Hour() ?? '??:??';
-      return '$name 📅$startStr-$endStr'; // Daily window with calendar emoji
     }
+    // TODO(bridger): Time-based display names disabled
+    // else if (type == HabitType.alarmHabit) {
+    //   final timeStr = alarmTime != null ? '${alarmTime!.format24Hour()}' : '??:??';
+    //   return '$name ⏰$timeStr'; // Alarm emoji with time
+    // } else if (type == HabitType.timedSession) {
+    //   final duration = timeoutMinutes ?? 0;
+    //   return '$name ⏱️${duration}m'; // Session timer with duration
+    // } else if (type == HabitType.timeWindow) {
+    //   final startStr = windowStartTime?.format24Hour() ?? '??:??';
+    //   final endStr = windowEndTime?.format24Hour() ?? '??:??';
+    //   return '$name 🕐$startStr-$endStr'; // Window emoji with time range
+    // } else if (type == HabitType.dailyTimeWindow) {
+    //   final startStr = windowStartTime?.format24Hour() ?? '??:??';
+    //   final endStr = windowEndTime?.format24Hour() ?? '??:??';
+    //   return '$name 📅$startStr-$endStr'; // Daily window with calendar emoji
+    // }
     return name;
   }
 
@@ -448,11 +491,11 @@ bool isHabitCompletedToday(Habit habit) {
   return timeService.isSameDay(habit.lastCompleted!, timeService.now());
 }
 
-/// Extension to format TimeOfDay as 24-hour string
-extension TimeOfDayExtension on TimeOfDay {
-  String format24Hour() {
-    final h = hour.toString().padLeft(2, '0');
-    final m = minute.toString().padLeft(2, '0');
-    return '$h:$m';
-  }
-}
+/// TODO(bridger): Extension to format TimeOfDay as 24-hour string (DISABLED - TimeOfDay conflicts)
+// extension TimeOfDayExtension on TimeOfDay {
+//   String format24Hour() {
+//     final h = hour.toString().padLeft(2, '0');
+//     final m = minute.toString().padLeft(2, '0');
+//     return '$h:$m';
+//   }
+// }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import '../models/habit.dart';
-import 'time_service.dart';
+import 'package:domain/entities/habit.dart';
+import 'package:domain/use_cases/create_bundle_use_case.dart';
+import 'package:domain/use_cases/complete_bundle_use_case.dart';
+import 'package:domain/services/time_service.dart';
 
 /// Simple in-memory habit repository for MVP
 /// Following repository pattern from clean architecture
@@ -69,34 +71,35 @@ class HabitService {
       }
     }
 
+    // TODO(bridger): Disabled time-based habit validations
     // Validate alarm habit
-    if (type == HabitType.alarmHabit) {
-      if (alarmTime == null) {
-        throw ArgumentError('Alarm habit must have an alarm time');
-      }
-      
-      if (timeoutMinutes == null || timeoutMinutes <= 0) {
-        throw ArgumentError('Alarm habit must have a positive completion window duration');
-      }
-    }
+    // if (type == HabitType.alarmHabit) {
+    //   if (alarmTime == null) {
+    //     throw ArgumentError('Alarm habit must have an alarm time');
+    //   }
+    //   
+    //   if (timeoutMinutes == null || timeoutMinutes <= 0) {
+    //     throw ArgumentError('Alarm habit must have a positive completion window duration');
+    //   }
+    // }
 
     // Validate timed session
-    if (type == HabitType.timedSession) {
-      if (timeoutMinutes == null || timeoutMinutes <= 0) {
-        throw ArgumentError('Timed session must have a positive duration');
-      }
-    }
+    // if (type == HabitType.timedSession) {
+    //   if (timeoutMinutes == null || timeoutMinutes <= 0) {
+    //     throw ArgumentError('Timed session must have a positive duration');
+    //   }
+    // }
 
     // Validate time window
-    if (type == HabitType.timeWindow) {
-      if (windowStartTime == null || windowEndTime == null) {
-        throw ArgumentError('Time window must have start and end times');
-      }
-      
-      if (availableDays == null || availableDays.isEmpty) {
-        throw ArgumentError('Time window must have at least one available day');
-      }
-    }
+    // if (type == HabitType.timeWindow) {
+    //   if (windowStartTime == null || windowEndTime == null) {
+    //     throw ArgumentError('Time window must have start and end times');
+    //   }
+    //   
+    //   if (availableDays == null || availableDays.isEmpty) {
+    //     throw ArgumentError('Time window must have at least one available day');
+    //   }
+    // }
 
     // Create and add habit
     final habit = Habit.create(
@@ -104,10 +107,11 @@ class HabitService {
       description: trimmedDescription,
       type: type,
       stackedOnHabitId: stackedOnHabitId,
-      alarmTime: alarmTime,
+      // TODO(bridger): TimeOfDay fields disabled
+      // alarmTime: alarmTime,
       timeoutMinutes: timeoutMinutes,
-      windowStartTime: windowStartTime,
-      windowEndTime: windowEndTime,
+      // windowStartTime: windowStartTime,
+      // windowEndTime: windowEndTime,
       availableDays: availableDays,
     );
 
@@ -278,5 +282,176 @@ class HabitService {
     final timeService = TimeService();
     final now = timeService.now();
     return 'Current date: ${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════════════
+  // BUNDLE METHODS
+  // ═══════════════════════════════════════════════════════════════════════════════════
+
+  /// Create a new bundle habit
+  Future<String> createBundle({
+    required String name,
+    required String description,
+    required List<String> childHabitIds,
+  }) async {
+    // Use the bundle use case for validation and creation
+    final bundleHabit = CreateBundleUseCase.execute(
+      name: name,
+      description: description,
+      childHabitIds: childHabitIds,
+      existingHabits: _habits,
+    );
+
+    // Check for duplicate bundle names
+    final duplicateExists = _habits.any(
+      (habit) => habit.name.toLowerCase() == bundleHabit.name.toLowerCase(),
+    );
+
+    if (duplicateExists) {
+      throw ArgumentError('A habit with this name already exists');
+    }
+
+    // Update child habits to mark them as belonging to this bundle
+    for (final childId in childHabitIds) {
+      final index = _habits.indexWhere((h) => h.id == childId);
+      if (index != -1) {
+        final childHabit = _habits[index];
+        _habits[index] = Habit(
+          id: childHabit.id,
+          name: childHabit.name,
+          description: childHabit.description,
+          type: childHabit.type,
+          stackedOnHabitId: childHabit.stackedOnHabitId,
+          bundleChildIds: childHabit.bundleChildIds,
+          parentBundleId: bundleHabit.id, // Set parent bundle ID
+          // TODO(bridger): TimeOfDay fields disabled
+          // alarmTime: childHabit.alarmTime,
+          timeoutMinutes: childHabit.timeoutMinutes,
+          // windowStartTime: childHabit.windowStartTime,
+          // windowEndTime: childHabit.windowEndTime,
+          availableDays: childHabit.availableDays,
+          createdAt: childHabit.createdAt,
+          lastCompleted: childHabit.lastCompleted,
+          lastAlarmTriggered: childHabit.lastAlarmTriggered,
+          sessionStartTime: childHabit.sessionStartTime,
+          lastSessionStarted: childHabit.lastSessionStarted,
+          sessionCompletedToday: childHabit.sessionCompletedToday,
+          dailyCompletionCount: childHabit.dailyCompletionCount,
+          lastCompletionCountReset: childHabit.lastCompletionCountReset,
+          dailyFailureCount: childHabit.dailyFailureCount,
+          lastFailureCountReset: childHabit.lastFailureCountReset,
+          avoidanceSuccessToday: childHabit.avoidanceSuccessToday,
+          currentStreak: childHabit.currentStreak,
+        );
+      }
+    }
+
+    _habits.add(bundleHabit);
+    return bundleHabit.id;
+  }
+
+  /// Complete a bundle habit and all its incomplete children
+  Future<void> completeBundle(String bundleId) async {
+    final bundleHabit = getHabitById(bundleId);
+    if (bundleHabit == null) {
+      throw ArgumentError('Bundle habit not found');
+    }
+
+    if (!bundleHabit.isBundle) {
+      throw ArgumentError('Provided habit is not a bundle');
+    }
+
+    // Use the bundle use case to complete the bundle
+    final updatedHabits = CompleteBundleUseCase.execute(
+      bundleHabit: bundleHabit,
+      allHabits: _habits,
+    );
+
+    // Update all the affected habits in our collection
+    for (final updatedHabit in updatedHabits) {
+      final index = _habits.indexWhere((h) => h.id == updatedHabit.id);
+      if (index != -1) {
+        _habits[index] = updatedHabit;
+      }
+    }
+  }
+
+  /// Get all bundle habits
+  List<Habit> getBundleHabits() {
+    return _habits.where((habit) => habit.isBundle).toList();
+  }
+
+  /// Get bundle progress for a specific bundle
+  BundleProgress getBundleProgress(String bundleId) {
+    final bundleHabit = getHabitById(bundleId);
+    if (bundleHabit == null || !bundleHabit.isBundle) {
+      return const BundleProgress(completed: 0, total: 0);
+    }
+
+    return CompleteBundleUseCase.getBundleProgress(
+      bundleHabit: bundleHabit,
+      allHabits: _habits,
+    );
+  }
+
+  /// Get bundle with its children for display
+  BundleHabitWithChildren? getBundleWithChildren(String bundleId) {
+    final bundleHabit = getHabitById(bundleId);
+    if (bundleHabit == null || !bundleHabit.isBundle) {
+      return null;
+    }
+
+    final childHabits = <Habit>[];
+    for (final childId in bundleHabit.childHabitIds) {
+      final childHabit = getHabitById(childId);
+      if (childHabit != null) {
+        childHabits.add(childHabit);
+      }
+    }
+
+    final progress = getBundleProgress(bundleId);
+
+    return BundleHabitWithChildren(
+      bundleHabit: bundleHabit,
+      childHabits: childHabits,
+      progress: progress,
+    );
+  }
+
+  /// Get all bundles with their children for today's view
+  List<BundleHabitWithChildren> getBundlesWithChildrenForToday() {
+    final bundles = <BundleHabitWithChildren>[];
+    
+    for (final habit in _habits) {
+      if (habit.isBundle) {
+        final bundleWithChildren = getBundleWithChildren(habit.id);
+        if (bundleWithChildren != null) {
+          bundles.add(bundleWithChildren);
+        }
+      }
+    }
+    
+    return bundles;
+  }
+
+  /// Get habits available for bundling (not already in a bundle, not bundles themselves)
+  List<Habit> getAvailableHabitsForBundling() {
+    return _habits.where((habit) => 
+      !habit.isBundle && 
+      !habit.isInBundle
+    ).toList();
+  }
+
+  /// Check if all children in a bundle are completed today
+  bool areBundleChildrenCompleted(String bundleId) {
+    final bundleHabit = getHabitById(bundleId);
+    if (bundleHabit == null || !bundleHabit.isBundle) {
+      return false;
+    }
+
+    return CompleteBundleUseCase.areAllChildrenCompleted(
+      bundleHabit: bundleHabit,
+      allHabits: _habits,
+    );
   }
 }

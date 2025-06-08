@@ -157,6 +157,7 @@ cd packages/data_local && fvm dart run build_runner build --delete-conflicting-o
 - Add basic habits with name validation
 - Check off daily completions
 - Track streaks with 🔥 badges
+- ✔ **Routines/Bundles (v0.1)** - Group habits into completion routines
 - Persistent local storage (Isar)
 - Reactive UI with loading states
 - Clean architecture separation
