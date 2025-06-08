@@ -1,6 +1,8 @@
 
 import '../services/time_service.dart';
 import 'base_habit.dart';
+import 'habit_icon.dart';
+import 'time_of_day.dart';
 
 /// Time window habit (only available during specific hours/days)
 class TimeWindowHabit extends BaseHabit {
@@ -23,7 +25,7 @@ class TimeWindowHabit extends BaseHabit {
   });
 
   @override
-  IconData get icon => Icons.schedule;
+  HabitIcon get icon => HabitIcon.schedule;
 
   @override
   String get typeName => 'Time Window';

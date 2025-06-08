@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../models/habit.dart';
-import '../services/habit_relationship_service.dart';
+import 'package:domain/domain.dart';
+import 'package:data_local/repositories/habit_relationship_service.dart';
 
 /// Reusable widget for selecting habits to add to groups
 /// Supports different selection modes and validation

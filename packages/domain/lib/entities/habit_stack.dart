@@ -1,6 +1,7 @@
 
 import '../services/time_service.dart';
 import 'base_habit.dart';
+import 'habit_icon.dart';
 
 /// Habit that builds on top of another habit (habit stacking)
 class HabitStack extends BaseHabit {
@@ -19,7 +20,7 @@ class HabitStack extends BaseHabit {
   });
 
   @override
-  IconData get icon => Icons.layers;
+  HabitIcon get icon => HabitIcon.layers;
 
   @override
   String get typeName => 'Habit Stack';

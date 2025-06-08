@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/habits_provider.dart';
-import '../models/habit.dart';
-import '../services/timed_habit_service.dart';
-import '../services/bundle_service.dart';
+import 'package:domain/domain.dart';
+import 'package:data_local/repositories/timed_habit_service.dart';
+import 'package:data_local/repositories/bundle_service.dart';
 import '../screens/create_bundle_screen.dart';
 
 class DailyHabitsPage extends ConsumerWidget {

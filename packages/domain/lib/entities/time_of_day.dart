@@ -22,6 +22,11 @@ class TimeOfDay {
     return TimeOfDay(hour: hour, minute: minute);
   }
 
+  /// Create from DateTime
+  factory TimeOfDay.fromDateTime(DateTime dateTime) {
+    return TimeOfDay(hour: dateTime.hour, minute: dateTime.minute);
+  }
+
   /// Check if this time is before another time
   bool isBefore(TimeOfDay other) {
     return toMinutes() < other.toMinutes();

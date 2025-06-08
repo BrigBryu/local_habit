@@ -1,18 +1,18 @@
-import 'package:flutter/material.dart';
-import '../models/base_habit.dart';
-import '../models/basic_habit.dart';
-import '../models/habit_stack.dart';
-import '../models/alarm_habit.dart';
-import '../models/timed_session_habit.dart';
-import '../models/time_window_habit.dart';
-import '../models/habit_factory.dart';
-import 'time_service.dart';
+import '../entities/base_habit.dart';
+import '../entities/basic_habit.dart';
+import '../entities/habit_stack.dart';
+import '../entities/alarm_habit.dart';
+import '../entities/timed_session_habit.dart';
+import '../entities/time_window_habit.dart';
+import '../entities/habit_factory.dart';
+import '../entities/time_of_day.dart' as domain;
+import '../services/time_service.dart';
 
-/// Habit service using the new inheritance-based habit system
-class NewHabitService {
-  static final NewHabitService _instance = NewHabitService._internal();
-  factory NewHabitService() => _instance;
-  NewHabitService._internal();
+/// Habit use cases for the new inheritance-based habit system
+class HabitUseCases {
+  static final HabitUseCases _instance = HabitUseCases._internal();
+  factory HabitUseCases() => _instance;
+  HabitUseCases._internal();
 
   final List<BaseHabit> _habits = [];
   final TimeService _timeService = TimeService();
@@ -67,7 +67,7 @@ class NewHabitService {
     required String name,
     required String description,
     required String stackedOnHabitId,
-    required TimeOfDay alarmTime,
+    required domain.TimeOfDay alarmTime,
     required int windowMinutes,
   }) async {
     _validateCommonFields(name, description);
@@ -126,8 +126,8 @@ class NewHabitService {
   Future<String> addTimeWindowHabit({
     required String name,
     required String description,
-    required TimeOfDay windowStartTime,
-    required TimeOfDay windowEndTime,
+    required domain.TimeOfDay windowStartTime,
+    required domain.TimeOfDay windowEndTime,
     required List<int> availableDays,
   }) async {
     _validateCommonFields(name, description);

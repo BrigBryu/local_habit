@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../models/habit.dart';
-import '../services/habit_service.dart';
+import 'package:domain/domain.dart';
+import 'package:data_local/repositories/habit_service.dart';
 
 class AddHabitScreen extends StatefulWidget {
   const AddHabitScreen({super.key});

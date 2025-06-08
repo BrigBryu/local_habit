@@ -1,6 +1,8 @@
 
 import '../services/time_service.dart';
 import 'base_habit.dart';
+import 'habit_icon.dart';
+import 'time_of_day.dart';
 
 /// Alarm-based habit with completion window
 class AlarmHabit extends BaseHabit {
@@ -25,7 +27,7 @@ class AlarmHabit extends BaseHabit {
   });
 
   @override
-  IconData get icon => Icons.alarm;
+  HabitIcon get icon => HabitIcon.alarm;
 
   @override
   String get typeName => 'Alarm Habit';

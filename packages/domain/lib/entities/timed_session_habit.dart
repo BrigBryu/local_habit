@@ -27,7 +27,7 @@ class TimedSessionHabit extends BaseHabit {
   });
 
   @override
-  IconData get icon => Icons.timer;
+  HabitIcon get icon => HabitIcon.timer;
 
   @override
   String get typeName => 'Timed Session';

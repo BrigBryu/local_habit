@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/habit.dart';
+import 'package:domain/domain.dart';
 import '../providers/habits_provider.dart';
-import '../services/bundle_service.dart';
+import 'package:data_local/repositories/bundle_service.dart';
 
 class CreateBundleScreen extends ConsumerStatefulWidget {
   const CreateBundleScreen({super.key});
