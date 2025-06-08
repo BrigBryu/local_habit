@@ -1,0 +1,160 @@
+import 'package:flutter/material.dart';
+import 'base_habit.dart';
+import 'basic_habit.dart';
+import 'habit_stack.dart';
+import 'alarm_habit.dart';
+import 'timed_session_habit.dart';
+import 'time_window_habit.dart';
+
+/// Enum for different habit types
+enum HabitType {
+  basic('Basic Habit'),
+  stack('Habit Stack'),
+  alarmHabit('Alarm Habit'),
+  timedSession('Timed Session'),
+  timeWindow('Time Window');
+
+  const HabitType(this.displayName);
+  final String displayName;
+}
+
+/// Factory for creating different types of habits
+class HabitFactory {
+  /// Create a basic habit
+  static BasicHabit createBasic({
+    required String name,
+    required String description,
+  }) {
+    return BasicHabit.create(
+      name: name,
+      description: description,
+    );
+  }
+
+  /// Create a habit stack
+  static HabitStack createStack({
+    required String name,
+    required String description,
+    required String stackedOnHabitId,
+  }) {
+    return HabitStack.create(
+      name: name,
+      description: description,
+      stackedOnHabitId: stackedOnHabitId,
+    );
+  }
+
+  /// Create an alarm habit
+  static AlarmHabit createAlarm({
+    required String name,
+    required String description,
+    required String stackedOnHabitId,
+    required TimeOfDay alarmTime,
+    required int windowMinutes,
+  }) {
+    return AlarmHabit.create(
+      name: name,
+      description: description,
+      stackedOnHabitId: stackedOnHabitId,
+      alarmTime: alarmTime,
+      windowMinutes: windowMinutes,
+    );
+  }
+
+  /// Create a timed session habit
+  static TimedSessionHabit createTimedSession({
+    required String name,
+    required String description,
+    required int sessionMinutes,
+    int graceMinutes = 15,
+  }) {
+    return TimedSessionHabit.create(
+      name: name,
+      description: description,
+      sessionMinutes: sessionMinutes,
+      graceMinutes: graceMinutes,
+    );
+  }
+
+  /// Create a time window habit
+  static TimeWindowHabit createTimeWindow({
+    required String name,
+    required String description,
+    required TimeOfDay windowStartTime,
+    required TimeOfDay windowEndTime,
+    required List<int> availableDays,
+  }) {
+    return TimeWindowHabit.create(
+      name: name,
+      description: description,
+      windowStartTime: windowStartTime,
+      windowEndTime: windowEndTime,
+      availableDays: availableDays,
+    );
+  }
+
+  /// Create a habit from parameters (for backward compatibility)
+  static BaseHabit createFromType({
+    required HabitType type,
+    required String name,
+    required String description,
+    String? stackedOnHabitId,
+    TimeOfDay? alarmTime,
+    int? windowMinutes,
+    int? sessionMinutes,
+    int? graceMinutes,
+    TimeOfDay? windowStartTime,
+    TimeOfDay? windowEndTime,
+    List<int>? availableDays,
+  }) {
+    switch (type) {
+      case HabitType.basic:
+        return createBasic(name: name, description: description);
+      
+      case HabitType.stack:
+        if (stackedOnHabitId == null) {
+          throw ArgumentError('Habit stack requires stackedOnHabitId');
+        }
+        return createStack(
+          name: name,
+          description: description,
+          stackedOnHabitId: stackedOnHabitId,
+        );
+      
+      case HabitType.alarmHabit:
+        if (stackedOnHabitId == null || alarmTime == null || windowMinutes == null) {
+          throw ArgumentError('Alarm habit requires stackedOnHabitId, alarmTime, and windowMinutes');
+        }
+        return createAlarm(
+          name: name,
+          description: description,
+          stackedOnHabitId: stackedOnHabitId,
+          alarmTime: alarmTime,
+          windowMinutes: windowMinutes,
+        );
+      
+      case HabitType.timedSession:
+        if (sessionMinutes == null) {
+          throw ArgumentError('Timed session requires sessionMinutes');
+        }
+        return createTimedSession(
+          name: name,
+          description: description,
+          sessionMinutes: sessionMinutes,
+          graceMinutes: graceMinutes ?? 15,
+        );
+      
+      case HabitType.timeWindow:
+        if (windowStartTime == null || windowEndTime == null || availableDays == null) {
+          throw ArgumentError('Time window requires windowStartTime, windowEndTime, and availableDays');
+        }
+        return createTimeWindow(
+          name: name,
+          description: description,
+          windowStartTime: windowStartTime,
+          windowEndTime: windowEndTime,
+          availableDays: availableDays,
+        );
+    }
+  }
+}

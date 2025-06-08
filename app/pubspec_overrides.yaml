@@ -1,0 +1,6 @@
+# melos_managed_dependency_overrides: data_local,domain
+dependency_overrides:
+  data_local:
+    path: ../packages/data_local
+  domain:
+    path: ../packages/domain

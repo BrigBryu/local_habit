@@ -1,106 +1,270 @@
-# Habit Level Up
+# Habit Level Up 🚀
 
-A cross-platform habit tracker that gamifies personal development through XP progression and level-based UI evolution.
+A professional Flutter habit tracking app built with clean architecture, future-proof design, and gamified personal development.
 
-## Iteration 0: Foundation - "Hello Habit"
+## 🏗️ Professional Architecture
 
-**Purpose**: Compile once, run on both phones with basic infrastructure.
+**Clean Architecture with Sealed Class Hierarchy:**
 
-### Deliverables
-- ✅ Flutter project scaffold with cross-platform support
-- ✅ State management via Riverpod
-- ✅ Local persistence setup with Isar
-- ✅ Empty "Daily Habits" screen
-- ✅ CI pipeline for automated testing
-- ✅ iOS 17+ and Android 34+ targets
+```
+habit_level_up/
+├─ packages/
+│   ├─ domain/           ← Pure Dart: Sealed Habit entities, use cases
+│   ├─ data_local/       ← Isar persistence with discriminator pattern
+│   ├─ data_remote/      ← Future: Firebase/Supabase sync
+│   └─ features/         ← Future: Modular features
+├─ app/                  ← Flutter UI entry point
+├─ melos.yaml           ← Workspace management
+└─ .fvm/                ← Flutter version pinning
+```
 
-### User Stories
-- As a user I can open the app and see an empty "Daily Habits" list
-- As a dev I get hot-reload & CI for rapid iteration
+**Key Benefits:**
+- ✅ **Version pinned** with FVM + locked dependencies
+- ✅ **Domain separated** from framework (pure Dart)
+- ✅ **Sealed classes** for compiler-safe polymorphism
+- ✅ **Future-proof** habit variants (basic → timed → scored)
+- ✅ **Local-first** with sync queue ready
+- ✅ **Automated tooling** (melos scripts)
 
-### Tech Stack
-- **Framework**: Flutter 3.32+ with Dart null-safety
-- **State Management**: Riverpod v3 for compile-time safe providers
-- **Local Database**: Isar for fast, encrypted persistence
-- **Platforms**: iOS 17+, Android 34+ (API level 21+)
-
-## Development Setup
+## 🚀 Getting Started with Android Studio
 
 ### Prerequisites
-- Flutter 3.32+ (managed via FVM) ✅
-- Dart 3.8.1+ ✅
-- Java OpenJDK 21+ ✅
-- iOS development: Xcode 15+ for iOS 17+ target (⚠️ needs full Xcode install)
-- Android development: Android Studio with SDK 34 ✅
-- Android Command Line Tools ✅
-- CocoaPods for iOS dependencies ✅
+- **Flutter SDK 3.24.5** (managed via FVM)
+- **Android Studio 2024.3+** with Android SDK 34
+- **Java OpenJDK 21+**
+- **Git**
 
-### Getting Started
+### 📋 Setup Instructions
+
+#### 1. **Clone and Setup Workspace**
 ```bash
-# Clone the repository
-git clone git@github.com:BrigBryu/habit_level_up.git
 cd habit_level_up
 
-# Install FVM if not already installed
+# Install FVM for Flutter version management
 dart pub global activate fvm
+fvm install 3.24.5
+fvm use 3.24.5
 
-# Use the pinned Flutter version
-fvm use stable
+# Install Melos for workspace management
+dart pub global activate melos
+```
 
-# Install dependencies
-fvm flutter pub get
+#### 2. **Bootstrap Dependencies**
+```bash
+# Bootstrap all packages in the workspace
+melos bootstrap
 
-# Run the app (Android requires emulator or device)
+# Generate required freezed/json_serializable code
+cd packages/domain
+dart run build_runner build
+
+cd ../data_local  
+dart run build_runner build
+
+cd ../../app
+flutter pub get
+```
+
+### 📱 Running with Android Studio
+
+#### **Option 1: Android Studio IDE (Recommended)**
+
+1. **Open Android Studio**
+2. **Open project:**
+   ```bash
+   # Open Android Studio, then File → Open → Select habit_level_up/app folder
+   # OR launch directly from command line:
+   open -a "Android Studio" app/
+   ```
+3. **Wait for indexing** and Gradle sync to complete
+4. **Setup Android Emulator:**
+   ```bash
+   # From Terminal or Android Studio Terminal:
+   fvm flutter emulators                    # List available emulators
+   fvm flutter emulators --launch Pixel_8_API_34   # Launch emulator
+   ```
+   - Or use **Tools → AVD Manager** in Android Studio
+   - Wait for emulator to fully boot and show home screen
+5. **Run the App:**
+   ```bash
+   # From Terminal:
+   cd app
+   fvm flutter run
+   ```
+   - Or in Android Studio: Select emulator from dropdown → Click green ▶️ **Run** button
+   - Keyboard shortcut: `Shift + F10` (Windows/Linux) / `⌘ + R` (Mac)
+
+#### **Option 2: Command Line with Android Studio Emulator**
+
+1. **Start Android Studio** (to ensure emulator tools are available)
+
+2. **Launch emulator:**
+   ```bash
+   # List available emulators
+   fvm flutter emulators
+   
+   # run
+   fvm flutter emulators --launch Pixel_8_API_34
+
+
+   cd app
+   fvm flutter run
+
+
+#### **Option 3: Physical Android Device**
+
+1. **Enable Developer Mode:**
+   - Settings → About phone → Tap "Build number" 7 times
+   - Settings → Developer options → Enable "USB debugging"
+
+2. **Connect via USB and run:**
+   ```bash
+   # Verify device is connected
+   fvm flutter devices
+   
+   # Run on connected device
+   cd app
+   fvm flutter run
+   ```
+
+### 🛠️ Development Workflow
+
+#### **Daily Commands**
+```bash
+# Run in debug mode with hot reload
+cd app && fvm flutter run
+
+# Hot reload: press 'r' in terminal
+# Hot restart: press 'R' in terminal
+# Quit: press 'q' in terminal
+
+# Automated tooling
+fvm dart run melos run test        # Run all tests
+fvm dart run melos run format      # Format code
+fvm dart run melos run analyze     # Static analysis
+```
+
+#### **After Domain/Data Changes**
+```bash
+# Regenerate freezed/json code
+cd packages/domain && fvm dart run build_runner build --delete-conflicting-outputs
+cd packages/data_local && fvm dart run build_runner build --delete-conflicting-outputs
+```
+
+## 🎯 Current MVP Features
+
+**✅ Implemented:**
+- Add basic habits with name validation
+- Check off daily completions
+- Track streaks with 🔥 badges
+- Persistent local storage (Isar)
+- Reactive UI with loading states
+- Clean architecture separation
+
+**🔒 Future-Ready:**
+- Timed habits (track duration)
+- Score-based habits (target points)  
+- Cloud sync across devices
+- XP system and gamification
+- Push notifications
+
+## 🧪 Testing
+
+#### **System Tests (MVP Checklist)**
+```bash
+cd app
+fvm flutter test integration_test/habit_flow_test.dart
+```
+
+**Test scenarios:**
+1. ✅ Add "Drink water" → List shows one unticked habit
+2. ✅ Tap checkbox → Shows completed ✓, streak = 1
+3. ✅ Force-quit app → Relaunch → Still completed
+
+#### **Unit Tests**
+```bash
+fvm dart run melos run test:unit    # Pure Dart packages
+fvm dart run melos run test         # All packages
+```
+
+## 🔧 Troubleshooting
+
+#### **Build Issues**
+```bash
+# Clean and rebuild
+fvm flutter clean
+fvm dart run melos bootstrap
+fvm dart run build_runner build --delete-conflicting-outputs
+```
+
+#### **Emulator Not Showing**
+- Open Android Studio → Tools → AVD Manager
+- Ensure emulator is running and visible on screen
+- Check connection: `adb devices`
+- Try restarting emulator
+
+#### **Path/Version Issues**
+```bash
+# Verify Flutter setup
+fvm flutter doctor -v
+which flutter
+
+# Use FVM consistently
 fvm flutter run
 ```
 
-### Android Development Status ✅
-- **Android Studio 2024.3** installed
-- **Java OpenJDK 21** configured  
-- **Android Command Line Tools** installed via Homebrew
-- **Android SDK API 34** with platform-tools, build-tools
-- **Pixel 8 API 34 emulator** created and functional
-- **Flutter doctor** passes for Android toolchain
-
-### Testing the App
+#### **Database/Isar Issues**
 ```bash
-# Start Android emulator
-fvm flutter emulators --launch Pixel_8_API_34
-
-# Run the app (or use convenience script)
-fvm flutter run -d emulator-5554
-# OR
-./flutter.sh run -d emulator-5554
+# Clear app data and reinstall
+flutter clean
+# Uninstall from emulator/device
+# Run again to reinstall fresh
 ```
 
-### Project Structure
-```
-lib/
-├── main.dart                 # App entry point with ProviderScope
-├── pages/
-│   └── daily_habits_page.dart  # Main habits list screen
-└── providers/
-    └── habits_provider.dart    # Placeholder habits provider
-```
+## 📁 Key Files
 
-## Roadmap
+**Entry Points:**
+- `app/lib/main.dart` - App entry point
+- `app/lib/presentation/pages/habits_page.dart` - Main UI
 
-### Iteration 1: Solo Core Loop (Level-Up mechanics)
-- Add/edit/archive habits
-- XP system with completion tracking
-- Level-based progression gates
+**Domain (Business Logic):**
+- `packages/domain/lib/src/entities/habit.dart` - Sealed habit hierarchy
+- `packages/domain/lib/src/use_cases/` - Business operations
 
-### Iteration 2: Dynamic UI (Evolving World)
-- Theme engine with level-based visual changes
-- Smooth animations for level-up moments
-- A/B testing framework
+**Data Persistence:**
+- `packages/data_local/lib/src/repositories/isar_habit_repository.dart`
+- `packages/data_local/lib/src/models/habit_model.dart`
 
-### Iteration 3: Habit Safety Nets (Streak Shield)
-- Local push notifications
-- Grace period for streak protection
-- Time-zone aware reset logic
+**UI Components:**
+- `app/lib/presentation/widgets/habit_tile.dart`
+- `app/lib/presentation/widgets/add_habit_bottom_sheet.dart`
 
-### Future Iterations
-- Partner accountability system
-- Cloud sync and offline support
-- Advanced analytics and insights
+## 🚀 Future Extensibility
+
+**Adding New Habit Variants:**
+1. Uncomment `Habit.timed()` in domain layer
+2. Add timer UI in `HabitTile` switch statement  
+3. Isar automatically handles polymorphic storage
+4. Use cases remain unchanged (future-proof!)
+
+**Architecture Benefits:**
+- **Sealed classes** ensure compiler catches missing cases
+- **Clean separation** allows independent testing
+- **Dependency injection** through Riverpod providers
+- **Melos workspace** manages multi-package complexity
+
+## 🤝 Contributing
+
+1. **Follow clean architecture** - Domain never imports Flutter
+2. **Use sealed classes** for type safety
+3. **Write tests** for new features (aim for 90% coverage)
+4. **Format code** before commits: `melos run format`
+5. **Keep variants future-ready** but locked until needed
+
+## 📄 License
+
+MIT License - see LICENSE file for details.
+
+---
+
+**Built with ❤️ using Flutter's latest best practices and professional architecture patterns.**

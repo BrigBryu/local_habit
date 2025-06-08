@@ -1,0 +1,64 @@
+name: habit_level_up_workspace
+
+packages:
+  - packages/**
+  - app
+
+command:
+  bootstrap:
+    hooks:
+      post: |
+        echo "Dependencies bootstrapped successfully"
+
+scripts:
+  analyze:
+    run: dart analyze
+    exec:
+      concurrency: 10
+    description: Run dart analyze in all packages
+
+  format:
+    run: dart format --set-exit-if-changed .
+    exec:
+      concurrency: 10
+    description: Format code in all packages
+
+  format:fix:
+    run: dart format .
+    exec:
+      concurrency: 10
+    description: Format and fix code in all packages
+
+  test:
+    run: flutter test --coverage
+    exec:
+      concurrency: 1
+    packageFilters:
+      flutter: true
+    description: Run tests in all Flutter packages
+
+  test:unit:
+    run: dart test --coverage=coverage
+    exec:
+      concurrency: 10
+    packageFilters:
+      flutter: false
+    description: Run unit tests in pure Dart packages
+
+  coverage:
+    run: |
+      dart pub global activate coverage
+      dart pub global run coverage:format_coverage --packages=.packages --report-on=lib --lcov -o coverage/lcov.info -i coverage
+    description: Generate coverage report
+
+  fix:
+    run: dart fix --apply
+    exec:
+      concurrency: 10
+    description: Apply automated fixes
+
+  deps:get:
+    run: flutter pub get
+    exec:
+      concurrency: 10
+    description: Get dependencies for all packages
