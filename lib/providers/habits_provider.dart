@@ -4,6 +4,7 @@ import 'package:domain/domain.dart';
 // import 'package:data_local/repositories/timed_habit_service.dart';
 import 'package:domain/domain.dart';
 import 'package:data_local/repositories/bundle_service.dart';
+import 'package:data_local/repositories/stack_service.dart';
 
 class HabitsNotifier extends StateNotifier<List<Habit>> {
   HabitsNotifier() : super([]) {
@@ -15,6 +16,7 @@ class HabitsNotifier extends StateNotifier<List<Habit>> {
   // final _timedHabitService = TimedHabitService();
   final _levelService = LevelService();
   final _bundleService = BundleService();
+  final _stackService = StackService();
 
   void addHabit(Habit habit) {
     state = [...state, habit];
@@ -90,6 +92,18 @@ class HabitsNotifier extends StateNotifier<List<Habit>> {
       habit.type != HabitType.bundle || 
       (habit.bundleChildIds?.length ?? 0) >= 2
     ).toList();
+
+    // Clean up any stacks that had this habit as a step
+    // If a stack loses all its steps, it becomes empty but stays valid
+    for (final habit in state) {
+      if (habit.type == HabitType.stack) {
+        final steps = _stackService.getStackSteps(habit, state);
+        if (steps.any((step) => step.id == habitId)) {
+          // This stack contained the removed habit, but we don't need to do anything
+          // The step will simply not be found in future stack operations
+        }
+      }
+    }
   }
 
   // TODO(bridger): Start timed session disabled (timed habits disabled)
@@ -335,6 +349,148 @@ class HabitsNotifier extends StateNotifier<List<Habit>> {
   List<Habit> getAvailableHabitsForBundle() {
     // Return all non-bundle habits, allowing moving between bundles
     return state.where((habit) => habit.type != HabitType.bundle).toList();
+  }
+
+  // Stack-related methods
+  String? addStack(String name, String description, List<String> stepIds) {
+    try {
+      final stack = _stackService.createStack(
+        name: name,
+        description: description,
+        stepIds: stepIds,
+        allHabits: state,
+      );
+      
+      // Add the stack
+      addHabit(stack);
+      
+      // Update step habits to reference the stack
+      final updatedSteps = _stackService.assignStepsToStack(stack.id, stepIds, state);
+      for (final updatedStep in updatedSteps) {
+        updateHabit(updatedStep);
+      }
+      
+      return null; // Success
+    } catch (e) {
+      return 'Failed to create stack: $e';
+    }
+  }
+
+  String? addHabitToStack(String stackId, String habitId) {
+    try {
+      final stack = state.firstWhere((h) => h.id == stackId);
+      final habit = state.firstWhere((h) => h.id == habitId);
+      
+      // Remove from any existing stack or bundle
+      if (habit.stackedOnHabitId != null && habit.stackedOnHabitId != stackId) {
+        _removeFromStack(habit.stackedOnHabitId!, habitId);
+      }
+      
+      if (habit.parentBundleId != null) {
+        _removeFromBundle(habit.parentBundleId!, habitId);
+      }
+      
+      // Update habit to reference the stack
+      final updatedHabit = Habit(
+        id: habit.id,
+        name: habit.name,
+        description: habit.description,
+        type: habit.type,
+        stackedOnHabitId: stackId,
+        bundleChildIds: habit.bundleChildIds,
+        parentBundleId: null, // Remove bundle reference
+        timeoutMinutes: habit.timeoutMinutes,
+        availableDays: habit.availableDays,
+        createdAt: habit.createdAt,
+        lastCompleted: habit.lastCompleted,
+        lastAlarmTriggered: habit.lastAlarmTriggered,
+        sessionStartTime: habit.sessionStartTime,
+        lastSessionStarted: habit.lastSessionStarted,
+        sessionCompletedToday: habit.sessionCompletedToday,
+        dailyCompletionCount: habit.dailyCompletionCount,
+        lastCompletionCountReset: habit.lastCompletionCountReset,
+        dailyFailureCount: habit.dailyFailureCount,
+        lastFailureCountReset: habit.lastFailureCountReset,
+        avoidanceSuccessToday: habit.avoidanceSuccessToday,
+        currentStreak: habit.currentStreak,
+      );
+      updateHabit(updatedHabit);
+      
+      return '${habit.name} added to ${stack.name}';
+    } catch (e) {
+      return 'Failed to add habit to stack: $e';
+    }
+  }
+
+  void _removeFromStack(String stackId, String habitId) {
+    // Remove habit from stack - for now, just update the habit
+    final habit = state.firstWhere((h) => h.id == habitId);
+    final updatedHabit = Habit(
+      id: habit.id,
+      name: habit.name,
+      description: habit.description,
+      type: habit.type,
+      stackedOnHabitId: null,
+      bundleChildIds: habit.bundleChildIds,
+      parentBundleId: habit.parentBundleId,
+      timeoutMinutes: habit.timeoutMinutes,
+      availableDays: habit.availableDays,
+      createdAt: habit.createdAt,
+      lastCompleted: habit.lastCompleted,
+      lastAlarmTriggered: habit.lastAlarmTriggered,
+      sessionStartTime: habit.sessionStartTime,
+      lastSessionStarted: habit.lastSessionStarted,
+      sessionCompletedToday: habit.sessionCompletedToday,
+      dailyCompletionCount: habit.dailyCompletionCount,
+      lastCompletionCountReset: habit.lastCompletionCountReset,
+      dailyFailureCount: habit.dailyFailureCount,
+      lastFailureCountReset: habit.lastFailureCountReset,
+      avoidanceSuccessToday: habit.avoidanceSuccessToday,
+      currentStreak: habit.currentStreak,
+    );
+    updateHabit(updatedHabit);
+  }
+
+  void _removeFromBundle(String bundleId, String habitId) {
+    final bundle = state.firstWhere((h) => h.id == bundleId);
+    final updatedChildIds = bundle.bundleChildIds!
+        .where((id) => id != habitId)
+        .toList();
+    
+    if (updatedChildIds.length < 2) {
+      // Bundle becomes invalid, remove it entirely
+      removeHabit(bundleId);
+    } else {
+      // Update bundle with remaining children
+      final updatedBundle = Habit(
+        id: bundle.id,
+        name: bundle.name,
+        description: bundle.description,
+        type: bundle.type,
+        stackedOnHabitId: bundle.stackedOnHabitId,
+        bundleChildIds: updatedChildIds,
+        parentBundleId: bundle.parentBundleId,
+        timeoutMinutes: bundle.timeoutMinutes,
+        availableDays: bundle.availableDays,
+        createdAt: bundle.createdAt,
+        lastCompleted: bundle.lastCompleted,
+        lastAlarmTriggered: bundle.lastAlarmTriggered,
+        sessionStartTime: bundle.sessionStartTime,
+        lastSessionStarted: bundle.lastSessionStarted,
+        sessionCompletedToday: bundle.sessionCompletedToday,
+        dailyCompletionCount: bundle.dailyCompletionCount,
+        lastCompletionCountReset: bundle.lastCompletionCountReset,
+        dailyFailureCount: bundle.dailyFailureCount,
+        lastFailureCountReset: bundle.lastFailureCountReset,
+        avoidanceSuccessToday: bundle.avoidanceSuccessToday,
+        currentStreak: bundle.currentStreak,
+      );
+      updateHabit(updatedBundle);
+    }
+  }
+
+  List<Habit> getAvailableHabitsForStack() {
+    return _stackService.getAvailableHabitsForStack(state);
   }
 
   void _addTestHabits() {

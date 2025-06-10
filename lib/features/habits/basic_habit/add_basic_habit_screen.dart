@@ -5,6 +5,7 @@ import '../../../providers/habits_provider.dart';
 import '../shared/base_add_habit_screen.dart';
 import '../avoidance_habit/add_avoidance_habit_screen.dart';
 import '../bundle_habit/add_bundle_habit_screen.dart';
+import '../stack_habit/add_stack_habit_screen.dart';
 import '../../../core/theme/app_colors.dart';
 
 class AddBasicHabitScreen extends BaseAddHabitScreen {
@@ -115,6 +116,9 @@ class _AddBasicHabitScreenState extends BaseAddHabitScreenState<AddBasicHabitScr
         break;
       case '/add-bundle-habit':
         targetScreen = const AddBundleHabitScreen();
+        break;
+      case '/add-stack-habit':
+        targetScreen = const AddStackHabitScreen();
         break;
       default:
         super.navigateToHabitType(route);

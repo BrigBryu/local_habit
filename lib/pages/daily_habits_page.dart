@@ -5,6 +5,8 @@ import 'package:domain/domain.dart';
 import 'package:data_local/repositories/timed_habit_service_disabled.dart';
 import '../features/habits/bundle_habit/index.dart';
 import '../features/habits/avoidance_habit/index.dart';
+import '../features/habits/stack_habit/index.dart';
+import '../features/habits/stack_habit/add_stack_habit_screen.dart';
 import '../core/theme/theme_extensions.dart';
 import '../core/theme/app_colors.dart';
 
@@ -15,9 +17,9 @@ class DailyHabitsPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final allHabits = ref.watch(habitsProvider);
     
-    // Filter to show only top-level habits (not children of bundles)
+    // Filter to show only top-level habits (not children of bundles or stacks)
     final topLevelHabits = allHabits.where((habit) => 
-      habit.parentBundleId == null
+      habit.parentBundleId == null && habit.stackedOnHabitId == null
     ).toList();
 
     return Scaffold(
@@ -44,6 +46,8 @@ class DailyHabitsPage extends ConsumerWidget {
                 switch (habit.type) {
                   case HabitType.bundle:
                     return BundleHabitTile(habit: habit, allHabits: allHabits);
+                  case HabitType.stack:
+                    return StackHabitTile(habit: habit, allHabits: allHabits);
                   case HabitType.avoidance:
                     return AvoidanceHabitTile(habit: habit);
                   case HabitType.basic:
@@ -55,6 +59,24 @@ class DailyHabitsPage extends ConsumerWidget {
       floatingActionButton: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
+          FloatingActionButton(
+            heroTag: "stack",
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const AddStackHabitScreen(),
+                ),
+              );
+            },
+            tooltip: 'Create Stack',
+            backgroundColor: AppColors.completedBackground,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: BorderSide(color: AppColors.stackHabit.withOpacity(0.3), width: 1),
+            ),
+            child: Icon(Icons.layers, color: AppColors.stackHabit),
+          ),
+          const SizedBox(height: 16),
           FloatingActionButton(
             heroTag: "bundle",
             onPressed: () {

@@ -174,6 +174,7 @@ abstract class BaseAddHabitScreenState<T extends BaseAddHabitScreen> extends Con
     final items = <DropdownMenuItem<String>>[
       const DropdownMenuItem(value: '/add-basic-habit', child: Text('Basic')),
       const DropdownMenuItem(value: '/add-bundle-habit', child: Text('Bundle')),
+      const DropdownMenuItem(value: '/add-stack-habit', child: Text('Stack')),
       const DropdownMenuItem(value: '/add-avoidance-habit', child: Text('Avoidance')),
       // 🚧 add more here when new types arrive
     ];
