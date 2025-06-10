@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:domain/domain.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/flexible_theme_system.dart';
 
 /// Base class for all add habit screens providing common functionality
 /// for name/description fields, validation, and UI patterns
@@ -83,14 +84,14 @@ abstract class BaseAddHabitScreenState<T extends BaseAddHabitScreen> extends Con
         borderRadius: BorderRadius.circular(12),
         gradient: LinearGradient(
           colors: [
-            AppColors.draculaCurrentLine.withOpacity(0.6),
-            AppColors.draculaCurrentLine.withOpacity(0.3),
+            ref.watchColors.draculaCurrentLine.withOpacity(0.6),
+            ref.watchColors.draculaCurrentLine.withOpacity(0.3),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         border: Border.all(
-          color: AppColors.draculaYellow.withOpacity(0.3),
+          color: ref.watchColors.draculaYellow.withOpacity(0.3),
           width: 2,
         ),
       ),
@@ -101,13 +102,13 @@ abstract class BaseAddHabitScreenState<T extends BaseAddHabitScreen> extends Con
           children: [
             Row(
               children: [
-                Icon(Icons.lightbulb_outline, color: AppColors.draculaYellow),
+                Icon(Icons.lightbulb_outline, color: ref.watchColors.draculaYellow),
                 const SizedBox(width: 8),
                 Text(
                   'Tips for Great Habits',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: AppColors.draculaYellow,
+                    color: ref.watchColors.draculaYellow,
                     fontSize: 16,
                   ),
                 ),
@@ -120,7 +121,7 @@ abstract class BaseAddHabitScreenState<T extends BaseAddHabitScreen> extends Con
               '• Make it enjoyable: Choose habits you actually want to do',
               style: TextStyle(
                 fontSize: 14,
-                color: AppColors.draculaForeground,
+                color: ref.watchColors.draculaForeground,
               ),
             ),
           ],
@@ -169,6 +170,7 @@ abstract class BaseAddHabitScreenState<T extends BaseAddHabitScreen> extends Con
 
   /// Build the habit type selector dropdown
   Widget _buildHabitTypeDropdown(BuildContext context) {
+    final colors = ref.watchColors;
     final items = <DropdownMenuItem<String>>[
       const DropdownMenuItem(value: '/add-basic-habit', child: Text('Basic')),
       const DropdownMenuItem(value: '/add-bundle-habit', child: Text('Bundle')),
@@ -180,19 +182,19 @@ abstract class BaseAddHabitScreenState<T extends BaseAddHabitScreen> extends Con
       value: currentRoute,
       items: items,
       onChanged: _onHabitTypeChanged,
-      style: TextStyle(color: AppColors.draculaPurple),
-      dropdownColor: AppColors.draculaCurrentLine,
+      style: TextStyle(color: colors.draculaPurple),
+      dropdownColor: colors.draculaCurrentLine,
       decoration: InputDecoration(
         labelText: 'Habit type',
-        labelStyle: TextStyle(color: AppColors.draculaCyan),
+        labelStyle: TextStyle(color: colors.basicHabit),
         border: OutlineInputBorder(
-          borderSide: BorderSide(color: AppColors.draculaCyan, width: 1.5),
+          borderSide: BorderSide(color: colors.basicHabit, width: 1.5),
         ),
         enabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: AppColors.draculaCyan, width: 1.5),
+          borderSide: BorderSide(color: colors.basicHabit, width: 1.5),
         ),
         focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: AppColors.draculaPink, width: 2),
+          borderSide: BorderSide(color: colors.draculaPink, width: 2),
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       ),
@@ -205,7 +207,7 @@ abstract class BaseAddHabitScreenState<T extends BaseAddHabitScreen> extends Con
     return Scaffold(
       appBar: AppBar(
         title: Text(screenTitle),
-        backgroundColor: AppColors.draculaCurrentLine,
+        backgroundColor: ref.watchColors.draculaCurrentLine,
       ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
@@ -224,7 +226,7 @@ abstract class BaseAddHabitScreenState<T extends BaseAddHabitScreen> extends Con
                         'Create a new habit to track daily',
                         style: TextStyle(
                           fontSize: 16,
-                          color: AppColors.draculaCyan,
+                          color: ref.watchColors.formFieldLabel,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -235,13 +237,13 @@ abstract class BaseAddHabitScreenState<T extends BaseAddHabitScreen> extends Con
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: AppColors.draculaCyan.withOpacity(0.3),
+                            color: ref.watchColors.formFieldBorder.withOpacity(0.3),
                             width: 2,
                           ),
                           gradient: LinearGradient(
                             colors: [
-                              AppColors.draculaCurrentLine.withOpacity(0.2),
-                              AppColors.draculaCurrentLine.withOpacity(0.1),
+                              ref.watchColors.draculaCurrentLine.withOpacity(0.2),
+                              ref.watchColors.draculaCurrentLine.withOpacity(0.1),
                             ],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
@@ -255,29 +257,29 @@ abstract class BaseAddHabitScreenState<T extends BaseAddHabitScreen> extends Con
                             if (showHabitTypeSelector) ...[
                               _buildHabitTypeDropdown(context),
                               const SizedBox(height: 16),
-                              Divider(color: AppColors.draculaComment.withOpacity(0.3)),
+                              Divider(color: ref.watchColors.draculaComment.withOpacity(0.3)),
                               const SizedBox(height: 16),
                             ],
 
                             // Name field
                             TextFormField(
                               controller: nameController,
-                              style: TextStyle(color: AppColors.draculaPurple),
+                              style: TextStyle(color: ref.watchColors.draculaPurple),
                               decoration: InputDecoration(
                                 labelText: nameFieldLabel,
-                                labelStyle: TextStyle(color: AppColors.draculaCyan),
+                                labelStyle: TextStyle(color: ref.watchColors.formFieldLabel),
                                 hintText: nameFieldHint,
-                                hintStyle: TextStyle(color: AppColors.draculaComment),
+                                hintStyle: TextStyle(color: ref.watchColors.draculaComment),
                                 border: OutlineInputBorder(
-                                  borderSide: BorderSide(color: AppColors.draculaCyan, width: 1.5),
+                                  borderSide: BorderSide(color: ref.watchColors.formFieldBorder, width: 1.5),
                                 ),
                                 enabledBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(color: AppColors.draculaCyan, width: 1.5),
+                                  borderSide: BorderSide(color: ref.watchColors.formFieldBorder, width: 1.5),
                                 ),
                                 focusedBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(color: AppColors.draculaPink, width: 2),
+                                  borderSide: BorderSide(color: ref.watchColors.draculaPink, width: 2),
                                 ),
-                                prefixIcon: Icon(Icons.check_circle_outline, color: AppColors.draculaCyan),
+                                prefixIcon: Icon(Icons.check_circle_outline, color: ref.watchColors.formFieldBorder),
                               ),
                               textInputAction: TextInputAction.next,
                               textCapitalization: TextCapitalization.sentences,
@@ -290,22 +292,22 @@ abstract class BaseAddHabitScreenState<T extends BaseAddHabitScreen> extends Con
                             // Description field
                             TextFormField(
                               controller: descriptionController,
-                              style: TextStyle(color: AppColors.draculaPurple),
+                              style: TextStyle(color: ref.watchColors.draculaPurple),
                               decoration: InputDecoration(
                                 labelText: descriptionFieldLabel,
-                                labelStyle: TextStyle(color: AppColors.draculaCyan),
+                                labelStyle: TextStyle(color: ref.watchColors.formFieldLabel),
                                 hintText: descriptionFieldHint,
-                                hintStyle: TextStyle(color: AppColors.draculaComment),
+                                hintStyle: TextStyle(color: ref.watchColors.draculaComment),
                                 border: OutlineInputBorder(
-                                  borderSide: BorderSide(color: AppColors.draculaCyan, width: 1.5),
+                                  borderSide: BorderSide(color: ref.watchColors.formFieldBorder, width: 1.5),
                                 ),
                                 enabledBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(color: AppColors.draculaCyan, width: 1.5),
+                                  borderSide: BorderSide(color: ref.watchColors.formFieldBorder, width: 1.5),
                                 ),
                                 focusedBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(color: AppColors.draculaPink, width: 2),
+                                  borderSide: BorderSide(color: ref.watchColors.draculaPink, width: 2),
                                 ),
-                                prefixIcon: Icon(Icons.description_outlined, color: AppColors.draculaCyan),
+                                prefixIcon: Icon(Icons.description_outlined, color: ref.watchColors.formFieldBorder),
                               ),
                               textInputAction: TextInputAction.done,
                               textCapitalization: TextCapitalization.sentences,
@@ -339,8 +341,8 @@ abstract class BaseAddHabitScreenState<T extends BaseAddHabitScreen> extends Con
                     child: OutlinedButton(
                       onPressed: isLoading ? null : () => Navigator.of(context).pop(),
                       style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: AppColors.draculaComment),
-                        foregroundColor: AppColors.draculaComment,
+                        side: BorderSide(color: ref.watchColors.draculaComment),
+                        foregroundColor: ref.watchColors.draculaComment,
                       ),
                       child: const Text('Cancel'),
                     ),
@@ -350,9 +352,9 @@ abstract class BaseAddHabitScreenState<T extends BaseAddHabitScreen> extends Con
                     child: ElevatedButton(
                       onPressed: isLoading || !canSave() ? null : _saveHabit,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.draculaPink,
+                        backgroundColor: ref.watchColors.draculaPink,
                         foregroundColor: Colors.white,
-                        disabledBackgroundColor: AppColors.draculaComment,
+                        disabledBackgroundColor: ref.watchColors.draculaComment,
                       ),
                       child: isLoading
                           ? const SizedBox(
@@ -395,7 +397,7 @@ abstract class BaseAddHabitScreenState<T extends BaseAddHabitScreen> extends Con
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(getSuccessMessage()),
-            backgroundColor: AppColors.draculaGreen,
+            backgroundColor: ref.read(flexibleColorsProvider).success,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -405,7 +407,7 @@ abstract class BaseAddHabitScreenState<T extends BaseAddHabitScreen> extends Con
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error: ${e.toString()}'),
-            backgroundColor: AppColors.draculaRed,
+            backgroundColor: ref.read(flexibleColorsProvider).error,
             behavior: SnackBarBehavior.floating,
           ),
         );

@@ -4,9 +4,10 @@ import 'package:domain/domain.dart';
 import '../../../providers/habits_provider.dart';
 import '../../../core/theme/theme_extensions.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/flexible_theme_system.dart';
 import 'basic_habit_info_screen.dart';
 
-class HabitTile extends StatelessWidget {
+class HabitTile extends ConsumerWidget {
   final Habit habit;
   final VoidCallback? onTap;
 
@@ -17,8 +18,9 @@ class HabitTile extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isCompleted = isHabitCompletedToday(habit);
+    final colors = ref.watchColors;
     
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -27,19 +29,19 @@ class HabitTile extends StatelessWidget {
         gradient: LinearGradient(
           colors: [
             isCompleted 
-              ? AppColors.draculaGreen.withOpacity(0.4)
-              : AppColors.draculaCurrentLine.withOpacity(0.6),
+              ? colors.completedBackground.withOpacity(0.8)
+              : colors.draculaCurrentLine.withOpacity(0.6),
             isCompleted 
-              ? AppColors.draculaGreen.withOpacity(0.1)
-              : AppColors.draculaCurrentLine.withOpacity(0.3),
+              ? colors.completedBackground.withOpacity(0.4)
+              : colors.draculaCurrentLine.withOpacity(0.3),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         border: Border.all(
           color: isCompleted 
-            ? AppColors.draculaGreen.withOpacity(0.4)
-            : AppColors.draculaCyan.withOpacity(0.4),
+            ? colors.completedBorder.withOpacity(0.8)
+            : colors.basicHabit.withOpacity(0.4),
           width: 2,
         ),
         boxShadow: [
@@ -64,16 +66,16 @@ class HabitTile extends StatelessWidget {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: _getHabitTypeColor().withOpacity(0.15),
+                    color: _getHabitTypeColor(ref).withOpacity(0.15),
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: _getHabitTypeColor().withOpacity(0.3),
+                      color: _getHabitTypeColor(ref).withOpacity(0.3),
                       width: 2,
                     ),
                   ),
                   child: Icon(
                     _getHabitTypeIcon(),
-                    color: _getHabitTypeColor(),
+                    color: _getHabitTypeColor(ref),
                     size: 24,
                   ),
                 ),
@@ -89,7 +91,7 @@ class HabitTile extends StatelessWidget {
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           decoration: isCompleted ? TextDecoration.lineThrough : null,
-                          color: isCompleted ? AppColors.draculaGreen : AppColors.draculaPurple,
+                          color: isCompleted ? colors.completedTextOnGreen : colors.draculaPurple,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -98,7 +100,7 @@ class HabitTile extends StatelessWidget {
                       Text(
                         _buildSubtitleText(),
                         style: TextStyle(
-                          color: isCompleted ? AppColors.draculaGreen : AppColors.draculaCyan,
+                          color: isCompleted ? colors.completedTextOnGreen : colors.basicHabit,
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
                         ),
@@ -110,7 +112,7 @@ class HabitTile extends StatelessWidget {
                         Text(
                           habit.description,
                           style: TextStyle(
-                            color: AppColors.draculaComment,
+                            color: colors.draculaComment,
                             fontSize: 11,
                           ),
                           maxLines: 1,
@@ -180,16 +182,17 @@ class HabitTile extends StatelessWidget {
     return HomeHabitCheckButton(habit: habit);
   }
   
-  Color _getHabitTypeColor() {
+  Color _getHabitTypeColor(WidgetRef ref) {
+    final colors = ref.watchColors;
     switch (habit.type) {
       case HabitType.basic:
-        return AppColors.draculaCyan;
+        return colors.basicHabit;
       case HabitType.avoidance:
-        return AppColors.draculaRed;
+        return colors.avoidanceHabit;
       case HabitType.bundle:
-        return AppColors.draculaPurple;
+        return colors.bundleHabit;
       case HabitType.stack:
-        return AppColors.draculaOrange;
+        return colors.stackHabit;
     }
   }
   
@@ -231,10 +234,10 @@ class HomeHabitCheckButton extends ConsumerWidget {
         height: 40,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: AppColors.draculaGreen,
+          color: ref.watchColors.completed,
           boxShadow: [
             BoxShadow(
-              color: AppColors.draculaGreen.withOpacity(0.3),
+              color: ref.watchColors.completed.withOpacity(0.3),
               blurRadius: 4,
               offset: const Offset(0, 2),
             ),
@@ -255,9 +258,9 @@ class HomeHabitCheckButton extends ConsumerWidget {
         height: 40,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: AppColors.draculaCurrentLine.withOpacity(0.15),
+          color: ref.watchColors.draculaCurrentLine.withOpacity(0.15),
           border: Border.all(
-            color: AppColors.draculaPink,
+            color: ref.watchColors.draculaPink,
             width: 2,
           ),
           boxShadow: [
@@ -270,7 +273,7 @@ class HomeHabitCheckButton extends ConsumerWidget {
         ),
         child: Icon(
           Icons.circle_outlined,
-          color: AppColors.draculaPink,
+          color: ref.watchColors.draculaPink,
           size: 24,
         ),
       ),
@@ -285,7 +288,7 @@ class HomeHabitCheckButton extends ConsumerWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(result),
-          backgroundColor: AppColors.draculaGreen,
+          backgroundColor: ref.read(flexibleColorsProvider).success,
           behavior: SnackBarBehavior.floating,
           duration: const Duration(seconds: 2),
         ),
@@ -294,7 +297,7 @@ class HomeHabitCheckButton extends ConsumerWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('${habit.name} completed! +${habit.calculateXPReward()} XP'),
-          backgroundColor: AppColors.draculaGreen,
+          backgroundColor: ref.read(flexibleColorsProvider).success,
           behavior: SnackBarBehavior.floating,
           duration: const Duration(seconds: 2),
         ),

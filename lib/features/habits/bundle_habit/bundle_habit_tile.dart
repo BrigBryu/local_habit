@@ -5,6 +5,7 @@ import 'package:data_local/repositories/bundle_service.dart' as bundle_service;
 import '../../../providers/habits_provider.dart';
 import '../../../core/theme/theme_extensions.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/flexible_theme_system.dart';
 import 'providers.dart';
 import 'bundle_info_screen.dart';
 
@@ -40,6 +41,7 @@ class _ExpandableBundleTile extends ConsumerWidget {
     final children = _bundleService.getChildHabits(habit, allHabits);
     final progressPercentage = _bundleService.getBundleProgressPercentage(habit, allHabits);
     final isExpanded = ref.watch(bundleExpandedProvider(habit.id));
+    final colors = ref.watchColors;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -48,19 +50,19 @@ class _ExpandableBundleTile extends ConsumerWidget {
         gradient: LinearGradient(
           colors: [
             isCompleted 
-              ? Theme.of(context).completionColors.successBackground.withOpacity(0.4)
-              : Theme.of(context).completionColors.completedBackground.withOpacity(0.6),
+              ? colors.completedBackground.withOpacity(0.8)
+              : colors.draculaCurrentLine.withOpacity(0.6),
             isCompleted 
-              ? Theme.of(context).completionColors.successBackground.withOpacity(0.1)
-              : Theme.of(context).completionColors.completedBackground.withOpacity(0.3),
+              ? colors.completedBackground.withOpacity(0.4)
+              : colors.draculaCurrentLine.withOpacity(0.3),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         border: Border.all(
           color: isCompleted 
-            ? Theme.of(context).completionColors.success.withOpacity(0.4)
-            : Theme.of(context).completionColors.completed.withOpacity(0.4),
+            ? colors.completedBorder.withOpacity(0.8)
+            : colors.draculaCyan.withOpacity(0.4),
           width: 2,
         ),
         boxShadow: [
@@ -101,6 +103,7 @@ class _ExpandableBundleTile extends ConsumerWidget {
     List<Habit> children,
   ) {
     final isExpanded = ref.watch(bundleExpandedProvider(habit.id));
+    final colors = ref.watchColors;
     
     return Container(
       padding: const EdgeInsets.all(16),
@@ -108,11 +111,11 @@ class _ExpandableBundleTile extends ConsumerWidget {
         gradient: LinearGradient(
           colors: [
             isCompleted 
-              ? Theme.of(context).completionColors.successBackground.withOpacity(0.15)
-              : Theme.of(context).primaryColor.withOpacity(0.1),
+              ? colors.draculaGreen.withOpacity(0.15)
+              : colors.draculaPurple.withOpacity(0.1),
             isCompleted 
-              ? Theme.of(context).completionColors.successBackground.withOpacity(0.08)
-              : Theme.of(context).primaryColor.withOpacity(0.05),
+              ? colors.draculaGreen.withOpacity(0.08)
+              : colors.draculaPurple.withOpacity(0.05),
           ],
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
@@ -121,7 +124,7 @@ class _ExpandableBundleTile extends ConsumerWidget {
       child: Row(
         children: [
           // Progress Ring
-          _buildProgressRing(progress, isCompleted, progressPercentage, context),
+          _buildProgressRing(progress, isCompleted, progressPercentage, context, ref),
           const SizedBox(width: 16),
           // Bundle Info
           Expanded(
@@ -134,7 +137,7 @@ class _ExpandableBundleTile extends ConsumerWidget {
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     decoration: isCompleted ? TextDecoration.lineThrough : null,
-                    color: isCompleted ? AppColors.draculaGreen : AppColors.draculaPurple,
+                    color: isCompleted ? colors.draculaGreen : colors.draculaPurple,
                   ),
                 ),
                 if (habit.description.isNotEmpty) ...[ 
@@ -142,7 +145,7 @@ class _ExpandableBundleTile extends ConsumerWidget {
                   Text(
                     habit.description,
                     style: TextStyle(
-                      color: AppColors.draculaCyan,
+                      color: colors.draculaCyan,
                       fontSize: 12,
                     ),
                   ),
@@ -156,7 +159,7 @@ class _ExpandableBundleTile extends ConsumerWidget {
               isExpanded
                   ? Icons.keyboard_arrow_up_rounded
                   : Icons.keyboard_arrow_down_rounded,
-              color: AppColors.draculaPink,
+              color: colors.draculaPink,
               size: 24,
             ),
             onPressed: () => _toggleExpansion(ref),
@@ -169,8 +172,9 @@ class _ExpandableBundleTile extends ConsumerWidget {
     );
   }
 
-  Widget _buildProgressRing(bundle_service.BundleProgress progress, bool isCompleted, double progressPercentage, BuildContext context) {
+  Widget _buildProgressRing(bundle_service.BundleProgress progress, bool isCompleted, double progressPercentage, BuildContext context, WidgetRef ref) {
     final children = _bundleService.getChildHabits(habit, allHabits);
+    final colors = ref.watchColors;
     
     // Build tooltip text with habit names and completion status
     String tooltipText = 'Habits in this bundle:\n';
@@ -199,9 +203,9 @@ class _ExpandableBundleTile extends ConsumerWidget {
           children: [
             CircularProgressIndicator(
               value: progressPercentage,
-              backgroundColor: AppColors.borderLight,
+              backgroundColor: colors.draculaComment.withOpacity(0.3),
               valueColor: AlwaysStoppedAnimation(
-                isCompleted ? Theme.of(context).completionColors.success : AppColors.textSecondary,
+                isCompleted ? colors.draculaGreen : colors.draculaComment,
               ),
               strokeWidth: 5,
             ),
@@ -225,7 +229,7 @@ class _ExpandableBundleTile extends ConsumerWidget {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
-                    color: isCompleted ? AppColors.draculaGreen : AppColors.draculaCyan,
+                    color: isCompleted ? colors.draculaGreen : colors.draculaCyan,
                   ),
                 ),
               ),
@@ -237,6 +241,7 @@ class _ExpandableBundleTile extends ConsumerWidget {
   }
 
   Widget _buildActionButtons(BuildContext context, WidgetRef ref, bool isCompleted, List<Habit> children) {
+    final colors = ref.watchColors;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -244,7 +249,7 @@ class _ExpandableBundleTile extends ConsumerWidget {
           onPressed: () => _showAddHabitDialog(context, ref),
           icon: Icon(
             Icons.add_circle_outline,
-            color: AppColors.draculaPink,
+            color: colors.draculaPink,
           ),
           tooltip: 'Add Habit to Bundle',
         ),
@@ -254,14 +259,14 @@ class _ExpandableBundleTile extends ConsumerWidget {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  AppColors.draculaPink,
-                  AppColors.draculaPink.withOpacity(0.8),
+                  colors.draculaPink,
+                  colors.draculaPink.withOpacity(0.8),
                 ],
               ),
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.draculaPink.withOpacity(0.3),
+                  color: colors.draculaPink.withOpacity(0.3),
                   blurRadius: 4,
                   offset: const Offset(0, 2),
                 ),
@@ -287,6 +292,7 @@ class _ExpandableBundleTile extends ConsumerWidget {
   }
 
   Widget _buildChildrenSection(BuildContext context, WidgetRef ref, List<Habit> children) {
+    final colors = ref.watchColors;
     if (children.isEmpty) {
       return Container(
         padding: const EdgeInsets.all(16),
@@ -294,7 +300,7 @@ class _ExpandableBundleTile extends ConsumerWidget {
           child: Text(
             'No habits in this bundle yet',
             style: TextStyle(
-              color: AppColors.textSecondary,
+              color: colors.draculaComment,
               fontStyle: FontStyle.italic,
             ),
           ),
@@ -307,7 +313,7 @@ class _ExpandableBundleTile extends ConsumerWidget {
         color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.08),
         border: Border(
           top: BorderSide(
-            color: AppColors.borderLight,
+            color: colors.draculaComment.withOpacity(0.3),
             width: 1,
           ),
         ),
@@ -321,7 +327,7 @@ class _ExpandableBundleTile extends ConsumerWidget {
               color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.05),
               border: Border(
                 bottom: BorderSide(
-                  color: AppColors.borderLight,
+                  color: colors.draculaComment.withOpacity(0.3),
                   width: 0.5,
                 ),
               ),
@@ -336,6 +342,7 @@ class _ExpandableBundleTile extends ConsumerWidget {
   Widget _buildNestedHabitTile(BuildContext context, WidgetRef ref, Habit habit) {
     // Simplified nested habit tile for bundle context
     final isCompleted = _isHabitCompletedToday(habit);
+    final colors = ref.watchColors;
     
     return Container(
       padding: const EdgeInsets.only(left: 16),
@@ -357,7 +364,7 @@ class _ExpandableBundleTile extends ConsumerWidget {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
-                    color: AppColors.draculaPurple,
+                    color: colors.draculaPurple,
                   ),
                   children: [
                     TextSpan(text: habit.displayName),
@@ -368,7 +375,7 @@ class _ExpandableBundleTile extends ConsumerWidget {
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.normal,
-                          color: AppColors.draculaCyan,
+                          color: colors.draculaCyan,
                         ),
                       ),
                     ],
@@ -381,8 +388,8 @@ class _ExpandableBundleTile extends ConsumerWidget {
           ],
         ),
         trailing: isCompleted 
-          ? Icon(Icons.check_circle, color: Theme.of(context).completionColors.success, size: 20)
-          : Icon(Icons.check_box_outline_blank, color: AppColors.textSecondary, size: 20),
+          ? Icon(Icons.check_circle, color: colors.draculaGreen, size: 20)
+          : Icon(Icons.check_box_outline_blank, color: colors.draculaComment, size: 20),
         onTap: habit.type == HabitType.avoidance ? null : () => _handleNestedHabitTap(context, ref, habit),
       ),
     );
@@ -405,11 +412,17 @@ class _ExpandableBundleTile extends ConsumerWidget {
     
     if (result != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result)),
+        SnackBar(
+          content: Text(result),
+          backgroundColor: ref.read(flexibleColorsProvider).error,
+        ),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${habit.name} completed!')),
+        SnackBar(
+          content: Text('${habit.name} completed!'),
+          backgroundColor: ref.read(flexibleColorsProvider).success,
+        ),
       );
     }
   }
@@ -422,12 +435,13 @@ class _ExpandableBundleTile extends ConsumerWidget {
   void _completeBundle(BuildContext context, WidgetRef ref) {
     final habitsNotifier = ref.read(habitsProvider.notifier);
     final result = habitsNotifier.completeBundle(habit.id);
+    final colors = ref.watchColors;
     
     if (result != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(result),
-          backgroundColor: Theme.of(context).completionColors.success,
+          backgroundColor: colors.success,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -437,6 +451,7 @@ class _ExpandableBundleTile extends ConsumerWidget {
   void _showAddHabitDialog(BuildContext context, WidgetRef ref) {
     final habitsNotifier = ref.read(habitsProvider.notifier);
     final allAvailableHabits = habitsNotifier.getAvailableHabitsForBundle();
+    final colors = ref.watchColors;
     
     // Filter out habits that are already in this bundle
     final currentBundleChildIds = habit.bundleChildIds ?? [];
@@ -450,7 +465,7 @@ class _ExpandableBundleTile extends ConsumerWidget {
           content: Text(allAvailableHabits.isEmpty 
             ? 'No available habits to add. Create some individual habits first!'
             : 'No more habits available to add to this bundle.'),
-          backgroundColor: AppColors.draculaOrange,
+          backgroundColor: colors.warning,
         ),
       );
       return;
@@ -459,11 +474,12 @@ class _ExpandableBundleTile extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: colors.draculaCurrentLine,
         title: Row(
           children: [
-            Icon(Icons.add_circle, color: AppColors.draculaPink),
+            Icon(Icons.add_circle, color: colors.draculaPink),
             const SizedBox(width: 8),
-            Expanded(child: Text('Add to ${habit.name}', style: TextStyle(color: AppColors.draculaPurple))),
+            Expanded(child: Text('Add to ${habit.name}', style: TextStyle(color: colors.draculaPurple))),
           ],
         ),
         content: SizedBox(
@@ -474,24 +490,110 @@ class _ExpandableBundleTile extends ConsumerWidget {
             children: [
               Text(
                 'Select a habit to add to this bundle:',
-                style: TextStyle(color: AppColors.draculaCyan),
+                style: TextStyle(color: colors.draculaCyan),
               ),
               const SizedBox(height: 16),
               Expanded(
                 child: ListView.builder(
                   itemCount: availableHabits.length,
                   itemBuilder: (context, index) {
-                    final habit = availableHabits[index];
-                    return Card(
-                      child: ListTile(
-                        leading: _getHabitIcon(habit),
-                        title: Text(habit.displayName),
-                        subtitle: Text(habit.description),
-                        trailing: const Icon(Icons.arrow_forward_ios),
-                        onTap: () {
-                          Navigator.of(context).pop();
-                          _addHabitToBundle(context, ref, habit.id);
-                        },
+                    final habitToAdd = availableHabits[index];
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        gradient: LinearGradient(
+                          colors: [
+                            colors.draculaCurrentLine.withOpacity(0.6),
+                            colors.draculaCurrentLine.withOpacity(0.3),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        border: Border.all(
+                          color: colors.draculaCyan.withOpacity(0.4),
+                          width: 2,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            _addHabitToBundle(context, ref, habitToAdd.id);
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Row(
+                              children: [
+                                // Habit type icon
+                                Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color: _getHabitTypeColor(habitToAdd.type).withOpacity(0.15),
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: _getHabitTypeColor(habitToAdd.type).withOpacity(0.3),
+                                      width: 2,
+                                    ),
+                                  ),
+                                  child: Icon(
+                                    _getHabitTypeIcon(habitToAdd.type),
+                                    color: _getHabitTypeColor(habitToAdd.type),
+                                    size: 20,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                // Habit info
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        habitToAdd.displayName,
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: colors.draculaPurple,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      if (habitToAdd.description.isNotEmpty) ...[
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          habitToAdd.description,
+                                          style: TextStyle(
+                                            color: colors.draculaCyan,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                                // Add arrow
+                                Icon(
+                                  Icons.add_circle_outline,
+                                  color: colors.draculaPink,
+                                  size: 24,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
                     );
                   },
@@ -503,11 +605,37 @@ class _ExpandableBundleTile extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text('Cancel', style: TextStyle(color: colors.draculaComment)),
           ),
         ],
       ),
     );
+  }
+
+  IconData _getHabitTypeIcon(HabitType type) {
+    switch (type) {
+      case HabitType.basic:
+        return Icons.check_circle_outline;
+      case HabitType.avoidance:
+        return Icons.block;
+      case HabitType.bundle:
+        return Icons.folder_special;
+      case HabitType.stack:
+        return Icons.layers;
+    }
+  }
+  
+  Color _getHabitTypeColor(HabitType type) {
+    switch (type) {
+      case HabitType.basic:
+        return AppColors.basicHabit;
+      case HabitType.avoidance:
+        return AppColors.avoidanceHabit;
+      case HabitType.bundle:
+        return AppColors.bundleHabit;
+      case HabitType.stack:
+        return AppColors.stackHabit;
+    }
   }
 
   Widget _getHabitIcon(Habit habit) {
@@ -530,12 +658,13 @@ class _ExpandableBundleTile extends ConsumerWidget {
   void _addHabitToBundle(BuildContext context, WidgetRef ref, String habitId) {
     final habitsNotifier = ref.read(habitsProvider.notifier);
     final result = habitsNotifier.addHabitToBundle(habit.id, habitId);
+    final colors = ref.watchColors;
     
     if (result != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(result),
-          backgroundColor: Theme.of(context).completionColors.success,
+          backgroundColor: colors.success,
         ),
       );
     }

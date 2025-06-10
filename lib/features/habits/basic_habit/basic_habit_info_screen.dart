@@ -4,6 +4,7 @@ import 'package:domain/domain.dart';
 import '../../../providers/habits_provider.dart';
 import '../../../core/theme/theme_extensions.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/flexible_theme_system.dart';
 
 class BasicHabitInfoScreen extends ConsumerWidget {
   final Habit habit;
@@ -17,27 +18,48 @@ class BasicHabitInfoScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final currentHabit = ref.watch(habitsProvider).firstWhere((h) => h.id == habit.id);
     final isCompleted = _isHabitCompletedToday(currentHabit);
+    final colors = ref.watchColors;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(habit.name),
-        backgroundColor: AppColors.draculaCurrentLine,
+        title: Text(
+          habit.name,
+          style: TextStyle(color: colors.draculaForeground),
+        ),
+        backgroundColor: colors.draculaCurrentLine,
+        iconTheme: IconThemeData(color: colors.draculaForeground),
         actions: [
           if (!isCompleted)
             TextButton.icon(
               onPressed: () => _completeHabit(context, ref),
-              icon: Icon(Icons.check, color: AppColors.draculaGreen),
-              label: Text('Complete', style: TextStyle(color: AppColors.draculaGreen)),
+              icon: Icon(Icons.check, color: colors.draculaGreen),
+              label: Text('Complete', style: TextStyle(color: colors.draculaGreen)),
             ),
         ],
       ),
+      backgroundColor: colors.draculaBackground,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Habit Header Card
-            Card(
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                gradient: LinearGradient(
+                  colors: [
+                    colors.draculaCurrentLine.withOpacity(0.6),
+                    colors.draculaCurrentLine.withOpacity(0.3),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                border: Border.all(
+                  color: colors.draculaCyan.withOpacity(0.3),
+                  width: 2,
+                ),
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(20),
                 child: Column(
@@ -54,14 +76,14 @@ class BasicHabitInfoScreen extends ConsumerWidget {
                                 style: TextStyle(
                                   fontSize: 24,
                                   fontWeight: FontWeight.bold,
-                                  color: AppColors.draculaPurple,
+                                  color: colors.draculaPurple,
                                 ),
                               ),
                               const SizedBox(height: 4),
                               Text(
                                 'Basic Habit',
                                 style: TextStyle(
-                                  color: AppColors.draculaCyan,
+                                  color: colors.draculaCyan,
                                   fontSize: 14,
                                 ),
                               ),
@@ -75,20 +97,20 @@ class BasicHabitInfoScreen extends ConsumerWidget {
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: isCompleted 
-                              ? AppColors.draculaGreen.withOpacity(0.15)
-                              : AppColors.draculaCurrentLine.withOpacity(0.15),
+                              ? colors.draculaGreen.withOpacity(0.15)
+                              : colors.draculaCurrentLine.withOpacity(0.15),
                             border: Border.all(
                               color: isCompleted 
-                                ? AppColors.draculaGreen
-                                : AppColors.draculaCyan,
+                                ? colors.draculaGreen
+                                : colors.draculaCyan,
                               width: 3,
                             ),
                           ),
                           child: Icon(
                             isCompleted ? Icons.check_circle : Icons.circle_outlined,
                             color: isCompleted 
-                              ? AppColors.draculaGreen
-                              : AppColors.draculaCyan,
+                              ? colors.draculaGreen
+                              : colors.draculaCyan,
                             size: 40,
                           ),
                         ),
@@ -98,7 +120,7 @@ class BasicHabitInfoScreen extends ConsumerWidget {
                       const SizedBox(height: 16),
                       Text(
                         habit.description,
-                        style: TextStyle(fontSize: 16, color: AppColors.draculaCyan),
+                        style: TextStyle(fontSize: 16, color: colors.draculaCyan),
                       ),
                     ],
                   ],
@@ -114,12 +136,27 @@ class BasicHabitInfoScreen extends ConsumerWidget {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: AppColors.draculaPurple,
+                color: colors.draculaPurple,
               ),
             ),
             const SizedBox(height: 16),
 
-            Card(
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                gradient: LinearGradient(
+                  colors: [
+                    colors.draculaCurrentLine.withOpacity(0.6),
+                    colors.draculaCurrentLine.withOpacity(0.3),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                border: Border.all(
+                  color: colors.draculaPurple.withOpacity(0.3),
+                  width: 2,
+                ),
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
@@ -130,27 +167,27 @@ class BasicHabitInfoScreen extends ConsumerWidget {
                           child: _buildStatItem(
                             'Status',
                             isCompleted ? 'Completed' : 'Not completed',
-                            isCompleted ? AppColors.draculaGreen : AppColors.draculaOrange,
+                            isCompleted ? colors.draculaGreen : colors.draculaOrange,
                             isCompleted ? Icons.check_circle : Icons.schedule,
                           ),
                         ),
                         Container(
                           width: 1,
                           height: 40,
-                          color: AppColors.draculaComment.withOpacity(0.3),
+                          color: colors.draculaComment.withOpacity(0.3),
                         ),
                         Expanded(
                           child: _buildStatItem(
                             'Streak',
                             '${currentHabit.currentStreak} days',
-                            AppColors.draculaPink,
+                            colors.draculaPink,
                             Icons.local_fire_department,
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 16),
-                    Divider(color: AppColors.draculaComment.withOpacity(0.3)),
+                    Divider(color: colors.draculaComment.withOpacity(0.3)),
                     const SizedBox(height: 16),
                     Row(
                       children: [
@@ -158,20 +195,20 @@ class BasicHabitInfoScreen extends ConsumerWidget {
                           child: _buildStatItem(
                             'Completions Today',
                             '${currentHabit.dailyCompletionCount}',
-                            AppColors.draculaCyan,
+                            colors.draculaCyan,
                             Icons.today,
                           ),
                         ),
                         Container(
                           width: 1,
                           height: 40,
-                          color: AppColors.draculaComment.withOpacity(0.3),
+                          color: colors.draculaComment.withOpacity(0.3),
                         ),
                         Expanded(
                           child: _buildStatItem(
                             'Type',
                             'Basic',
-                            AppColors.draculaYellow,
+                            colors.draculaYellow,
                             Icons.check_circle_outline,
                           ),
                         ),
@@ -190,7 +227,7 @@ class BasicHabitInfoScreen extends ConsumerWidget {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: AppColors.draculaPurple,
+                color: colors.draculaPurple,
               ),
             ),
             const SizedBox(height: 16),
@@ -203,14 +240,14 @@ class BasicHabitInfoScreen extends ConsumerWidget {
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            AppColors.draculaGreen,
-                            AppColors.draculaGreen.withOpacity(0.8),
+                            colors.draculaGreen,
+                            colors.draculaGreen.withOpacity(0.8),
                           ],
                         ),
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.draculaGreen.withOpacity(0.3),
+                            color: colors.draculaGreen.withOpacity(0.3),
                             blurRadius: 4,
                             offset: const Offset(0, 2),
                           ),
@@ -238,8 +275,8 @@ class BasicHabitInfoScreen extends ConsumerWidget {
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            AppColors.draculaGreen.withOpacity(0.6),
-                            AppColors.draculaGreen.withOpacity(0.3),
+                            colors.draculaGreen.withOpacity(0.6),
+                            colors.draculaGreen.withOpacity(0.3),
                           ],
                         ),
                         borderRadius: BorderRadius.circular(12),
@@ -249,12 +286,12 @@ class BasicHabitInfoScreen extends ConsumerWidget {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.check_circle, color: AppColors.draculaGreen, size: 20),
+                            Icon(Icons.check_circle, color: colors.draculaGreen, size: 20),
                             const SizedBox(width: 8),
                             Text(
                               'Completed!',
                               style: TextStyle(
-                                color: AppColors.draculaGreen,
+                                color: colors.draculaGreen,
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -275,14 +312,14 @@ class BasicHabitInfoScreen extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(12),
                 gradient: LinearGradient(
                   colors: [
-                    AppColors.draculaCurrentLine.withOpacity(0.6),
-                    AppColors.draculaCurrentLine.withOpacity(0.3),
+                    colors.draculaCurrentLine.withOpacity(0.6),
+                    colors.draculaCurrentLine.withOpacity(0.3),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 border: Border.all(
-                  color: AppColors.draculaYellow.withOpacity(0.3),
+                  color: colors.draculaYellow.withOpacity(0.3),
                   width: 2,
                 ),
               ),
@@ -293,13 +330,13 @@ class BasicHabitInfoScreen extends ConsumerWidget {
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.lightbulb_outline, color: AppColors.draculaYellow),
+                        Icon(Icons.lightbulb_outline, color: colors.draculaYellow),
                         const SizedBox(width: 8),
                         Text(
                           'Tips for Success',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: AppColors.draculaYellow,
+                            color: colors.draculaYellow,
                             fontSize: 16,
                           ),
                         ),
@@ -313,7 +350,7 @@ class BasicHabitInfoScreen extends ConsumerWidget {
                       '• Don\'t break the chain - aim for daily completion',
                       style: TextStyle(
                         fontSize: 14,
-                        color: AppColors.draculaForeground,
+                        color: colors.draculaForeground,
                       ),
                     ),
                   ],
@@ -327,27 +364,32 @@ class BasicHabitInfoScreen extends ConsumerWidget {
   }
 
   Widget _buildStatItem(String label, String value, Color color, IconData icon) {
-    return Column(
-      children: [
-        Icon(icon, color: color, size: 24),
-        const SizedBox(height: 8),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: color,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: AppColors.draculaComment,
-          ),
-        ),
-      ],
+    return Consumer(
+      builder: (context, ref, child) {
+        final colors = ref.watchColors;
+        return Column(
+          children: [
+            Icon(icon, color: color, size: 24),
+            const SizedBox(height: 8),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                color: colors.draculaComment,
+              ),
+            ),
+          ],
+        );
+      }
     );
   }
 
@@ -365,6 +407,7 @@ class BasicHabitInfoScreen extends ConsumerWidget {
     
     final habitsNotifier = ref.read(habitsProvider.notifier);
     final result = habitsNotifier.completeHabit(habit.id);
+    final colors = ref.watchColors;
     
     if (result != null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -374,7 +417,7 @@ class BasicHabitInfoScreen extends ConsumerWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('${habit.name} completed! +${habit.calculateXPReward()} XP'),
-          backgroundColor: AppColors.draculaGreen,
+          backgroundColor: colors.draculaGreen,
           behavior: SnackBarBehavior.floating,
         ),
       );

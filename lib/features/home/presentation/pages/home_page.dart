@@ -8,6 +8,7 @@ import '../../../habits/basic_habit/basic_habit_info_screen.dart';
 import '../../../habits/bundle_habit/bundle_habit_tile.dart';
 import '../../../../providers/habits_provider.dart';
 import '../../../../screens/level_page.dart';
+import '../../../../screens/theme_settings_screen.dart';
 import '../../../../core/theme/app_colors.dart';
 
 class HomePage extends ConsumerWidget {
@@ -20,6 +21,27 @@ class HomePage extends ConsumerWidget {
     final routeAvailability = ref.watch(routeAvailabilityProvider);
 
     return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          'Habit Level Up',
+          style: TextStyle(
+            color: AppColors.draculaForeground,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: AppColors.draculaCurrentLine,
+        elevation: 0,
+        actions: [
+          IconButton(
+            onPressed: () => _navigateToThemeSettings(context),
+            icon: Icon(
+              Icons.palette_outlined,
+              color: AppColors.draculaPurple,
+            ),
+            tooltip: 'Theme Settings',
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -165,6 +187,14 @@ class HomePage extends ConsumerWidget {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => BasicHabitInfoScreen(habit: habit),
+      ),
+    );
+  }
+
+  void _navigateToThemeSettings(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const ThemeSettingsScreen(),
       ),
     );
   }

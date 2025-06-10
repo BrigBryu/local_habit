@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:data_local/repositories/habit_service.dart';
 import 'package:domain/entities/habit.dart';
+import '../../../../core/theme/flexible_theme_system.dart';
 
 /// Bottom sheet for creating a new bundle habit
-class CreateBundleSheet extends StatefulWidget {
+class CreateBundleSheet extends ConsumerStatefulWidget {
   final HabitService habitService;
 
   const CreateBundleSheet({
@@ -12,10 +14,10 @@ class CreateBundleSheet extends StatefulWidget {
   });
 
   @override
-  State<CreateBundleSheet> createState() => _CreateBundleSheetState();
+  ConsumerState<CreateBundleSheet> createState() => _CreateBundleSheetState();
 }
 
-class _CreateBundleSheetState extends State<CreateBundleSheet> {
+class _CreateBundleSheetState extends ConsumerState<CreateBundleSheet> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
@@ -87,7 +89,7 @@ class _CreateBundleSheetState extends State<CreateBundleSheet> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: Colors.red,
+        backgroundColor: ref.read(flexibleColorsProvider).error,
       ),
     );
   }
@@ -99,9 +101,9 @@ class _CreateBundleSheetState extends State<CreateBundleSheet> {
       builder: (context, scrollController) {
         return Container(
           padding: const EdgeInsets.all(16),
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+          decoration: BoxDecoration(
+            color: ref.watchColors.cardBackground,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -112,7 +114,7 @@ class _CreateBundleSheetState extends State<CreateBundleSheet> {
                 height: 4,
                 margin: const EdgeInsets.only(bottom: 16),
                 decoration: BoxDecoration(
-                  color: Colors.grey[300],
+                  color: ref.watchColors.draculaComment.withOpacity(0.3),
                   borderRadius: BorderRadius.circular(2),
                 ),
                 alignment: Alignment.center,
@@ -138,10 +140,21 @@ class _CreateBundleSheetState extends State<CreateBundleSheet> {
                       // Bundle name
                       TextFormField(
                         controller: _nameController,
-                        decoration: const InputDecoration(
+                        style: TextStyle(color: ref.watchColors.draculaPurple),
+                        decoration: InputDecoration(
                           labelText: 'Bundle Name',
+                          labelStyle: TextStyle(color: ref.watchColors.bundleHabit),
                           hintText: 'e.g., Morning Routine',
-                          border: OutlineInputBorder(),
+                          hintStyle: TextStyle(color: ref.watchColors.draculaComment),
+                          border: OutlineInputBorder(
+                            borderSide: BorderSide(color: ref.watchColors.bundleHabit, width: 1.5),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: ref.watchColors.bundleHabit, width: 1.5),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: ref.watchColors.draculaPink, width: 2),
+                          ),
                         ),
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
@@ -161,10 +174,21 @@ class _CreateBundleSheetState extends State<CreateBundleSheet> {
                       // Bundle description
                       TextFormField(
                         controller: _descriptionController,
-                        decoration: const InputDecoration(
+                        style: TextStyle(color: ref.watchColors.draculaPurple),
+                        decoration: InputDecoration(
                           labelText: 'Description (Optional)',
+                          labelStyle: TextStyle(color: ref.watchColors.bundleHabit),
                           hintText: 'Describe your routine bundle',
-                          border: OutlineInputBorder(),
+                          hintStyle: TextStyle(color: ref.watchColors.draculaComment),
+                          border: OutlineInputBorder(
+                            borderSide: BorderSide(color: ref.watchColors.bundleHabit, width: 1.5),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: ref.watchColors.bundleHabit, width: 1.5),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: ref.watchColors.draculaPink, width: 2),
+                          ),
                         ),
                         maxLines: 2,
                         validator: (value) {
@@ -189,26 +213,26 @@ class _CreateBundleSheetState extends State<CreateBundleSheet> {
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: Colors.grey[100],
+                            color: ref.watchColors.draculaCurrentLine.withOpacity(0.3),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Column(
                             children: [
                               Icon(
                                 Icons.info_outline,
-                                color: Colors.grey[600],
+                                color: ref.watchColors.draculaComment,
                                 size: 32,
                               ),
                               const SizedBox(height: 8),
                               Text(
                                 'No habits available for bundling',
-                                style: TextStyle(color: Colors.grey[600]),
+                                style: TextStyle(color: ref.watchColors.draculaComment),
                               ),
                               const SizedBox(height: 4),
                               Text(
                                 'Create some individual habits first',
                                 style: TextStyle(
-                                  color: Colors.grey[500],
+                                  color: ref.watchColors.textSecondary,
                                   fontSize: 12,
                                 ),
                               ),
@@ -232,13 +256,13 @@ class _CreateBundleSheetState extends State<CreateBundleSheet> {
                               onChanged: (_) => _toggleHabitSelection(habit.id),
                               secondary: CircleAvatar(
                                 backgroundColor: isSelected
-                                    ? Colors.green
-                                    : Colors.grey[300],
+                                    ? ref.watchColors.success
+                                    : ref.watchColors.draculaCurrentLine,
                                 child: Icon(
                                   _getHabitIcon(habit.type),
                                   color: isSelected
                                       ? Colors.white
-                                      : Colors.grey[600],
+                                      : ref.watchColors.draculaComment,
                                   size: 20,
                                 ),
                               ),

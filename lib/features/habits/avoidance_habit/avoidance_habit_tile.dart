@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:domain/domain.dart';
 import '../../../providers/habits_provider.dart';
+import '../../../core/theme/flexible_theme_system.dart';
 
 /// Tile for displaying avoidance habits with success/failure buttons
 class AvoidanceHabitTile extends ConsumerWidget {
@@ -11,6 +12,7 @@ class AvoidanceHabitTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colors = ref.watchColors;
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: Container(
@@ -19,11 +21,11 @@ class AvoidanceHabitTile extends ConsumerWidget {
           gradient: LinearGradient(
             colors: [
               habit.avoidanceSuccessToday 
-                ? Colors.green.withOpacity(0.1)
-                : Colors.red.withOpacity(0.05),
+                ? colors.success.withOpacity(0.1)
+                : colors.error.withOpacity(0.05),
               habit.avoidanceSuccessToday 
-                ? Colors.green.withOpacity(0.05)
-                : Colors.red.withOpacity(0.02),
+                ? colors.success.withOpacity(0.05)
+                : colors.error.withOpacity(0.02),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -35,7 +37,7 @@ class AvoidanceHabitTile extends ConsumerWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: Colors.red,
+              color: colors.avoidanceHabit,
               borderRadius: BorderRadius.circular(20),
             ),
             child: const Icon(
@@ -49,13 +51,13 @@ class AvoidanceHabitTile extends ConsumerWidget {
             style: TextStyle(
               fontWeight: FontWeight.w500,
               decoration: habit.avoidanceSuccessToday ? TextDecoration.lineThrough : null,
-              color: habit.avoidanceSuccessToday ? Colors.green : null,
+              color: habit.avoidanceSuccessToday ? colors.success : null,
             ),
           ),
           subtitle: Text(
             _getSubtitleText(),
             style: TextStyle(
-              color: Colors.grey[600],
+              color: colors.draculaComment,
               fontSize: 14,
             ),
           ),
@@ -77,7 +79,7 @@ class AvoidanceHabitTile extends ConsumerWidget {
 
   Widget _buildTrailingWidget(BuildContext context, WidgetRef ref) {
     if (habit.avoidanceSuccessToday) {
-      return const Icon(Icons.check_circle, color: Colors.green, size: 32);
+      return Icon(Icons.check_circle, color: colors.success, size: 32);
     }
 
     return Row(
@@ -89,11 +91,11 @@ class AvoidanceHabitTile extends ConsumerWidget {
           child: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.red.withOpacity(0.1),
+              color: colors.error.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.red.withOpacity(0.3)),
+              border: Border.all(color: colors.error.withOpacity(0.3)),
             ),
-            child: const Icon(Icons.close, color: Colors.red, size: 24),
+            child: Icon(Icons.close, color: colors.error, size: 24),
           ),
         ),
         const SizedBox(width: 12),
@@ -103,11 +105,11 @@ class AvoidanceHabitTile extends ConsumerWidget {
           child: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.green.withOpacity(0.1),
+              color: colors.success.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.green.withOpacity(0.3)),
+              border: Border.all(color: colors.success.withOpacity(0.3)),
             ),
-            child: const Icon(Icons.check, color: Colors.green, size: 24),
+            child: Icon(Icons.check, color: colors.success, size: 24),
           ),
         ),
       ],
@@ -122,14 +124,14 @@ class AvoidanceHabitTile extends ConsumerWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(result),
-          backgroundColor: Colors.red,
+          backgroundColor: colors.error,
         ),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Failure recorded for ${habit.name}'),
-          backgroundColor: Colors.red,
+          backgroundColor: colors.error,
         ),
       );
     }
@@ -143,14 +145,14 @@ class AvoidanceHabitTile extends ConsumerWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(result),
-          backgroundColor: Colors.green,
+          backgroundColor: colors.success,
         ),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('${habit.name} avoided successfully!'),
-          backgroundColor: Colors.green,
+          backgroundColor: colors.success,
         ),
       );
     }

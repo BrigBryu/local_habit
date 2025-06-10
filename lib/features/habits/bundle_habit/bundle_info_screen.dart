@@ -5,6 +5,7 @@ import 'package:data_local/repositories/bundle_service.dart' as bundle_service;
 import '../../../providers/habits_provider.dart';
 import '../../../core/theme/theme_extensions.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/flexible_theme_system.dart';
 
 class BundleInfoScreen extends ConsumerStatefulWidget {
   final Habit bundle;
@@ -38,40 +39,61 @@ class _BundleInfoScreenState extends ConsumerState<BundleInfoScreen> {
     final isCompleted = bundleService.isBundleCompleted(currentBundle, widget.allHabits);
     final children = bundleService.getChildHabits(currentBundle, widget.allHabits);
     final progressPercentage = bundleService.getBundleProgressPercentage(currentBundle, widget.allHabits);
+    final colors = ref.watchColors;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.bundle.name),
-        backgroundColor: AppColors.draculaCurrentLine,
+        title: Text(
+          widget.bundle.name,
+          style: TextStyle(color: colors.draculaForeground),
+        ),
+        backgroundColor: colors.draculaCurrentLine,
+        iconTheme: IconThemeData(color: colors.draculaForeground),
         actions: [
           TextButton.icon(
             onPressed: () => setState(() => _isReorderMode = !_isReorderMode),
             icon: Icon(
               _isReorderMode ? Icons.check : Icons.reorder,
-              color: _isReorderMode ? AppColors.draculaGreen : AppColors.draculaPink,
+              color: _isReorderMode ? colors.draculaGreen : colors.draculaPink,
             ),
             label: Text(
               _isReorderMode ? 'Done reordering' : 'Reorder',
               style: TextStyle(
-                color: _isReorderMode ? AppColors.draculaGreen : AppColors.draculaPink,
+                color: _isReorderMode ? colors.draculaGreen : colors.draculaPink,
               ),
             ),
           ),
           if (!isCompleted)
             TextButton.icon(
               onPressed: () => _completeBundle(context, ref),
-              icon: Icon(Icons.done_all, color: AppColors.draculaGreen),
-              label: Text('Complete All', style: TextStyle(color: AppColors.draculaGreen)),
+              icon: Icon(Icons.done_all, color: colors.draculaGreen),
+              label: Text('Complete All', style: TextStyle(color: colors.draculaGreen)),
             ),
         ],
       ),
+      backgroundColor: colors.draculaBackground,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Bundle Header Card
-            Card(
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                gradient: LinearGradient(
+                  colors: [
+                    colors.draculaCurrentLine.withOpacity(0.6),
+                    colors.draculaCurrentLine.withOpacity(0.3),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                border: Border.all(
+                  color: colors.draculaPurple.withOpacity(0.3),
+                  width: 2,
+                ),
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(20),
                 child: Column(
@@ -88,14 +110,14 @@ class _BundleInfoScreenState extends ConsumerState<BundleInfoScreen> {
                                 style: TextStyle(
                                   fontSize: 24,
                                   fontWeight: FontWeight.bold,
-                                  color: AppColors.draculaPurple,
+                                  color: colors.draculaPurple,
                                 ),
                               ),
                               const SizedBox(height: 4),
                               Text(
                                 'Bundle Habit',
                                 style: TextStyle(
-                                  color: AppColors.draculaCyan,
+                                  color: colors.draculaCyan,
                                   fontSize: 14,
                                 ),
                               ),
@@ -111,11 +133,11 @@ class _BundleInfoScreenState extends ConsumerState<BundleInfoScreen> {
                             children: [
                               CircularProgressIndicator(
                                 value: progressPercentage,
-                                backgroundColor: AppColors.borderLight,
+                                backgroundColor: colors.draculaComment.withOpacity(0.3),
                                 valueColor: AlwaysStoppedAnimation(
                                   isCompleted 
-                                    ? AppColors.draculaGreen 
-                                    : AppColors.draculaCyan,
+                                    ? colors.draculaGreen 
+                                    : colors.draculaCyan,
                                 ),
                                 strokeWidth: 6,
                               ),
@@ -125,8 +147,8 @@ class _BundleInfoScreenState extends ConsumerState<BundleInfoScreen> {
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                   color: isCompleted 
-                                    ? AppColors.draculaGreen 
-                                    : AppColors.draculaCyan,
+                                    ? colors.draculaGreen 
+                                    : colors.draculaCyan,
                                 ),
                               ),
                             ],
@@ -138,7 +160,7 @@ class _BundleInfoScreenState extends ConsumerState<BundleInfoScreen> {
                       const SizedBox(height: 16),
                       Text(
                         widget.bundle.description,
-                        style: TextStyle(fontSize: 16, color: AppColors.draculaCyan),
+                        style: TextStyle(fontSize: 16, color: colors.draculaCyan),
                       ),
                     ],
                   ],
@@ -154,7 +176,7 @@ class _BundleInfoScreenState extends ConsumerState<BundleInfoScreen> {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: AppColors.draculaPurple,
+                color: colors.draculaPurple,
               ),
             ),
             const SizedBox(height: 16),
@@ -169,21 +191,21 @@ class _BundleInfoScreenState extends ConsumerState<BundleInfoScreen> {
                         Icon(
                           Icons.inbox_outlined,
                           size: 64,
-                          color: AppColors.textSecondary,
+                          color: colors.draculaComment,
                         ),
                         const SizedBox(height: 16),
                         Text(
                           'No habits in this bundle yet',
                           style: TextStyle(
                             fontSize: 18,
-                            color: AppColors.draculaComment,
+                            color: colors.draculaComment,
                           ),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           'Add some habits to get started',
                           style: TextStyle(
-                            color: AppColors.draculaComment,
+                            color: colors.draculaComment,
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -225,17 +247,18 @@ class _BundleInfoScreenState extends ConsumerState<BundleInfoScreen> {
   }
 
   Widget _buildReorderableHabitsList(BuildContext context, WidgetRef ref, List<Habit> children) {
+    final colors = ref.watchColors;
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: AppColors.draculaPink.withOpacity(0.3),
+          color: colors.draculaPink.withOpacity(0.3),
           width: 2,
         ),
         gradient: LinearGradient(
           colors: [
-            AppColors.draculaCurrentLine.withOpacity(0.2),
-            AppColors.draculaCurrentLine.withOpacity(0.1),
+            colors.draculaCurrentLine.withOpacity(0.2),
+            colors.draculaCurrentLine.withOpacity(0.1),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -247,14 +270,14 @@ class _BundleInfoScreenState extends ConsumerState<BundleInfoScreen> {
         children: [
           Row(
             children: [
-              Icon(Icons.drag_indicator, color: AppColors.draculaPink),
+              Icon(Icons.drag_indicator, color: colors.draculaPink),
               const SizedBox(width: 8),
               Text(
                 'Drag to reorder habits:',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.draculaPink,
+                  color: colors.draculaPink,
                 ),
               ),
             ],
@@ -271,26 +294,26 @@ class _BundleInfoScreenState extends ConsumerState<BundleInfoScreen> {
                 key: ValueKey(habit.id),
                 margin: const EdgeInsets.only(bottom: 8),
                 decoration: BoxDecoration(
-                  color: AppColors.draculaCurrentLine.withOpacity(0.5),
+                  color: colors.draculaCurrentLine.withOpacity(0.5),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: AppColors.draculaPink.withOpacity(0.3),
+                    color: colors.draculaPink.withOpacity(0.3),
                     width: 1,
                   ),
                 ),
                 child: ListTile(
-                  leading: Icon(Icons.drag_handle, color: AppColors.draculaPink),
+                  leading: Icon(Icons.drag_handle, color: colors.draculaPink),
                   title: Text(
                     habit.displayName,
                     style: TextStyle(
-                      color: AppColors.draculaPurple,
+                      color: colors.draculaPurple,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
                   subtitle: habit.description.isNotEmpty
                       ? Text(
                           habit.description,
-                          style: TextStyle(color: AppColors.draculaCyan),
+                          style: TextStyle(color: colors.draculaCyan),
                         )
                       : null,
                 ),
@@ -343,98 +366,166 @@ class _BundleInfoScreenState extends ConsumerState<BundleInfoScreen> {
 
   Widget _buildHabitCard(BuildContext context, WidgetRef ref, Habit habit) {
     final isCompleted = _isHabitCompletedToday(habit);
+    final colors = ref.watchColors;
     
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isCompleted 
-              ? Theme.of(context).completionColors.success.withOpacity(0.3)
-              : AppColors.borderLight,
-            width: isCompleted ? 2 : 1,
-          ),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        gradient: LinearGradient(
+          colors: [
+            isCompleted 
+              ? colors.completedBackground.withOpacity(0.8)
+              : colors.draculaCurrentLine.withOpacity(0.6),
+            isCompleted 
+              ? colors.completedBackground.withOpacity(0.4)
+              : colors.draculaCurrentLine.withOpacity(0.3),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-        child: ListTile(
-          contentPadding: const EdgeInsets.all(16),
-          leading: Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: isCompleted 
-                ? Theme.of(context).completionColors.success
-                : AppColors.incompleteBackground,
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: isCompleted 
-                  ? Theme.of(context).completionColors.success
-                  : AppColors.borderMedium,
-                width: 2,
-              ),
-            ),
-            child: Icon(
-              isCompleted ? Icons.check : _getHabitTypeIcon(habit.type),
-              color: isCompleted 
-                ? Colors.white 
-                : AppColors.textSecondary,
-              size: 24,
-            ),
+        border: Border.all(
+          color: isCompleted 
+            ? colors.completedBorder.withOpacity(0.8)
+            : colors.draculaCyan.withOpacity(0.4),
+          width: 2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
-          title: Text(
-            habit.displayName,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              decoration: isCompleted ? TextDecoration.lineThrough : null,
-              color: isCompleted 
-                ? AppColors.draculaComment 
-                : AppColors.draculaPurple,
-            ),
-          ),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (habit.description.isNotEmpty) ...[
-                const SizedBox(height: 4),
-                Text(
-                  habit.description,
-                  style: TextStyle(
-                    color: AppColors.draculaCyan,
-                    fontSize: 14,
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(10),
+          onTap: habit.type != HabitType.avoidance && !isCompleted 
+            ? () => _completeHabit(context, ref, habit)
+            : null,
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                // Habit type icon
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: _getHabitTypeColor(habit.type).withOpacity(0.15),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: _getHabitTypeColor(habit.type).withOpacity(0.3),
+                      width: 2,
+                    ),
                   ),
-                ),
-              ],
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: _getHabitTypeColor(habit.type).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  habit.type.displayName,
-                  style: TextStyle(
+                  child: Icon(
+                    _getHabitTypeIcon(habit.type),
                     color: _getHabitTypeColor(habit.type),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
+                    size: 24,
                   ),
                 ),
-              ),
-            ],
-          ),
-          trailing: isCompleted 
-            ? null 
-            : habit.type != HabitType.avoidance 
-              ? IconButton(
-                  onPressed: () => _completeHabit(context, ref, habit),
-                  icon: Icon(
-                    Icons.check_circle_outline,
-                    color: AppColors.draculaPink,
+                const SizedBox(width: 16),
+                // Habit info
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        habit.displayName,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          decoration: isCompleted ? TextDecoration.lineThrough : null,
+                          color: isCompleted ? colors.draculaGreen : colors.draculaPurple,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      if (habit.description.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          habit.description,
+                          style: TextStyle(
+                            color: isCompleted ? colors.draculaGreen.withOpacity(0.8) : colors.draculaCyan,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: _getThemeAwareHabitTypeColor(habit.type).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          habit.type.displayName,
+                          style: TextStyle(
+                            color: _getThemeAwareHabitTypeColor(habit.type),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  tooltip: 'Complete ${habit.name}',
-                )
-              : null,
+                ),
+                // Completion indicator - subtle and consistent
+                if (isCompleted)
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: colors.draculaGreen,
+                      boxShadow: [
+                        BoxShadow(
+                          color: colors.draculaGreen.withOpacity(0.3),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.check,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  )
+                else if (habit.type != HabitType.avoidance)
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: colors.draculaCurrentLine.withOpacity(0.15),
+                      border: Border.all(
+                        color: colors.draculaPink,
+                        width: 2,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 4,
+                          offset: const Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      Icons.circle_outlined,
+                      color: colors.draculaPink,
+                      size: 24,
+                    ),
+                  ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -463,6 +554,20 @@ class _BundleInfoScreenState extends ConsumerState<BundleInfoScreen> {
         return AppColors.bundleHabit;
       case HabitType.stack:
         return AppColors.stackHabit;
+    }
+  }
+
+  Color _getThemeAwareHabitTypeColor(HabitType type) {
+    final colors = ref.watchColors;
+    switch (type) {
+      case HabitType.basic:
+        return colors.basicHabit; // Uses theme-aware cyan (dark in light mode)
+      case HabitType.avoidance:
+        return colors.avoidanceHabit; // Uses theme-aware red
+      case HabitType.bundle:
+        return colors.bundleHabit; // Uses theme-aware purple
+      case HabitType.stack:
+        return colors.stackHabit; // Uses theme-aware orange
     }
   }
 
@@ -495,12 +600,13 @@ class _BundleInfoScreenState extends ConsumerState<BundleInfoScreen> {
   void _completeBundle(BuildContext context, WidgetRef ref) {
     final habitsNotifier = ref.read(habitsProvider.notifier);
     final result = habitsNotifier.completeBundle(widget.bundle.id);
+    final colors = ref.watchColors;
     
     if (result != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(result),
-          backgroundColor: Theme.of(context).completionColors.success,
+          backgroundColor: colors.draculaGreen,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -566,12 +672,13 @@ class _BundleInfoScreenState extends ConsumerState<BundleInfoScreen> {
   void _addHabitToBundle(BuildContext context, WidgetRef ref, String habitId) {
     final habitsNotifier = ref.read(habitsProvider.notifier);
     final result = habitsNotifier.addHabitToBundle(widget.bundle.id, habitId);
+    final colors = ref.watchColors;
     
     if (result != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(result),
-          backgroundColor: Theme.of(context).completionColors.success,
+          backgroundColor: colors.draculaGreen,
         ),
       );
     }

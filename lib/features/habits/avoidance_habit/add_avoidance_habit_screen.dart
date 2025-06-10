@@ -6,6 +6,7 @@ import '../shared/base_add_habit_screen.dart';
 import '../basic_habit/add_basic_habit_screen.dart';
 import '../bundle_habit/add_bundle_habit_screen.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/flexible_theme_system.dart';
 
 class AddAvoidanceHabitScreen extends BaseAddHabitScreen {
   const AddAvoidanceHabitScreen({super.key});
@@ -32,8 +33,9 @@ class _AddAvoidanceHabitScreenState extends BaseAddHabitScreenState<AddAvoidance
 
   @override
   Widget buildCustomContent(BuildContext context) {
+    final colors = ref.watchColors;
     return Card(
-      color: Colors.red.shade50,
+      color: colors.draculaRed.withOpacity(0.1),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -41,26 +43,26 @@ class _AddAvoidanceHabitScreenState extends BaseAddHabitScreenState<AddAvoidance
           children: [
             Row(
               children: [
-                Icon(Icons.block, color: Colors.red.shade700),
+                Icon(Icons.block, color: colors.draculaRed),
                 const SizedBox(width: 8),
                 Text(
                   'Avoidance Habit',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: Colors.red.shade700,
+                    color: colors.draculaRed,
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 12),
-            const Text(
+            Text(
               '• Track things you want to avoid or stop doing\n'
               '• Mark failures when you slip up\n'
               '• Complete successfully when you avoid the behavior all day\n'
               '• Breaks streak on first failure, but you can still mark success',
               style: TextStyle(
                 fontSize: 14,
-                color: AppColors.textPrimary,
+                color: colors.draculaForeground,
               ),
             ),
           ],
@@ -71,8 +73,9 @@ class _AddAvoidanceHabitScreenState extends BaseAddHabitScreenState<AddAvoidance
 
   @override
   Widget buildTipsSection(BuildContext context) {
+    final colors = ref.watchColors;
     return Card(
-      color: Colors.orange.shade50,
+      color: colors.draculaOrange.withOpacity(0.1),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -80,25 +83,25 @@ class _AddAvoidanceHabitScreenState extends BaseAddHabitScreenState<AddAvoidance
           children: [
             Row(
               children: [
-                Icon(Icons.psychology, color: Colors.orange.shade700),
+                Icon(Icons.psychology, color: colors.draculaOrange),
                 const SizedBox(width: 8),
                 Text(
                   'Avoidance Tips',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: Colors.orange.shade700,
+                    color: colors.draculaOrange,
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 12),
-            const Text(
+            Text(
               '• Replace bad habits with good ones\n'
               '• Identify triggers that lead to the behavior\n'
               '• Be honest about failures - tracking helps awareness',
               style: TextStyle(
                 fontSize: 14,
-                color: AppColors.textPrimary,
+                color: colors.draculaForeground,
               ),
             ),
           ],

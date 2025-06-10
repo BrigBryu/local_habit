@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:domain/domain.dart';
 import 'package:data_local/repositories/habit_relationship_service.dart';
+import '../core/theme/flexible_theme_system.dart';
+import '../core/theme/app_colors.dart';
 
 /// Reusable widget for selecting habits to add to groups
 /// Supports different selection modes and validation
-class HabitSelector extends StatefulWidget {
+class HabitSelector extends ConsumerStatefulWidget {
   final List<Habit> availableHabits;
   final List<String> selectedHabitIds;
   final Function(List<String>) onSelectionChanged;
@@ -31,14 +34,15 @@ class HabitSelector extends StatefulWidget {
   });
 
   @override
-  State<HabitSelector> createState() => _HabitSelectorState();
+  ConsumerState<HabitSelector> createState() => _HabitSelectorState();
 }
 
-class _HabitSelectorState extends State<HabitSelector> {
+class _HabitSelectorState extends ConsumerState<HabitSelector> {
   final _relationshipService = HabitRelationshipService();
 
   @override
   Widget build(BuildContext context) {
+    final colors = ref.watchColors;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -55,7 +59,7 @@ class _HabitSelectorState extends State<HabitSelector> {
             widget.subtitle!,
             style: TextStyle(
               fontSize: 12,
-              color: Colors.grey[600],
+              color: colors.draculaComment,
             ),
           ),
           const SizedBox(height: 8),
@@ -68,6 +72,7 @@ class _HabitSelectorState extends State<HabitSelector> {
   }
 
   Widget _buildHabitList() {
+    final colors = ref.watchColors;
     if (widget.availableHabits.isEmpty) {
       return _buildEmptyState();
     }
@@ -75,7 +80,7 @@ class _HabitSelectorState extends State<HabitSelector> {
     return Container(
       height: widget.height,
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade300),
+        border: Border.all(color: colors.draculaComment.withOpacity(0.3)),
         borderRadius: BorderRadius.circular(8),
       ),
       child: SingleChildScrollView(
@@ -90,19 +95,20 @@ class _HabitSelectorState extends State<HabitSelector> {
   Widget _buildHabitTile(Habit habit) {
     final isSelected = widget.selectedHabitIds.contains(habit.id);
     final canSelect = _canSelectHabit(habit);
+    final colors = ref.watchColors;
 
     if (widget.allowMultipleSelection) {
       return CheckboxListTile(
         title: Text(
           habit.displayName,
           style: TextStyle(
-            color: canSelect ? null : Colors.grey,
+            color: canSelect ? colors.draculaForeground : colors.draculaComment,
           ),
         ),
         subtitle: Text(
           habit.description,
           style: TextStyle(
-            color: canSelect ? Colors.grey[600] : Colors.grey[400],
+            color: canSelect ? colors.draculaCyan : colors.draculaComment.withOpacity(0.6),
             fontSize: 12,
           ),
         ),
@@ -116,13 +122,13 @@ class _HabitSelectorState extends State<HabitSelector> {
         title: Text(
           habit.displayName,
           style: TextStyle(
-            color: canSelect ? null : Colors.grey,
+            color: canSelect ? colors.draculaForeground : colors.draculaComment,
           ),
         ),
         subtitle: Text(
           habit.description,
           style: TextStyle(
-            color: canSelect ? Colors.grey[600] : Colors.grey[400],
+            color: canSelect ? colors.draculaCyan : colors.draculaComment.withOpacity(0.6),
             fontSize: 12,
           ),
         ),
@@ -136,6 +142,7 @@ class _HabitSelectorState extends State<HabitSelector> {
   }
 
   Widget _buildEmptyState() {
+    final colors = ref.watchColors;
     String message;
     switch (widget.groupType) {
       case HabitType.bundle:
@@ -151,9 +158,9 @@ class _HabitSelectorState extends State<HabitSelector> {
     return Container(
       height: widget.height,
       decoration: BoxDecoration(
-        color: Colors.orange.shade50,
+        color: colors.draculaOrange.withOpacity(0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.orange.shade200),
+        border: Border.all(color: colors.draculaOrange.withOpacity(0.3)),
       ),
       child: Center(
         child: Padding(
@@ -161,13 +168,13 @@ class _HabitSelectorState extends State<HabitSelector> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.info_outline, size: 32, color: Colors.orange.shade700),
+              Icon(Icons.info_outline, size: 32, color: colors.draculaOrange),
               const SizedBox(height: 8),
               Text(
                 message,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Colors.orange.shade700,
+                  color: colors.draculaOrange,
                   fontSize: 14,
                 ),
               ),
@@ -180,6 +187,7 @@ class _HabitSelectorState extends State<HabitSelector> {
 
   Widget _buildSelectionSummary() {
     if (widget.selectedHabitIds.isEmpty) return const SizedBox.shrink();
+    final colors = ref.watchColors;
 
     final validationResult = _relationshipService.validateGrouping(
       childIds: widget.selectedHabitIds,
@@ -189,8 +197,8 @@ class _HabitSelectorState extends State<HabitSelector> {
 
     final count = widget.selectedHabitIds.length;
     final isValid = validationResult.isValid;
-    final color = isValid ? Colors.green.shade700 : Colors.orange.shade700;
-    final backgroundColor = isValid ? Colors.green.shade50 : Colors.orange.shade50;
+    final color = isValid ? colors.draculaGreen : colors.draculaOrange;
+    final backgroundColor = isValid ? colors.draculaGreen.withOpacity(0.1) : colors.draculaOrange.withOpacity(0.1);
 
     String message = '$count habit${count == 1 ? '' : 's'} selected';
     if (!isValid && validationResult.errorMessage != null) {
@@ -271,11 +279,12 @@ class _HabitSelectorState extends State<HabitSelector> {
   }
 
   Widget _getHabitTypeIcon(Habit habit) {
+    // Use AppColors for consistent habit type colors across the app
     switch (habit.type) {
       case HabitType.basic:
-        return Icon(Icons.check_circle_outline, color: Colors.blue, size: 20);
+        return Icon(Icons.check_circle_outline, color: AppColors.basicHabit, size: 20);
       case HabitType.avoidance:
-        return Icon(Icons.block, color: Colors.red, size: 20);
+        return Icon(Icons.block, color: AppColors.avoidanceHabit, size: 20);
       // TODO(bridger): Disabled time-based habit types
       // case HabitType.timedSession:
       //   return Icon(Icons.timer, color: Colors.orange, size: 20);
@@ -285,11 +294,12 @@ class _HabitSelectorState extends State<HabitSelector> {
       // case HabitType.alarmHabit:
       //   return Icon(Icons.alarm, color: Colors.purple, size: 20);
       case HabitType.stack:
-        return Icon(Icons.layers, color: Colors.indigo, size: 20);
+        return Icon(Icons.layers, color: AppColors.stackHabit, size: 20);
       case HabitType.bundle:
-        return Icon(Icons.folder, color: Colors.brown, size: 20);
+        return Icon(Icons.folder, color: AppColors.bundleHabit, size: 20);
       default:
-        return Icon(Icons.circle, color: Colors.grey, size: 20);
+        final colors = ref.watchColors;
+        return Icon(Icons.circle, color: colors.draculaComment, size: 20);
     }
   }
 }
