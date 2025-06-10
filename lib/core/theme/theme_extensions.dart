@@ -1,0 +1,210 @@
+import 'package:flutter/material.dart';
+import 'app_colors.dart';
+
+/// Theme extension for habit-specific colors
+@immutable
+class HabitColorsExtension extends ThemeExtension<HabitColorsExtension> {
+  const HabitColorsExtension({
+    required this.basicHabit,
+    required this.avoidanceHabit,
+    required this.bundleHabit,
+    required this.stackHabit,
+    required this.basicHabitBackground,
+    required this.avoidanceHabitBackground,
+    required this.bundleHabitBackground,
+    required this.stackHabitBackground,
+  });
+
+  final Color basicHabit;
+  final Color avoidanceHabit;
+  final Color bundleHabit;
+  final Color stackHabit;
+  final Color basicHabitBackground;
+  final Color avoidanceHabitBackground;
+  final Color bundleHabitBackground;
+  final Color stackHabitBackground;
+
+  static const HabitColorsExtension light = HabitColorsExtension(
+    basicHabit: AppColors.basicHabit,
+    avoidanceHabit: AppColors.avoidanceHabit,
+    bundleHabit: AppColors.bundleHabit,
+    stackHabit: AppColors.stackHabit,
+    basicHabitBackground: Color(0xFFEFF6FF),
+    avoidanceHabitBackground: Color(0xFFFEF2F2),
+    bundleHabitBackground: Color(0xFFF5F3FF),
+    stackHabitBackground: Color(0xFFEEF2FF),
+  );
+
+  static const HabitColorsExtension dark = HabitColorsExtension(
+    basicHabit: Color(0xFF60A5FA),
+    avoidanceHabit: Color(0xFFF87171),
+    bundleHabit: Color(0xFFA78BFA),
+    stackHabit: Color(0xFF818CF8),
+    basicHabitBackground: Color(0xFF1E3A8A),
+    avoidanceHabitBackground: Color(0xFF991B1B),
+    bundleHabitBackground: Color(0xFF6B21A8),
+    stackHabitBackground: Color(0xFF3730A3),
+  );
+
+  @override
+  HabitColorsExtension copyWith({
+    Color? basicHabit,
+    Color? avoidanceHabit,
+    Color? bundleHabit,
+    Color? stackHabit,
+    Color? basicHabitBackground,
+    Color? avoidanceHabitBackground,
+    Color? bundleHabitBackground,
+    Color? stackHabitBackground,
+  }) {
+    return HabitColorsExtension(
+      basicHabit: basicHabit ?? this.basicHabit,
+      avoidanceHabit: avoidanceHabit ?? this.avoidanceHabit,
+      bundleHabit: bundleHabit ?? this.bundleHabit,
+      stackHabit: stackHabit ?? this.stackHabit,
+      basicHabitBackground: basicHabitBackground ?? this.basicHabitBackground,
+      avoidanceHabitBackground: avoidanceHabitBackground ?? this.avoidanceHabitBackground,
+      bundleHabitBackground: bundleHabitBackground ?? this.bundleHabitBackground,
+      stackHabitBackground: stackHabitBackground ?? this.stackHabitBackground,
+    );
+  }
+
+  @override
+  HabitColorsExtension lerp(HabitColorsExtension? other, double t) {
+    if (other is! HabitColorsExtension) {
+      return this;
+    }
+
+    return HabitColorsExtension(
+      basicHabit: Color.lerp(basicHabit, other.basicHabit, t)!,
+      avoidanceHabit: Color.lerp(avoidanceHabit, other.avoidanceHabit, t)!,
+      bundleHabit: Color.lerp(bundleHabit, other.bundleHabit, t)!,
+      stackHabit: Color.lerp(stackHabit, other.stackHabit, t)!,
+      basicHabitBackground: Color.lerp(basicHabitBackground, other.basicHabitBackground, t)!,
+      avoidanceHabitBackground: Color.lerp(avoidanceHabitBackground, other.avoidanceHabitBackground, t)!,
+      bundleHabitBackground: Color.lerp(bundleHabitBackground, other.bundleHabitBackground, t)!,
+      stackHabitBackground: Color.lerp(stackHabitBackground, other.stackHabitBackground, t)!,
+    );
+  }
+}
+
+/// Theme extension for completion states
+@immutable
+class CompletionColorsExtension extends ThemeExtension<CompletionColorsExtension> {
+  const CompletionColorsExtension({
+    required this.completed,
+    required this.completedBackground,
+    required this.incomplete,
+    required this.incompleteBackground,
+    required this.completedBorder,
+    required this.incompleteBorder,
+    required this.success,
+    required this.successBackground,
+    required this.warning,
+    required this.warningBackground,
+    required this.error,
+    required this.errorBackground,
+  });
+
+  final Color completed;
+  final Color completedBackground;
+  final Color incomplete;
+  final Color incompleteBackground;
+  final Color completedBorder;
+  final Color incompleteBorder;
+  final Color success;
+  final Color successBackground;
+  final Color warning;
+  final Color warningBackground;
+  final Color error;
+  final Color errorBackground;
+
+  static const CompletionColorsExtension light = CompletionColorsExtension(
+    completed: AppColors.primaryPurple,
+    completedBackground: AppColors.completedBackground,
+    incomplete: AppColors.incomplete,
+    incompleteBackground: AppColors.incompleteBackground,
+    completedBorder: AppColors.primaryPurple,
+    incompleteBorder: AppColors.borderMedium,
+    success: AppColors.success,
+    successBackground: Color(0xFFECFDF5),
+    warning: AppColors.warning,
+    warningBackground: Color(0xFFFFFBEB),
+    error: AppColors.error,
+    errorBackground: Color(0xFFFEF2F2),
+  );
+
+  static const CompletionColorsExtension dark = CompletionColorsExtension(
+    completed: AppColors.lightPurple,
+    completedBackground: Color(0xFF4A1A5C),
+    incomplete: Color(0xFF9CA3AF),
+    incompleteBackground: Color(0xFF1F2937),
+    completedBorder: AppColors.lightPurple,
+    incompleteBorder: Color(0xFF6B7280),
+    success: AppColors.successLight,
+    successBackground: Color(0xFF064E3B),
+    warning: AppColors.warningLight,
+    warningBackground: Color(0xFF78350F),
+    error: AppColors.errorLight,
+    errorBackground: Color(0xFF7F1D1D),
+  );
+
+  @override
+  CompletionColorsExtension copyWith({
+    Color? completed,
+    Color? completedBackground,
+    Color? incomplete,
+    Color? incompleteBackground,
+    Color? completedBorder,
+    Color? incompleteBorder,
+    Color? success,
+    Color? successBackground,
+    Color? warning,
+    Color? warningBackground,
+    Color? error,
+    Color? errorBackground,
+  }) {
+    return CompletionColorsExtension(
+      completed: completed ?? this.completed,
+      completedBackground: completedBackground ?? this.completedBackground,
+      incomplete: incomplete ?? this.incomplete,
+      incompleteBackground: incompleteBackground ?? this.incompleteBackground,
+      completedBorder: completedBorder ?? this.completedBorder,
+      incompleteBorder: incompleteBorder ?? this.incompleteBorder,
+      success: success ?? this.success,
+      successBackground: successBackground ?? this.successBackground,
+      warning: warning ?? this.warning,
+      warningBackground: warningBackground ?? this.warningBackground,
+      error: error ?? this.error,
+      errorBackground: errorBackground ?? this.errorBackground,
+    );
+  }
+
+  @override
+  CompletionColorsExtension lerp(CompletionColorsExtension? other, double t) {
+    if (other is! CompletionColorsExtension) {
+      return this;
+    }
+
+    return CompletionColorsExtension(
+      completed: Color.lerp(completed, other.completed, t)!,
+      completedBackground: Color.lerp(completedBackground, other.completedBackground, t)!,
+      incomplete: Color.lerp(incomplete, other.incomplete, t)!,
+      incompleteBackground: Color.lerp(incompleteBackground, other.incompleteBackground, t)!,
+      completedBorder: Color.lerp(completedBorder, other.completedBorder, t)!,
+      incompleteBorder: Color.lerp(incompleteBorder, other.incompleteBorder, t)!,
+      success: Color.lerp(success, other.success, t)!,
+      successBackground: Color.lerp(successBackground, other.successBackground, t)!,
+      warning: Color.lerp(warning, other.warning, t)!,
+      warningBackground: Color.lerp(warningBackground, other.warningBackground, t)!,
+      error: Color.lerp(error, other.error, t)!,
+      errorBackground: Color.lerp(errorBackground, other.errorBackground, t)!,
+    );
+  }
+}
+
+/// Convenient extension methods to access theme colors
+extension ThemeColorsExtension on ThemeData {
+  HabitColorsExtension get habitColors => extension<HabitColorsExtension>()!;
+  CompletionColorsExtension get completionColors => extension<CompletionColorsExtension>()!;
+}

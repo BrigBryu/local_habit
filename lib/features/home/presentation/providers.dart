@@ -8,8 +8,13 @@ final homeHabitsProvider = Provider<List<Habit>>((ref) {
   final timeService = TimeService();
   final today = timeService.today();
   
-  // Return all habits that are visible for today
+  // Return only top-level habits (not children of bundles) that are visible for today
   return habits.where((habit) {
+    // Filter out habits that belong to bundles
+    if (habit.parentBundleId != null) {
+      return false;
+    }
+    
     // Filter out habits that shouldn't be shown today
     if (habit.availableDays != null && habit.availableDays!.isNotEmpty) {
       final dayOfWeek = today.weekday; // 1 = Monday, 7 = Sunday

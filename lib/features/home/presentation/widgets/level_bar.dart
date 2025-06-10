@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:domain/domain.dart';
+import '../../../../core/theme/app_colors.dart';
 
 class LevelBar extends StatelessWidget {
   final VoidCallback? onTap;
@@ -23,10 +24,11 @@ class LevelBar extends StatelessWidget {
         height: 48,
         padding: const EdgeInsets.symmetric(horizontal: 16),
         decoration: BoxDecoration(
-          color: Theme.of(context).primaryColor.withOpacity(0.1),
+          color: AppColors.completedBackground,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: Theme.of(context).primaryColor.withOpacity(0.2),
+            color: AppColors.primaryPurple.withOpacity(0.3),
+            width: 1,
           ),
         ),
         child: Row(
@@ -59,7 +61,7 @@ class LevelBar extends StatelessWidget {
                           borderRadius: BorderRadius.circular(2),
                           child: LinearProgressIndicator(
                             value: progress,
-                            backgroundColor: Colors.grey.shade300,
+                            backgroundColor: AppColors.borderLight,
                             valueColor: AlwaysStoppedAnimation<Color>(
                               Theme.of(context).primaryColor,
                             ),
@@ -71,7 +73,7 @@ class LevelBar extends StatelessWidget {
                       Text(
                         '$currentXP / $nextLevelXP XP',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.grey[600],
+                          color: AppColors.textSecondary,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -83,7 +85,7 @@ class LevelBar extends StatelessWidget {
             ),
             Icon(
               Icons.chevron_right,
-              color: Colors.grey[400],
+              color: AppColors.textTertiary,
               size: 20,
             ),
           ],

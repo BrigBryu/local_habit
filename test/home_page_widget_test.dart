@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:domain/domain.dart';
 import 'package:habit_level_up/features/home/presentation/pages/home_page.dart';
 import 'package:habit_level_up/features/home/presentation/widgets/level_bar.dart';
-import 'package:habit_level_up/features/home/presentation/widgets/habit_tile.dart';
+import 'package:habit_level_up/features/habits/basic_habit/basic_habit_tile.dart';
 import 'package:habit_level_up/features/home/presentation/providers.dart';
 
 void main() {

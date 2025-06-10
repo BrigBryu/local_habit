@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:domain/domain.dart';
 import '../widgets/level_bar.dart';
-import '../widgets/habit_tile.dart';
 import '../providers.dart';
-import '../../../../screens/add_habit_screen.dart';
+import '../../../habits/basic_habit/index.dart';
+import '../../../habits/basic_habit/basic_habit_info_screen.dart';
+import '../../../habits/bundle_habit/bundle_habit_tile.dart';
+import '../../../../providers/habits_provider.dart';
 import '../../../../screens/level_page.dart';
+import '../../../../core/theme/app_colors.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -12,6 +16,7 @@ class HomePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final habits = ref.watch(homeHabitsProvider);
+    final allHabits = ref.watch(habitsProvider); // Get ALL habits for bundle children
     final routeAvailability = ref.watch(routeAvailabilityProvider);
 
     return Scaffold(
@@ -42,7 +47,7 @@ class HomePage extends ConsumerWidget {
                   Text(
                     '${habits.length} total',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey[600],
+                      color: AppColors.textSecondary,
                     ),
                   ),
                 ],
@@ -58,10 +63,18 @@ class HomePage extends ConsumerWidget {
                       itemCount: habits.length,
                       itemBuilder: (context, index) {
                         final habit = habits[index];
-                        return HabitTile(
-                          habit: habit,
-                          onTap: () => _navigateToViewHabit(context, habit.id),
-                        );
+                        // Use different tiles for different habit types
+                        if (habit.type == HabitType.bundle) {
+                          return BundleHabitTile(
+                            habit: habit,
+                            allHabits: allHabits, // Pass ALL habits so bundle can find its children
+                          );
+                        } else {
+                          return HabitTile(
+                            habit: habit,
+                            onTap: () => _navigateToViewHabit(context, habit),
+                          );
+                        }
                       },
                     ),
               ),
@@ -71,10 +84,14 @@ class HomePage extends ConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _navigateToAddHabit(context, routeAvailability),
-        icon: const Icon(Icons.add),
-        label: const Text('Add Habit'),
-        backgroundColor: Theme.of(context).primaryColor,
-        foregroundColor: Colors.white,
+        icon: Icon(Icons.add, color: AppColors.primaryPurple),
+        label: Text('Add Habit', style: TextStyle(color: AppColors.primaryPurple, fontWeight: FontWeight.w600)),
+        backgroundColor: AppColors.completedBackground,
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: AppColors.primaryPurple.withOpacity(0.3), width: 1),
+        ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
@@ -88,13 +105,13 @@ class HomePage extends ConsumerWidget {
           Icon(
             Icons.task_alt,
             size: 80,
-            color: Colors.grey[300],
+            color: AppColors.borderMedium,
           ),
           const SizedBox(height: 16),
           Text(
             'No habits yet',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: Colors.grey[600],
+              color: AppColors.textSecondary,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -102,7 +119,7 @@ class HomePage extends ConsumerWidget {
           Text(
             'Tap the button below to create your first habit',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Colors.grey[500],
+              color: AppColors.textTertiary,
             ),
             textAlign: TextAlign.center,
           ),
@@ -117,7 +134,7 @@ class HomePage extends ConsumerWidget {
       try {
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (context) => const AddHabitScreen(),
+            builder: (context) => const AddBasicHabitScreen(),
           ),
         );
       } catch (e) {
@@ -144,18 +161,10 @@ class HomePage extends ConsumerWidget {
     }
   }
 
-  void _navigateToViewHabit(BuildContext context, String habitId) {
+  void _navigateToViewHabit(BuildContext context, Habit habit) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => Scaffold(
-          appBar: AppBar(
-            title: Text('Habit: $habitId'),
-            backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-          ),
-          body: const Center(
-            child: Text('Habit details coming soon'),
-          ),
-        ),
+        builder: (context) => BasicHabitInfoScreen(habit: habit),
       ),
     );
   }

@@ -6,7 +6,10 @@ import 'package:domain/domain.dart';
 import 'package:data_local/repositories/bundle_service.dart';
 
 class HabitsNotifier extends StateNotifier<List<Habit>> {
-  HabitsNotifier() : super([]);
+  HabitsNotifier() : super([]) {
+    // Add test habits for development
+    _addTestHabits();
+  }
 
   // TODO(bridger): Timed habit service disabled
   // final _timedHabitService = TimedHabitService();
@@ -225,20 +228,172 @@ class HabitsNotifier extends StateNotifier<List<Habit>> {
       final bundle = state.firstWhere((h) => h.id == bundleId);
       final habit = state.firstWhere((h) => h.id == habitId);
       
-      final updatedBundle = _bundleService.addHabitToBundle(bundle, habitId, state);
-      final updatedHabit = _bundleService.assignChildrenToBundle(bundleId, [habitId], state).first;
+      // If habit is already in a bundle, remove it from the old bundle first
+      if (habit.parentBundleId != null && habit.parentBundleId != bundleId) {
+        final oldBundle = state.firstWhere((h) => h.id == habit.parentBundleId);
+        final updatedOldBundleChildIds = oldBundle.bundleChildIds!
+            .where((id) => id != habitId)
+            .toList();
+        
+        if (updatedOldBundleChildIds.length < 2) {
+          // Old bundle becomes invalid, remove it entirely
+          removeHabit(oldBundle.id);
+        } else {
+          // Update old bundle with remaining children
+          final updatedOldBundle = Habit(
+            id: oldBundle.id,
+            name: oldBundle.name,
+            description: oldBundle.description,
+            type: oldBundle.type,
+            stackedOnHabitId: oldBundle.stackedOnHabitId,
+            bundleChildIds: updatedOldBundleChildIds,
+            parentBundleId: oldBundle.parentBundleId,
+            timeoutMinutes: oldBundle.timeoutMinutes,
+            availableDays: oldBundle.availableDays,
+            createdAt: oldBundle.createdAt,
+            lastCompleted: oldBundle.lastCompleted,
+            lastAlarmTriggered: oldBundle.lastAlarmTriggered,
+            sessionStartTime: oldBundle.sessionStartTime,
+            lastSessionStarted: oldBundle.lastSessionStarted,
+            sessionCompletedToday: oldBundle.sessionCompletedToday,
+            dailyCompletionCount: oldBundle.dailyCompletionCount,
+            lastCompletionCountReset: oldBundle.lastCompletionCountReset,
+            dailyFailureCount: oldBundle.dailyFailureCount,
+            lastFailureCountReset: oldBundle.lastFailureCountReset,
+            avoidanceSuccessToday: oldBundle.avoidanceSuccessToday,
+            currentStreak: oldBundle.currentStreak,
+          );
+          updateHabit(updatedOldBundle);
+        }
+      }
       
-      updateHabit(updatedBundle);
+      // Add to new bundle
+      final currentChildIds = bundle.bundleChildIds ?? [];
+      if (!currentChildIds.contains(habitId)) {
+        final updatedBundle = Habit(
+          id: bundle.id,
+          name: bundle.name,
+          description: bundle.description,
+          type: bundle.type,
+          stackedOnHabitId: bundle.stackedOnHabitId,
+          bundleChildIds: [...currentChildIds, habitId],
+          parentBundleId: bundle.parentBundleId,
+          timeoutMinutes: bundle.timeoutMinutes,
+          availableDays: bundle.availableDays,
+          createdAt: bundle.createdAt,
+          lastCompleted: bundle.lastCompleted,
+          lastAlarmTriggered: bundle.lastAlarmTriggered,
+          sessionStartTime: bundle.sessionStartTime,
+          lastSessionStarted: bundle.lastSessionStarted,
+          sessionCompletedToday: bundle.sessionCompletedToday,
+          dailyCompletionCount: bundle.dailyCompletionCount,
+          lastCompletionCountReset: bundle.lastCompletionCountReset,
+          dailyFailureCount: bundle.dailyFailureCount,
+          lastFailureCountReset: bundle.lastFailureCountReset,
+          avoidanceSuccessToday: bundle.avoidanceSuccessToday,
+          currentStreak: bundle.currentStreak,
+        );
+        updateHabit(updatedBundle);
+      }
+      
+      // Update habit to reference new bundle
+      final updatedHabit = Habit(
+        id: habit.id,
+        name: habit.name,
+        description: habit.description,
+        type: habit.type,
+        stackedOnHabitId: habit.stackedOnHabitId,
+        bundleChildIds: habit.bundleChildIds,
+        parentBundleId: bundleId,
+        timeoutMinutes: habit.timeoutMinutes,
+        availableDays: habit.availableDays,
+        createdAt: habit.createdAt,
+        lastCompleted: habit.lastCompleted,
+        lastAlarmTriggered: habit.lastAlarmTriggered,
+        sessionStartTime: habit.sessionStartTime,
+        lastSessionStarted: habit.lastSessionStarted,
+        sessionCompletedToday: habit.sessionCompletedToday,
+        dailyCompletionCount: habit.dailyCompletionCount,
+        lastCompletionCountReset: habit.lastCompletionCountReset,
+        dailyFailureCount: habit.dailyFailureCount,
+        lastFailureCountReset: habit.lastFailureCountReset,
+        avoidanceSuccessToday: habit.avoidanceSuccessToday,
+        currentStreak: habit.currentStreak,
+      );
       updateHabit(updatedHabit);
       
-      return '${habit.name} added to ${bundle.name}';
+      if (habit.parentBundleId != null && habit.parentBundleId != bundleId) {
+        return '${habit.name} moved to ${bundle.name}';
+      } else {
+        return '${habit.name} added to ${bundle.name}';
+      }
     } catch (e) {
       return 'Failed to add habit: $e';
     }
   }
 
   List<Habit> getAvailableHabitsForBundle() {
-    return _bundleService.getAvailableHabitsForBundle(state);
+    // Return all non-bundle habits, allowing moving between bundles
+    return state.where((habit) => habit.type != HabitType.bundle).toList();
+  }
+
+  void _addTestHabits() {
+    // Add test habits for development
+    final habit1 = Habit(
+      id: 'test_habit_1',
+      name: 'habit1',
+      description: '',
+      type: HabitType.basic,
+      createdAt: DateTime.now(),
+    );
+    
+    final habit2 = Habit(
+      id: 'test_habit_2', 
+      name: 'habit2',
+      description: '',
+      type: HabitType.basic,
+      createdAt: DateTime.now(),
+    );
+
+    // Add 3 more habits for the bundle
+    final habit3 = Habit(
+      id: 'test_habit_3',
+      name: 'Morning Exercise',
+      description: '10 push-ups',
+      type: HabitType.basic,
+      createdAt: DateTime.now(),
+      parentBundleId: 'test_bundle_1',
+    );
+
+    final habit4 = Habit(
+      id: 'test_habit_4',
+      name: 'Drink Water',
+      description: 'Glass of water',
+      type: HabitType.basic,
+      createdAt: DateTime.now(),
+      parentBundleId: 'test_bundle_1',
+    );
+
+    final habit5 = Habit(
+      id: 'test_habit_5',
+      name: 'Read',
+      description: '5 minutes reading',
+      type: HabitType.basic,
+      createdAt: DateTime.now(),
+      parentBundleId: 'test_bundle_1',
+    );
+
+    // Create a test bundle
+    final testBundle = Habit(
+      id: 'test_bundle_1',
+      name: 'Morning Routine',
+      description: 'Start the day right',
+      type: HabitType.bundle,
+      bundleChildIds: ['test_habit_3', 'test_habit_4', 'test_habit_5'],
+      createdAt: DateTime.now(),
+    );
+    
+    state = [habit1, habit2, habit3, habit4, habit5, testBundle];
   }
 
   // TODO(bridger): Update timed habits disabled (timed habits disabled)

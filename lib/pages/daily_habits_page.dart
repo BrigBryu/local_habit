@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/habits_provider.dart';
 import 'package:domain/domain.dart';
-// TODO(bridger): Timed habit service disabled
-// import 'package:data_local/repositories/timed_habit_service.dart';
-import 'package:data_local/repositories/bundle_service.dart';
-import '../screens/create_bundle_screen.dart';
+import 'package:data_local/repositories/timed_habit_service_disabled.dart';
+import '../features/habits/bundle_habit/index.dart';
+import '../features/habits/avoidance_habit/index.dart';
+import '../core/theme/theme_extensions.dart';
+import '../core/theme/app_colors.dart';
 
 class DailyHabitsPage extends ConsumerWidget {
   const DailyHabitsPage({super.key});
@@ -25,23 +26,29 @@ class DailyHabitsPage extends ConsumerWidget {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: topLevelHabits.isEmpty
-          ? const Center(
+          ? Center(
               child: Text(
                 'No habits yet!\nTap the + button to add your first habit.',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16),
+                style: TextStyle(
+                  fontSize: 16,
+                  color: AppColors.textSecondary,
+                ),
               ),
             )
           : ListView.builder(
               itemCount: topLevelHabits.length,
               itemBuilder: (context, index) {
                 final habit = topLevelHabits[index];
-                print('Top-level habit: ${habit.name}, Type: ${habit.type}'); // Debug
-                if (habit.type == HabitType.bundle) {
-                  print('Rendering SmartBundle card for: ${habit.name}'); // Debug
-                  return SmartBundleCard(habit: habit, allHabits: allHabits);
-                } else {
-                  return IndividualHabitCard(habit: habit);
+                
+                switch (habit.type) {
+                  case HabitType.bundle:
+                    return BundleHabitTile(habit: habit, allHabits: allHabits);
+                  case HabitType.avoidance:
+                    return AvoidanceHabitTile(habit: habit);
+                  case HabitType.basic:
+                  default:
+                    return IndividualHabitCard(habit: habit);
                 }
               },
             ),
@@ -53,16 +60,26 @@ class DailyHabitsPage extends ConsumerWidget {
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (context) => const CreateBundleScreen(),
+                  builder: (context) => const AddBundleHabitScreen(),
                 ),
               );
             },
             tooltip: 'Create Bundle',
-            child: const Icon(Icons.folder),
+            backgroundColor: AppColors.completedBackground,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: BorderSide(color: AppColors.primaryPurple.withOpacity(0.3), width: 1),
+            ),
+            child: Icon(Icons.folder, color: AppColors.primaryPurple),
           ),
           const SizedBox(height: 16),
           FloatingActionButton(
             heroTag: "sample",
+            backgroundColor: AppColors.completedBackground,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: BorderSide(color: AppColors.primaryPurple.withOpacity(0.3), width: 1),
+            ),
             onPressed: () {
               // Add some sample habits for testing
               final habitsNotifier = ref.read(habitsProvider.notifier);
@@ -74,22 +91,21 @@ class DailyHabitsPage extends ConsumerWidget {
                 type: HabitType.basic,
               ));
               
-              // Add a timed session habit
-              habitsNotifier.addHabit(Habit.create(
-                name: 'Meditation',
-                description: '10 minute meditation session',
-                type: HabitType.timedSession,
-                timeoutMinutes: 10,
-              ));
-              
-              // Add a daily time window habit
-              habitsNotifier.addHabit(Habit.create(
-                name: 'Morning Workout',
-                description: 'Exercise during morning hours',
-                type: HabitType.dailyTimeWindow,
-                windowStartTime: const TimeOfDay(hour: 6, minute: 0),
-                windowEndTime: const TimeOfDay(hour: 10, minute: 0),
-              ));
+              // TODO: Re-enable when time-based habits are supported
+              // habitsNotifier.addHabit(Habit.create(
+              //   name: 'Meditation',
+              //   description: '10 minute meditation session',
+              //   type: HabitType.timedSession,
+              //   timeoutMinutes: 10,
+              // ));
+              // 
+              // habitsNotifier.addHabit(Habit.create(
+              //   name: 'Morning Workout',
+              //   description: 'Exercise during morning hours',
+              //   type: HabitType.dailyTimeWindow,
+              //   windowStartTime: const TimeOfDay(hour: 6, minute: 0),
+              //   windowEndTime: const TimeOfDay(hour: 10, minute: 0),
+              // ));
               
               // Add an avoidance habit
               habitsNotifier.addHabit(Habit.create(
@@ -127,7 +143,7 @@ class DailyHabitsPage extends ConsumerWidget {
               );
             },
             tooltip: 'Add Sample Habits',
-            child: const Icon(Icons.add),
+            child: Icon(Icons.add, color: AppColors.primaryPurple),
           ),
         ],
       ),
@@ -202,12 +218,13 @@ class HabitListTile extends ConsumerWidget {
   }
 
   String _getSubtitle(TimedHabitService timedHabitService) {
-    if (habit.type == HabitType.timedSession ||
-        habit.type == HabitType.timeWindow ||
-        habit.type == HabitType.dailyTimeWindow ||
-        habit.type == HabitType.alarmHabit) {
-      return timedHabitService.getTimedHabitStatus(habit);
-    }
+    // TODO: Re-enable when time-based habits are supported
+    // if (habit.type == HabitType.timedSession ||
+    //     habit.type == HabitType.timeWindow ||
+    //     habit.type == HabitType.dailyTimeWindow ||
+    //     habit.type == HabitType.alarmHabit) {
+    //   return timedHabitService.getTimedHabitStatus(habit);
+    // }
     
     // For basic habits, show completion count if > 0
     if (habit.type == HabitType.basic && habit.dailyCompletionCount > 0) {
@@ -233,43 +250,13 @@ class HabitListTile extends ConsumerWidget {
   Widget _buildTrailingIcon(BuildContext context, WidgetRef ref, 
       TimedHabitService timedHabitService, bool isCompleted) {
     
-    if (isCompleted && habit.type != HabitType.avoidance) {
-      return const Icon(Icons.check_box, color: Colors.green);
-    }
-
     switch (habit.type) {
-      case HabitType.timedSession:
-        // Show timer icon if session not started, or clock if running
-        if (timedHabitService.isSessionActive(habit.id)) {
-          return const Icon(Icons.timer, color: Colors.orange);
-        } else if (habit.sessionCompletedToday) {
-          return const Icon(Icons.check_box_outline_blank, color: Colors.blue);
-        } else if (habit.hasStartedSessionToday()) {
-          return const Icon(Icons.timer_off, color: Colors.grey);
-        } else {
-          return const Icon(Icons.play_circle_outline, color: Colors.blue);
-        }
-      
-      case HabitType.timeWindow:
-      case HabitType.dailyTimeWindow:
-        if (timedHabitService.isTimeWindowAvailable(habit)) {
-          return const Icon(Icons.check_box_outline_blank, color: Colors.green);
-        } else {
-          return const Icon(Icons.schedule, color: Colors.grey);
-        }
-      
-      case HabitType.alarmHabit:
-        if (timedHabitService.isTimedHabitActive(habit.id)) {
-          return const Icon(Icons.alarm, color: Colors.red);
-        } else {
-          return const Icon(Icons.alarm_off, color: Colors.grey);
-        }
-      
       case HabitType.avoidance:
         return AvoidanceHabitButtons(habit: habit, ref: ref);
       
+      case HabitType.basic:
       default:
-        return const Icon(Icons.check_box_outline_blank);
+        return BasicHabitCheckButton(habit: habit, ref: ref);
     }
   }
 
@@ -289,61 +276,62 @@ class HabitListTile extends ConsumerWidget {
       return; // Already completed
     }
 
-    switch (habit.type) {
-      case HabitType.timedSession:
-        if (!habit.hasStartedSessionToday()) {
-          // Start the timer
-          final result = habitsNotifier.startTimedSession(habit.id);
-          if (result != null) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Timer started for ${habit.name}!')),
-            );
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Timer already started today')),
-            );
-          }
-        } else if (habit.sessionCompletedToday) {
-          // Check off the completed session
-          final result = habitsNotifier.completeHabit(habit.id);
-          if (result != null) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(result)),
-            );
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('${habit.name} completed!')),
-            );
-          }
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Timer still running or not completed')),
-          );
-        }
-        break;
-      
-      case HabitType.timeWindow:
-      case HabitType.dailyTimeWindow:
-        final validationError = timedHabitService.validateTimeWindowCompletion(habit);
-        if (validationError != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(validationError)),
-          );
-        } else {
-          final result = habitsNotifier.completeHabit(habit.id);
-          if (result != null) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(result)),
-            );
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('${habit.name} completed!')),
-            );
-          }
-        }
-        break;
-      
-      default:
+    // TODO: Re-enable when time-based habits are supported
+    // switch (habit.type) {
+    //   case HabitType.timedSession:
+    //     if (!habit.hasStartedSessionToday()) {
+    //       // Start the timer
+    //       final result = habitsNotifier.startTimedSession(habit.id);
+    //       if (result != null) {
+    //         ScaffoldMessenger.of(context).showSnackBar(
+    //           SnackBar(content: Text('Timer started for ${habit.name}!')),
+    //         );
+    //       } else {
+    //         ScaffoldMessenger.of(context).showSnackBar(
+    //           const SnackBar(content: Text('Timer already started today')),
+    //         );
+    //       }
+    //     } else if (habit.sessionCompletedToday) {
+    //       // Check off the completed session
+    //       final result = habitsNotifier.completeHabit(habit.id);
+    //       if (result != null) {
+    //         ScaffoldMessenger.of(context).showSnackBar(
+    //           SnackBar(content: Text(result)),
+    //         );
+    //       } else {
+    //         ScaffoldMessenger.of(context).showSnackBar(
+    //           SnackBar(content: Text('${habit.name} completed!')),
+    //         );
+    //       }
+    //     } else {
+    //       ScaffoldMessenger.of(context).showSnackBar(
+    //         const SnackBar(content: Text('Timer still running or not completed')),
+    //       );
+    //     }
+    //     break;
+    //   
+    //   case HabitType.timeWindow:
+    //   case HabitType.dailyTimeWindow:
+    //     final validationError = timedHabitService.validateTimeWindowCompletion(habit);
+    //     if (validationError != null) {
+    //       ScaffoldMessenger.of(context).showSnackBar(
+    //         SnackBar(content: Text(validationError)),
+    //       );
+    //     } else {
+    //       final result = habitsNotifier.completeHabit(habit.id);
+    //       if (result != null) {
+    //         ScaffoldMessenger.of(context).showSnackBar(
+    //           SnackBar(content: Text(result)),
+    //         );
+    //       } else {
+    //         ScaffoldMessenger.of(context).showSnackBar(
+    //           SnackBar(content: Text('${habit.name} completed!')),
+    //         );
+    //       }
+    //     }
+    //     break;
+    //   
+    //   default:
         final result = habitsNotifier.completeHabit(habit.id);
         if (result != null) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -354,6 +342,88 @@ class HabitListTile extends ConsumerWidget {
             SnackBar(content: Text('${habit.name} completed!')),
           );
         }
+    // }
+  }
+}
+
+/// Simple checkmark button for basic habits with clean aesthetic
+class BasicHabitCheckButton extends ConsumerWidget {
+  final Habit habit;
+  final WidgetRef ref;
+
+  const BasicHabitCheckButton({super.key, required this.habit, required this.ref});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isCompleted = _isHabitCompletedToday(habit);
+    final completionColors = Theme.of(context).completionColors;
+    
+    return GestureDetector(
+      onTap: isCompleted ? null : () => _completeHabit(context),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: isCompleted ? completionColors.completed : completionColors.incompleteBackground,
+          border: Border.all(
+            color: isCompleted ? completionColors.completedBorder : completionColors.incompleteBorder,
+            width: 2,
+          ),
+        ),
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 200),
+          child: isCompleted
+            ? const Icon(
+                Icons.check,
+                color: Colors.white,
+                size: 24,
+                key: ValueKey('completed'),
+              )
+            : Icon(
+                Icons.circle_outlined,
+                color: completionColors.incomplete,
+                size: 24,
+                key: const ValueKey('incomplete'),
+              ),
+        ),
+      ),
+    );
+  }
+
+  bool _isHabitCompletedToday(Habit habit) {
+    if (habit.lastCompleted == null) return false;
+    final now = DateTime.now();
+    final lastCompleted = habit.lastCompleted!;
+    return now.year == lastCompleted.year &&
+           now.month == lastCompleted.month &&
+           now.day == lastCompleted.day;
+  }
+
+  void _completeHabit(BuildContext context) {
+    final habitsNotifier = ref.read(habitsProvider.notifier);
+    final result = habitsNotifier.completeHabit(habit.id);
+    final completionColors = Theme.of(context).completionColors;
+    
+    if (result != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result),
+          backgroundColor: completionColors.success,
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${habit.name} completed! +${habit.calculateXPReward()} XP'),
+          backgroundColor: completionColors.success,
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 2),
+        ),
+      );
     }
   }
 }
@@ -367,7 +437,16 @@ class AvoidanceHabitButtons extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (habit.avoidanceSuccessToday) {
-      return const Icon(Icons.check_circle, color: Colors.green, size: 32);
+      final completionColors = Theme.of(context).completionColors;
+      return Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: completionColors.success,
+        ),
+        child: const Icon(Icons.check, color: Colors.white, size: 24),
+      );
     }
 
     return Row(
@@ -377,27 +456,29 @@ class AvoidanceHabitButtons extends ConsumerWidget {
         GestureDetector(
           onTap: () => _recordFailure(context),
           child: Container(
-            padding: const EdgeInsets.all(8),
+            width: 36,
+            height: 36,
             decoration: BoxDecoration(
-              color: Colors.red.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.red.withOpacity(0.3)),
+              shape: BoxShape.circle,
+              color: Theme.of(context).completionColors.errorBackground.withOpacity(0.3),
+              border: Border.all(color: Theme.of(context).completionColors.error, width: 2),
             ),
-            child: const Icon(Icons.close, color: Colors.red, size: 24),
+            child: Icon(Icons.close, color: Theme.of(context).completionColors.error, size: 20),
           ),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 8),
         // Success button
         GestureDetector(
           onTap: () => _markSuccess(context),
           child: Container(
-            padding: const EdgeInsets.all(8),
+            width: 36,
+            height: 36,
             decoration: BoxDecoration(
-              color: Colors.green.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.green.withOpacity(0.3)),
+              shape: BoxShape.circle,
+              color: Theme.of(context).completionColors.successBackground.withOpacity(0.3),
+              border: Border.all(color: Theme.of(context).completionColors.success, width: 2),
             ),
-            child: const Icon(Icons.check, color: Colors.green, size: 24),
+            child: Icon(Icons.check, color: Theme.of(context).completionColors.success, size: 20),
           ),
         ),
       ],
@@ -407,10 +488,16 @@ class AvoidanceHabitButtons extends ConsumerWidget {
   void _recordFailure(BuildContext context) {
     final habitsNotifier = ref.read(habitsProvider.notifier);
     final result = habitsNotifier.recordFailure(habit.id);
+    final completionColors = Theme.of(context).completionColors;
     
     if (result != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result)),
+        SnackBar(
+          content: Text(result),
+          backgroundColor: completionColors.error,
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 2),
+        ),
       );
     }
   }
@@ -418,776 +505,24 @@ class AvoidanceHabitButtons extends ConsumerWidget {
   void _markSuccess(BuildContext context) {
     final habitsNotifier = ref.read(habitsProvider.notifier);
     final result = habitsNotifier.completeHabit(habit.id);
+    final completionColors = Theme.of(context).completionColors;
     
     if (result != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result)),
+        SnackBar(
+          content: Text(result),
+          backgroundColor: completionColors.success,
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 2),
+        ),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${habit.name} avoided successfully!')),
-      );
-    }
-  }
-}
-
-/// Smart bundle card that shows nested children with proper hierarchy
-class SmartBundleCard extends ConsumerStatefulWidget {
-  final Habit habit;
-  final List<Habit> allHabits;
-
-  const SmartBundleCard({super.key, required this.habit, required this.allHabits});
-
-  @override
-  ConsumerState<SmartBundleCard> createState() => _SmartBundleCardState();
-}
-
-class _SmartBundleCardState extends ConsumerState<SmartBundleCard> with SingleTickerProviderStateMixin {
-  bool _isExpanded = false;
-  late AnimationController _animationController;
-  late Animation<double> _expandAnimation;
-  final _bundleService = BundleService();
-
-  @override
-  void initState() {
-    super.initState();
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
-    _expandAnimation = CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    );
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final progress = _bundleService.getBundleProgress(widget.habit, widget.allHabits);
-    final isCompleted = _bundleService.isBundleCompleted(widget.habit, widget.allHabits);
-    final children = _bundleService.getChildHabits(widget.habit, widget.allHabits);
-    final progressPercentage = _bundleService.getBundleProgressPercentage(widget.habit, widget.allHabits);
-
-    print('SmartBundle: ${widget.habit.name}, progress: ${progress.completed}/${progress.total}, children: ${children.length}'); // Debug
-
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        gradient: LinearGradient(
-          colors: [
-            isCompleted 
-              ? Colors.green.withOpacity(0.1)
-              : Theme.of(context).primaryColor.withOpacity(0.05),
-            isCompleted 
-              ? Colors.green.withOpacity(0.05)
-              : Theme.of(context).primaryColor.withOpacity(0.02),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        border: Border.all(
-          color: isCompleted 
-            ? Colors.green.withOpacity(0.3)
-            : Theme.of(context).primaryColor.withOpacity(0.2),
-          width: 2,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(10),
-        child: Column(
-          children: [
-            _buildBundleHeader(context, progress, isCompleted, progressPercentage),
-            AnimatedBuilder(
-              animation: _expandAnimation,
-              builder: (context, child) {
-                return ClipRect(
-                  child: Align(
-                    alignment: Alignment.topCenter,
-                    heightFactor: _expandAnimation.value,
-                    child: child,
-                  ),
-                );
-              },
-              child: _buildChildrenSection(children),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBundleHeader(BuildContext context, BundleProgress progress, bool isCompleted, double progressPercentage) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            isCompleted 
-              ? Colors.green.withOpacity(0.15)
-              : Theme.of(context).primaryColor.withOpacity(0.1),
-            isCompleted 
-              ? Colors.green.withOpacity(0.08)
-              : Theme.of(context).primaryColor.withOpacity(0.05),
-          ],
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-        ),
-      ),
-      child: Row(
-        children: [
-          // Progress Ring
-          _buildProgressRing(progress, isCompleted, progressPercentage, context),
-          const SizedBox(width: 16),
-          // Bundle Info
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.folder_special,
-                      color: isCompleted ? Colors.green : Theme.of(context).primaryColor,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        widget.habit.name,
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          decoration: isCompleted ? TextDecoration.lineThrough : null,
-                          color: isCompleted ? Colors.green : Theme.of(context).primaryColor,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  _bundleService.getBundleStatus(widget.habit, widget.allHabits),
-                  style: TextStyle(
-                    color: isCompleted ? Colors.green.shade700 : Colors.grey[600],
-                    fontWeight: FontWeight.w500,
-                    fontSize: 14,
-                  ),
-                ),
-                if (widget.habit.description.isNotEmpty) ...[
-                  const SizedBox(height: 2),
-                  Text(
-                    widget.habit.description,
-                    style: TextStyle(
-                      color: Colors.grey[500],
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-          // Action Buttons
-          _buildActionButtons(isCompleted),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProgressRing(BundleProgress progress, bool isCompleted, double progressPercentage, BuildContext context) {
-    return SizedBox(
-      width: 56,
-      height: 56,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          CircularProgressIndicator(
-            value: progressPercentage,
-            backgroundColor: Colors.grey[300],
-            valueColor: AlwaysStoppedAnimation(
-              isCompleted ? Colors.green : Theme.of(context).primaryColor,
-            ),
-            strokeWidth: 5,
-          ),
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 4,
-                  offset: const Offset(0, 1),
-                ),
-              ],
-            ),
-            child: Center(
-              child: Text(
-                '${progress.completed}/${progress.total}',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: isCompleted ? Colors.green : Theme.of(context).primaryColor,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActionButtons(bool isCompleted) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (!isCompleted)
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Theme.of(context).primaryColor,
-                  Theme.of(context).primaryColor.withOpacity(0.8),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Theme.of(context).primaryColor.withOpacity(0.3),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: ElevatedButton.icon(
-              onPressed: () => _completeBundle(),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.transparent,
-                foregroundColor: Colors.white,
-                shadowColor: Colors.transparent,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
-              icon: const Icon(Icons.done_all, size: 18),
-              label: const Text('Complete All', style: TextStyle(fontSize: 12)),
-            ),
-          ),
-        const SizedBox(width: 8),
-        IconButton(
-          onPressed: _showAddHabitDialog,
-          icon: Icon(
-            Icons.add_circle_outline,
-            color: Theme.of(context).primaryColor,
-          ),
-          tooltip: 'Add Habit to Bundle',
-        ),
-        IconButton(
-          icon: Icon(
-            _isExpanded ? Icons.expand_less : Icons.expand_more,
-            color: Theme.of(context).primaryColor,
-          ),
-          onPressed: _toggleExpansion,
-          tooltip: _isExpanded ? 'Collapse' : 'Show Details',
-        ),
-      ],
-    );
-  }
-
-  Widget _buildChildrenSection(List<Habit> children) {
-    if (children.isEmpty) {
-      return Container(
-        padding: const EdgeInsets.all(16),
-        child: Center(
-          child: Text(
-            'No habits in this bundle yet',
-            style: TextStyle(
-              color: Colors.grey[500],
-              fontStyle: FontStyle.italic,
-            ),
-          ),
-        ),
-      );
-    }
-
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.grey[50],
-        border: Border(
-          top: BorderSide(
-            color: Colors.grey[300]!,
-            width: 1,
-          ),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.list_alt,
-                  size: 16,
-                  color: Colors.grey[600],
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'Nested Habits (${children.length})',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    color: Colors.grey[700],
-                    fontSize: 14,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          ...children.map((child) => Container(
-            margin: const EdgeInsets.only(bottom: 1),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              border: Border(
-                bottom: BorderSide(
-                  color: Colors.grey[200]!,
-                  width: 0.5,
-                ),
-              ),
-            ),
-            child: HabitListTile(
-              habit: child,
-              isNested: true,
-            ),
-          )),
-        ],
-      ),
-    );
-  }
-
-  void _toggleExpansion() {
-    setState(() {
-      _isExpanded = !_isExpanded;
-      if (_isExpanded) {
-        _animationController.forward();
-      } else {
-        _animationController.reverse();
-      }
-    });
-  }
-
-  void _completeBundle() {
-    final habitsNotifier = ref.read(habitsProvider.notifier);
-    final result = habitsNotifier.completeBundle(widget.habit.id);
-    
-    if (result != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(result),
-          backgroundColor: Colors.green,
+          content: Text('${habit.name} avoided successfully!'),
+          backgroundColor: completionColors.success,
           behavior: SnackBarBehavior.floating,
-        ),
-      );
-    }
-  }
-
-  void _showAddHabitDialog() {
-    final habitsNotifier = ref.read(habitsProvider.notifier);
-    final availableHabits = habitsNotifier.getAvailableHabitsForBundle();
-    
-    if (availableHabits.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No available habits to add. Create some individual habits first!'),
-          backgroundColor: Colors.orange,
-        ),
-      );
-      return;
-    }
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            const Icon(Icons.add_circle, color: Colors.blue),
-            const SizedBox(width: 8),
-            Expanded(child: Text('Add to ${widget.habit.name}')),
-          ],
-        ),
-        content: SizedBox(
-          width: double.maxFinite,
-          height: 300,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Select a habit to add to this bundle:',
-                style: TextStyle(color: Colors.grey[600]),
-              ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: availableHabits.length,
-                  itemBuilder: (context, index) {
-                    final habit = availableHabits[index];
-                    return Card(
-                      child: ListTile(
-                        leading: _getHabitIcon(habit),
-                        title: Text(habit.displayName),
-                        subtitle: Text(habit.description),
-                        trailing: const Icon(Icons.arrow_forward_ios),
-                        onTap: () {
-                          Navigator.of(context).pop();
-                          _addHabitToBundle(habit.id);
-                        },
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _getHabitIcon(Habit habit) {
-    switch (habit.type) {
-      case HabitType.basic:
-        return const Icon(Icons.check_circle_outline, color: Colors.blue);
-      case HabitType.avoidance:
-        return const Icon(Icons.block, color: Colors.red);
-      case HabitType.timedSession:
-        return const Icon(Icons.timer, color: Colors.orange);
-      case HabitType.timeWindow:
-      case HabitType.dailyTimeWindow:
-        return const Icon(Icons.schedule, color: Colors.green);
-      default:
-        return const Icon(Icons.circle, color: Colors.grey);
-    }
-  }
-
-  void _addHabitToBundle(String habitId) {
-    final habitsNotifier = ref.read(habitsProvider.notifier);
-    final result = habitsNotifier.addHabitToBundle(widget.habit.id, habitId);
-    
-    if (result != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result),
-          backgroundColor: Colors.green,
-        ),
-      );
-    }
-  }
-}
-
-/// Legacy bundle card (keeping for backward compatibility)
-class BundleHabitCard extends ConsumerStatefulWidget {
-  final Habit habit;
-  final List<Habit> allHabits;
-
-  const BundleHabitCard({super.key, required this.habit, required this.allHabits});
-
-  @override
-  ConsumerState<BundleHabitCard> createState() => _BundleHabitCardState();
-}
-
-class _BundleHabitCardState extends ConsumerState<BundleHabitCard> {
-  bool _isExpanded = false;
-  final _bundleService = BundleService();
-
-  @override
-  Widget build(BuildContext context) {
-    final progress = _bundleService.getBundleProgress(widget.habit, widget.allHabits);
-    final isCompleted = _bundleService.isBundleCompleted(widget.habit, widget.allHabits);
-    final children = _bundleService.getChildHabits(widget.habit, widget.allHabits);
-    final progressPercentage = _bundleService.getBundleProgressPercentage(widget.habit, widget.allHabits);
-
-    print('Bundle card: ${widget.habit.name}, progress: ${progress.completed}/${progress.total}, children: ${children.length}'); // Debug
-
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      elevation: 4,
-      color: isCompleted ? Colors.green.withOpacity(0.1) : Colors.blue.withOpacity(0.05),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Theme.of(context).primaryColor.withOpacity(0.1),
-                  Theme.of(context).primaryColor.withOpacity(0.05),
-                ],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-              ),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
-            ),
-            child: Row(
-              children: [
-                // Progress Ring
-                SizedBox(
-                  width: 50,
-                  height: 50,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      CircularProgressIndicator(
-                        value: progressPercentage,
-                        backgroundColor: Colors.grey[300],
-                        valueColor: AlwaysStoppedAnimation(
-                          isCompleted ? Colors.green : Theme.of(context).primaryColor,
-                        ),
-                        strokeWidth: 4,
-                      ),
-                      Text(
-                        '${progress.completed}/${progress.total}',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 16),
-                // Bundle Info
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          const Icon(Icons.folder, color: Colors.orange),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              widget.habit.name,
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                decoration: isCompleted ? TextDecoration.lineThrough : null,
-                                color: isCompleted ? Colors.grey : null,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        _bundleService.getBundleStatus(widget.habit, widget.allHabits),
-                        style: TextStyle(
-                          color: isCompleted ? Colors.green : Colors.grey[600],
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                // Action Buttons
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (!isCompleted)
-                      ElevatedButton.icon(
-                        onPressed: () => _completeBundle(),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Theme.of(context).primaryColor,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        ),
-                        icon: const Icon(Icons.check_circle, size: 20),
-                        label: const Text('Complete All'),
-                      ),
-                    const SizedBox(width: 8),
-                    IconButton(
-                      onPressed: _showAddHabitDialog,
-                      icon: const Icon(Icons.add_circle_outline),
-                      tooltip: 'Add Habit to Bundle',
-                    ),
-                    IconButton(
-                      icon: Icon(_isExpanded ? Icons.expand_less : Icons.expand_more),
-                      onPressed: () {
-                        setState(() {
-                          _isExpanded = !_isExpanded;
-                        });
-                      },
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          if (_isExpanded)
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.grey[50],
-                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(8)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Individual Habits:',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey[700],
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  ...children.map((child) => 
-                    Container(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.grey[300]!),
-                      ),
-                      child: HabitListTile(habit: child),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  void _completeBundle() {
-    final habitsNotifier = ref.read(habitsProvider.notifier);
-    final result = habitsNotifier.completeBundle(widget.habit.id);
-    
-    if (result != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result),
-          backgroundColor: Colors.green,
-        ),
-      );
-    }
-  }
-
-  void _showAddHabitDialog() {
-    final habitsNotifier = ref.read(habitsProvider.notifier);
-    final availableHabits = habitsNotifier.getAvailableHabitsForBundle();
-    
-    if (availableHabits.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No available habits to add. Create some individual habits first!'),
-          backgroundColor: Colors.orange,
-        ),
-      );
-      return;
-    }
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            const Icon(Icons.add_circle, color: Colors.blue),
-            const SizedBox(width: 8),
-            Expanded(child: Text('Add to ${widget.habit.name}')),
-          ],
-        ),
-        content: SizedBox(
-          width: double.maxFinite,
-          height: 300,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Select a habit to add to this bundle:',
-                style: TextStyle(color: Colors.grey[600]),
-              ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: availableHabits.length,
-                  itemBuilder: (context, index) {
-                    final habit = availableHabits[index];
-                    return Card(
-                      child: ListTile(
-                        leading: _getHabitIcon(habit),
-                        title: Text(habit.displayName),
-                        subtitle: Text(habit.description),
-                        trailing: const Icon(Icons.arrow_forward_ios),
-                        onTap: () {
-                          Navigator.of(context).pop();
-                          _addHabitToBundle(habit.id);
-                        },
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _getHabitIcon(Habit habit) {
-    switch (habit.type) {
-      case HabitType.basic:
-        return const Icon(Icons.check_circle_outline, color: Colors.blue);
-      case HabitType.avoidance:
-        return const Icon(Icons.block, color: Colors.red);
-      case HabitType.timedSession:
-        return const Icon(Icons.timer, color: Colors.orange);
-      case HabitType.timeWindow:
-      case HabitType.dailyTimeWindow:
-        return const Icon(Icons.schedule, color: Colors.green);
-      default:
-        return const Icon(Icons.circle, color: Colors.grey);
-    }
-  }
-
-  void _addHabitToBundle(String habitId) {
-    final habitsNotifier = ref.read(habitsProvider.notifier);
-    final result = habitsNotifier.addHabitToBundle(widget.habit.id, habitId);
-    
-    if (result != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result),
-          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 2),
         ),
       );
     }
