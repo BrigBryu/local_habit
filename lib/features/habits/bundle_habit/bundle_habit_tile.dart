@@ -404,11 +404,11 @@ class _ExpandableBundleTile extends ConsumerWidget {
            now.day == lastCompleted.day;
   }
 
-  void _handleNestedHabitTap(BuildContext context, WidgetRef ref, Habit habit) {
+  Future<void> _handleNestedHabitTap(BuildContext context, WidgetRef ref, Habit habit) async {
     if (_isHabitCompletedToday(habit)) return; // Already completed
     
     final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
-    final result = habitsNotifier.completeHabit(habit.id);
+    final result = await habitsNotifier.completeHabit(habit.id);
     
     if (result != null) {
       ScaffoldMessenger.of(context).showSnackBar(

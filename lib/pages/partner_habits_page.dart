@@ -17,7 +17,7 @@ class PartnerHabitsPage extends ConsumerWidget {
     final partnerHabitsAsync = ref.watch(partnerHabitsProvider);
     
     return Scaffold(
-      backgroundColor: context.colorScheme.surface,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: partnerHabitsAsync.when(
         loading: () => const Center(
           child: CircularProgressIndicator(),
@@ -59,20 +59,20 @@ class PartnerHabitsPage extends ConsumerWidget {
                   Icon(
                     Icons.people_outline,
                     size: 64,
-                    color: AppColors.onSurface.withOpacity(0.5),
+                    color: AppColors.draculaComment.withOpacity(0.5),
                   ),
                   const SizedBox(height: 16),
                   Text(
                     'No Partner Connected',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      color: AppColors.onSurface.withOpacity(0.7),
+                      color: AppColors.draculaComment.withOpacity(0.7),
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Connect with a partner to see their habits here',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.onSurface.withOpacity(0.6),
+                      color: AppColors.draculaComment.withOpacity(0.6),
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -90,7 +90,7 @@ class PartnerHabitsPage extends ConsumerWidget {
                     label: const Text('Connect Partner'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.completedBackground,
-                      foregroundColor: AppColors.onPrimary,
+                      foregroundColor: AppColors.draculaForeground,
                     ),
                   ),
                 ],
@@ -173,7 +173,7 @@ class PartnerBasicHabitTile extends StatelessWidget {
                 Icon(
                   Icons.today,
                   size: 16,
-                  color: AppColors.onSurface.withOpacity(0.6),
+                  color: AppColors.draculaComment.withOpacity(0.6),
                 ),
                 const SizedBox(width: 4),
                 Text(
@@ -192,7 +192,7 @@ class PartnerBasicHabitTile extends StatelessWidget {
               )
             : Icon(
                 Icons.radio_button_unchecked,
-                color: AppColors.onSurface.withOpacity(0.3),
+                color: AppColors.draculaComment.withOpacity(0.3),
                 size: 28,
               ),
       ),
@@ -255,7 +255,7 @@ class PartnerAvoidanceHabitTile extends StatelessWidget {
               )
             : Icon(
                 Icons.radio_button_unchecked,
-                color: AppColors.onSurface.withOpacity(0.3),
+                color: AppColors.draculaComment.withOpacity(0.3),
                 size: 28,
               ),
       ),
@@ -313,7 +313,7 @@ class PartnerBundleHabitTile extends StatelessWidget {
         ),
         trailing: CircularProgressIndicator(
           value: totalCount > 0 ? completedCount / totalCount : 0,
-          backgroundColor: AppColors.onSurface.withOpacity(0.2),
+          backgroundColor: AppColors.draculaComment.withOpacity(0.2),
           valueColor: AlwaysStoppedAnimation(AppColors.bundleHabit),
         ),
         children: childHabits.map((child) {
@@ -376,7 +376,7 @@ class PartnerStackHabitTile extends StatelessWidget {
         ),
         trailing: CircularProgressIndicator(
           value: totalCount > 0 ? completedCount / totalCount : 0,
-          backgroundColor: AppColors.onSurface.withOpacity(0.2),
+          backgroundColor: AppColors.draculaComment.withOpacity(0.2),
           valueColor: AlwaysStoppedAnimation(AppColors.stackHabit),
         ),
         children: stackSteps.map((step) {

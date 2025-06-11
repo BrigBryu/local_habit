@@ -315,7 +315,7 @@ class HabitListTile extends ConsumerWidget {
            now.day == lastCompleted.day;
   }
 
-  void _handleTap(BuildContext context, WidgetRef ref, TimedHabitService timedHabitService) {
+  Future<void> _handleTap(BuildContext context, WidgetRef ref, TimedHabitService timedHabitService) async {
     final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
     
     if (_isHabitCompletedToday(habit)) {

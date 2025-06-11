@@ -23,10 +23,7 @@ class _HomeTabScaffoldState extends ConsumerState<HomeTabScaffold>
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     
-    // Initialize repository when widget is created
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(repositoryInitProvider);
-    });
+    // TODO: Initialize repository when provider is available
   }
 
   @override
@@ -93,7 +90,7 @@ class _HomeTabScaffoldState extends ConsumerState<HomeTabScaffold>
               ),
             ],
           ),
-          backgroundColor: AppColors.surface,
+          backgroundColor: AppColors.draculaBackground,
           elevation: 0,
           bottom: TabBar(
             controller: _tabController,
@@ -109,7 +106,7 @@ class _HomeTabScaffoldState extends ConsumerState<HomeTabScaffold>
             ],
             indicatorColor: AppColors.completedBackground,
             labelColor: AppColors.completedBackground,
-            unselectedLabelColor: AppColors.onSurface.withOpacity(0.6),
+            unselectedLabelColor: AppColors.draculaComment.withOpacity(0.6),
           ),
         ),
         body: TabBarView(

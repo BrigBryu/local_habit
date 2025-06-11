@@ -582,11 +582,11 @@ class _BundleInfoScreenState extends ConsumerState<BundleInfoScreen> {
            now.day == lastCompleted.day;
   }
 
-  void _completeHabit(BuildContext context, WidgetRef ref, Habit habit) {
+  Future<void> _completeHabit(BuildContext context, WidgetRef ref, Habit habit) async {
     if (_isHabitCompletedToday(habit)) return;
     
     final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
-    final result = habitsNotifier.completeHabit(habit.id);
+    final result = await habitsNotifier.completeHabit(habit.id);
     
     if (result != null) {
       ScaffoldMessenger.of(context).showSnackBar(

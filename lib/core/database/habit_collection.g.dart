@@ -149,7 +149,12 @@ int _habitCollectionEstimateSize(
   Map<Type, List<int>> allOffsets,
 ) {
   var bytesCount = offsets.last;
-  bytesCount += 3 + object.availableDays.length * 8;
+  {
+    final value = object.availableDays;
+    if (value != null) {
+      bytesCount += 3 + value.length * 8;
+    }
+  }
   {
     final list = object.bundleChildIds;
     if (list != null) {
@@ -219,7 +224,7 @@ HabitCollection _habitCollectionDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = HabitCollection();
-  object.availableDays = reader.readLongList(offsets[0]) ?? [];
+  object.availableDays = reader.readLongList(offsets[0]);
   object.avoidanceSuccessToday = reader.readBool(offsets[1]);
   object.bundleChildIds = reader.readStringList(offsets[2]);
   object.createdAt = reader.readDateTime(offsets[3]);
@@ -255,7 +260,7 @@ P _habitCollectionDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readLongList(offset) ?? []) as P;
+      return (reader.readLongList(offset)) as P;
     case 1:
       return (reader.readBool(offset)) as P;
     case 2:
@@ -413,6 +418,24 @@ extension HabitCollectionQueryWhere
 
 extension HabitCollectionQueryFilter
     on QueryBuilder<HabitCollection, HabitCollection, QFilterCondition> {
+  QueryBuilder<HabitCollection, HabitCollection, QAfterFilterCondition>
+      availableDaysIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'availableDays',
+      ));
+    });
+  }
+
+  QueryBuilder<HabitCollection, HabitCollection, QAfterFilterCondition>
+      availableDaysIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'availableDays',
+      ));
+    });
+  }
+
   QueryBuilder<HabitCollection, HabitCollection, QAfterFilterCondition>
       availableDaysElementEqualTo(int value) {
     return QueryBuilder.apply(this, (query) {
@@ -3351,7 +3374,7 @@ extension HabitCollectionQueryProperty
     });
   }
 
-  QueryBuilder<HabitCollection, List<int>, QQueryOperations>
+  QueryBuilder<HabitCollection, List<int>?, QQueryOperations>
       availableDaysProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'availableDays');

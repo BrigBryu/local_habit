@@ -22,7 +22,7 @@ class HabitCollection {
   
   // Timing
   int? timeoutMinutes;
-  List<int> availableDays = [];
+  List<int>? availableDays;
   
   // Timestamps
   late DateTime createdAt;
@@ -57,7 +57,7 @@ class HabitCollection {
       ..bundleChildIds = habit.bundleChildIds
       ..parentBundleId = habit.parentBundleId
       ..timeoutMinutes = habit.timeoutMinutes
-      ..availableDays = habit.availableDays ?? []
+      ..availableDays = habit.availableDays
       ..createdAt = habit.createdAt
       ..lastCompleted = habit.lastCompleted
       ..lastAlarmTriggered = habit.lastAlarmTriggered
@@ -82,7 +82,7 @@ class HabitCollection {
       bundleChildIds: bundleChildIds,
       parentBundleId: parentBundleId,
       timeoutMinutes: timeoutMinutes,
-      availableDays: availableDays.isEmpty ? null : availableDays,
+      availableDays: availableDays,
       createdAt: createdAt,
       lastCompleted: lastCompleted,
       lastAlarmTriggered: lastAlarmTriggered,

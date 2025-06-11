@@ -89,7 +89,7 @@ class HomePage extends ConsumerWidget {
                         if (habit.type == HabitType.bundle) {
                           return BundleHabitTile(
                             habit: habit,
-                            allHabits: allHabits, // Pass ALL habits so bundle can find its children
+                            allHabits: allHabits.value ?? [], // Extract value from AsyncValue
                           );
                         } else {
                           return HabitTile(

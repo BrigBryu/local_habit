@@ -250,7 +250,7 @@ class _DemoBundleCardState extends State<DemoBundleCard> {
                 Icon(Icons.list_alt, size: 16, color: Colors.grey[600]),
                 const SizedBox(width: 8),
                 Text(
-                  'Nested Habits (${nestedHabits.length})',
+                  'Nested Habits (${_nestedHabits.length})',
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
                     color: Colors.grey[700],
@@ -271,7 +271,7 @@ class _DemoBundleCardState extends State<DemoBundleCard> {
           ),
           
           // Nested Habit Items
-          ...(nestedHabits.asMap().entries.map((entry) {
+          ...(_nestedHabits.asMap().entries.map((entry) {
             final index = entry.key;
             final habit = entry.value;
             return _buildNestedHabitTile(habit, index);
@@ -360,7 +360,7 @@ class _DemoBundleCardState extends State<DemoBundleCard> {
 
   void _completeAllHabits() {
     setState(() {
-      for (var habit in _demoNestedHabits) {
+      for (var habit in _nestedHabits) {
         habit['completed'] = true;
       }
     });
