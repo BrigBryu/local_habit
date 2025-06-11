@@ -89,8 +89,6 @@ class AppColorSchemes {
     onSecondary: AppColors.textLight,
     surface: AppColors.cardBackground,
     onSurface: AppColors.textPrimary,
-    background: AppColors.backgroundLight,
-    onBackground: AppColors.textPrimary,
     error: AppColors.error,
     onError: AppColors.textLight,
   );
@@ -104,8 +102,6 @@ class AppColorSchemes {
     onSecondary: AppColors.textPrimary,
     surface: AppColors.cardBackgroundDark,
     onSurface: AppColors.textLight,
-    background: AppColors.backgroundDark,
-    onBackground: AppColors.textLight,
     error: AppColors.errorLight,
     onError: AppColors.textPrimary,
   );

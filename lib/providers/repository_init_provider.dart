@@ -6,6 +6,7 @@ import '../core/repositories/local_habits_repository.dart';
 import '../core/repositories/remote_habits_repository.dart';
 import '../core/network/supabase_client.dart';
 import '../core/auth/auth_service.dart';
+import '../core/realtime/realtime_service.dart';
 
 final _logger = Logger();
 
@@ -34,6 +35,11 @@ final repositoryProvider = FutureProvider<HabitsRepository>((ref) async {
     
     // Initialize the selected repository
     await repository.initialize();
+    
+    // Initialize realtime service for remote repositories
+    if (repository is RemoteHabitsRepository) {
+      await RealtimeService.instance.initialize();
+    }
     
     return repository;
     

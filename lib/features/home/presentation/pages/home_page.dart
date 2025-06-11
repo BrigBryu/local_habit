@@ -9,6 +9,7 @@ import '../../../habits/bundle_habit/bundle_habit_tile.dart';
 import '../../../../providers/habits_provider.dart';
 import '../../../../screens/level_page.dart';
 import '../../../../screens/theme_settings_screen.dart';
+import '../../../../screens/partner_settings_screen.dart';
 import '../../../../core/theme/app_colors.dart';
 
 class HomePage extends ConsumerWidget {
@@ -32,6 +33,14 @@ class HomePage extends ConsumerWidget {
         backgroundColor: AppColors.draculaCurrentLine,
         elevation: 0,
         actions: [
+          IconButton(
+            onPressed: () => _navigateToPartnerSettings(context),
+            icon: Icon(
+              Icons.people_outline,
+              color: AppColors.draculaCyan,
+            ),
+            tooltip: 'Partner Settings',
+          ),
           IconButton(
             onPressed: () => _navigateToThemeSettings(context),
             icon: Icon(
@@ -195,6 +204,14 @@ class HomePage extends ConsumerWidget {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => const ThemeSettingsScreen(),
+      ),
+    );
+  }
+
+  void _navigateToPartnerSettings(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const PartnerSettingsScreen(),
       ),
     );
   }

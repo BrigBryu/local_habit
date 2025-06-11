@@ -452,6 +452,56 @@ class Habit {
     return name;
   }
 
+  /// Convert habit to JSON for sync queue
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'description': description,
+    'type': type.name,
+    'stackedOnHabitId': stackedOnHabitId,
+    'bundleChildIds': bundleChildIds,
+    'parentBundleId': parentBundleId,
+    'timeoutMinutes': timeoutMinutes,
+    'availableDays': availableDays,
+    'createdAt': createdAt.toIso8601String(),
+    'lastCompleted': lastCompleted?.toIso8601String(),
+    'lastAlarmTriggered': lastAlarmTriggered?.toIso8601String(),
+    'sessionStartTime': sessionStartTime?.toIso8601String(),
+    'lastSessionStarted': lastSessionStarted?.toIso8601String(),
+    'sessionCompletedToday': sessionCompletedToday,
+    'dailyCompletionCount': dailyCompletionCount,
+    'lastCompletionCountReset': lastCompletionCountReset?.toIso8601String(),
+    'dailyFailureCount': dailyFailureCount,
+    'lastFailureCountReset': lastFailureCountReset?.toIso8601String(),
+    'avoidanceSuccessToday': avoidanceSuccessToday,
+    'currentStreak': currentStreak,
+  };
+
+  /// Create habit from JSON for sync queue
+  factory Habit.fromJson(Map<String, dynamic> json) => Habit(
+    id: json['id'] as String,
+    name: json['name'] as String,
+    description: json['description'] as String,
+    type: HabitType.values.firstWhere((e) => e.name == json['type']),
+    stackedOnHabitId: json['stackedOnHabitId'] as String?,
+    bundleChildIds: (json['bundleChildIds'] as List<dynamic>?)?.cast<String>(),
+    parentBundleId: json['parentBundleId'] as String?,
+    timeoutMinutes: json['timeoutMinutes'] as int?,
+    availableDays: (json['availableDays'] as List<dynamic>?)?.cast<int>(),
+    createdAt: DateTime.parse(json['createdAt'] as String),
+    lastCompleted: json['lastCompleted'] != null ? DateTime.parse(json['lastCompleted'] as String) : null,
+    lastAlarmTriggered: json['lastAlarmTriggered'] != null ? DateTime.parse(json['lastAlarmTriggered'] as String) : null,
+    sessionStartTime: json['sessionStartTime'] != null ? DateTime.parse(json['sessionStartTime'] as String) : null,
+    lastSessionStarted: json['lastSessionStarted'] != null ? DateTime.parse(json['lastSessionStarted'] as String) : null,
+    sessionCompletedToday: json['sessionCompletedToday'] as bool? ?? false,
+    dailyCompletionCount: json['dailyCompletionCount'] as int? ?? 0,
+    lastCompletionCountReset: json['lastCompletionCountReset'] != null ? DateTime.parse(json['lastCompletionCountReset'] as String) : null,
+    dailyFailureCount: json['dailyFailureCount'] as int? ?? 0,
+    lastFailureCountReset: json['lastFailureCountReset'] != null ? DateTime.parse(json['lastFailureCountReset'] as String) : null,
+    avoidanceSuccessToday: json['avoidanceSuccessToday'] as bool? ?? false,
+    currentStreak: json['currentStreak'] as int? ?? 0,
+  );
+
   @override
   String toString() => 'Habit(id: $id, name: $name, type: ${type.displayName}, streak: $currentStreak)';
 }

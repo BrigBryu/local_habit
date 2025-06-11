@@ -7,6 +7,7 @@ import 'local_habits_repository.dart';
 import '../network/supabase_client.dart';
 import '../network/supabase_habit_dto.dart';
 import '../auth/auth_service.dart';
+import '../sync/sync_queue.dart';
 
 /// Remote repository implementation for syncing habits with Supabase backend.
 class RemoteHabitsRepository implements HabitsRepository {
@@ -41,6 +42,9 @@ class RemoteHabitsRepository implements HabitsRepository {
       } else {
         _currentUserId = 'default_user'; // Fallback for development
       }
+      
+      // Initialize sync queue
+      await SyncQueue.instance.initialize(this);
       
       _logger.i('RemoteHabitsRepository initialized for user: $_currentUserId');
     } catch (e, stackTrace) {
@@ -107,15 +111,29 @@ class RemoteHabitsRepository implements HabitsRepository {
         return await _localFallback.addHabit(habit);
       }
 
-      // TODO: Implement Supabase habit creation
-      _logger.d('TODO: Add habit to Supabase: ${habit.name}');
+      // Create DTO and insert to Supabase
+      final dto = SupabaseHabitDto.fromDomain(habit, _currentUserId);
       
-      // For now, add to local as well for offline support
-      return await _localFallback.addHabit(habit);
+      final response = await supabase
+          .from('habits')
+          .insert(dto.toJson())
+          .select()
+          .single();
+      
+      _logger.i('Successfully added habit to Supabase: ${habit.name}');
+      
+      // Also add to local for offline support
+      await _localFallback.addHabit(habit);
+      
+      return null; // Success
       
     } catch (e, stackTrace) {
-      _logger.e('Failed to add habit remotely, using local fallback', 
+      _logger.e('Failed to add habit remotely, using local fallback and enqueuing for retry', 
                error: e, stackTrace: stackTrace);
+      
+      // Enqueue for later sync
+      await SyncQueue.instance.enqueue(SyncOp.addHabit(habit));
+      
       return await _localFallback.addHabit(habit);
     }
   }
@@ -128,15 +146,29 @@ class RemoteHabitsRepository implements HabitsRepository {
         return await _localFallback.updateHabit(habit);
       }
 
-      // TODO: Implement Supabase habit update
-      _logger.d('TODO: Update habit in Supabase: ${habit.name}');
+      // Create DTO and update in Supabase
+      final dto = SupabaseHabitDto.fromDomain(habit, _currentUserId);
       
-      // For now, update local as well for offline support
-      return await _localFallback.updateHabit(habit);
+      await supabase
+          .from('habits')
+          .update(dto.toJson())
+          .eq('id', habit.id)
+          .eq('owner_id', _currentUserId);
+      
+      _logger.i('Successfully updated habit in Supabase: ${habit.name}');
+      
+      // Also update local for offline support
+      await _localFallback.updateHabit(habit);
+      
+      return null; // Success
       
     } catch (e, stackTrace) {
-      _logger.e('Failed to update habit remotely, using local fallback', 
+      _logger.e('Failed to update habit remotely, using local fallback and enqueuing for retry', 
                error: e, stackTrace: stackTrace);
+      
+      // Enqueue for later sync
+      await SyncQueue.instance.enqueue(SyncOp.updateHabit(habit));
+      
       return await _localFallback.updateHabit(habit);
     }
   }
@@ -149,15 +181,27 @@ class RemoteHabitsRepository implements HabitsRepository {
         return await _localFallback.removeHabit(habitId);
       }
 
-      // TODO: Implement Supabase habit deletion
-      _logger.d('TODO: Remove habit from Supabase: $habitId');
+      // Delete from Supabase
+      await supabase
+          .from('habits')
+          .delete()
+          .eq('id', habitId)
+          .eq('owner_id', _currentUserId);
       
-      // For now, remove from local as well
-      return await _localFallback.removeHabit(habitId);
+      _logger.i('Successfully removed habit from Supabase: $habitId');
+      
+      // Also remove from local
+      await _localFallback.removeHabit(habitId);
+      
+      return null; // Success
       
     } catch (e, stackTrace) {
-      _logger.e('Failed to remove habit remotely, using local fallback', 
+      _logger.e('Failed to remove habit remotely, using local fallback and enqueuing for retry', 
                error: e, stackTrace: stackTrace);
+      
+      // Enqueue for later sync
+      await SyncQueue.instance.enqueue(SyncOp.removeHabit(habitId));
+      
       return await _localFallback.removeHabit(habitId);
     }
   }
@@ -170,16 +214,90 @@ class RemoteHabitsRepository implements HabitsRepository {
         return await _localFallback.completeHabit(habitId, xpAwarded: xpAwarded);
       }
 
-      // TODO: Implement Supabase habit completion
-      _logger.d('TODO: Record habit completion in Supabase: $habitId (XP: $xpAwarded)');
+      final now = DateTime.now();
       
-      // For now, record in local as well
-      return await _localFallback.completeHabit(habitId, xpAwarded: xpAwarded);
+      // Record completion in Supabase
+      await supabase.from('completions').insert({
+        'habit_id': habitId,
+        'owner_id': _currentUserId,
+        'completed_at': now.toIso8601String(),
+        'xp_awarded': xpAwarded,
+        'completion_type': 'manual',
+      });
+      
+      // Record XP event if XP was awarded
+      if (xpAwarded > 0) {
+        await supabase.from('xp_events').insert({
+          'user_id': _currentUserId,
+          'habit_id': habitId,
+          'event_type': 'habit_completion',
+          'xp_amount': xpAwarded,
+          'description': 'Habit completion reward',
+        });
+      }
+      
+      _logger.i('Successfully recorded habit completion in Supabase: $habitId (XP: $xpAwarded)');
+      
+      // Also record in local for offline support
+      await _localFallback.completeHabit(habitId, xpAwarded: xpAwarded);
+      
+      return null; // Success
       
     } catch (e, stackTrace) {
-      _logger.e('Failed to complete habit remotely, using local fallback', 
+      _logger.e('Failed to complete habit remotely, using local fallback and enqueuing for retry', 
                error: e, stackTrace: stackTrace);
+      
+      // Enqueue for later sync
+      await SyncQueue.instance.enqueue(SyncOp.completeHabit(habitId, xpAwarded));
+      
       return await _localFallback.completeHabit(habitId, xpAwarded: xpAwarded);
+    }
+  }
+  
+  @override
+  Future<String?> recordFailure(String habitId) async {
+    try {
+      if (!AuthService.instance.isAuthenticated) {
+        _logger.d('Not authenticated, using local fallback to record failure');
+        return await _localFallback.recordFailure(habitId);
+      }
+
+      final now = DateTime.now();
+      
+      // Record failure in completions table with negative XP
+      await supabase.from('completions').insert({
+        'habit_id': habitId,
+        'owner_id': _currentUserId,
+        'completed_at': now.toIso8601String(),
+        'xp_awarded': -5, // Penalty for avoidance failure
+        'completion_type': 'failure',
+        'notes': 'Avoidance habit failure',
+      });
+      
+      // Record XP penalty event
+      await supabase.from('xp_events').insert({
+        'user_id': _currentUserId,
+        'habit_id': habitId,
+        'event_type': 'habit_completion',
+        'xp_amount': -5,
+        'description': 'Avoidance habit failure penalty',
+      });
+      
+      _logger.i('Successfully recorded habit failure in Supabase: $habitId');
+      
+      // Also record in local for offline support
+      await _localFallback.recordFailure(habitId);
+      
+      return null; // Success
+      
+    } catch (e, stackTrace) {
+      _logger.e('Failed to record failure remotely, using local fallback and enqueuing for retry', 
+               error: e, stackTrace: stackTrace);
+      
+      // Enqueue for later sync
+      await SyncQueue.instance.enqueue(SyncOp.recordFailure(habitId));
+      
+      return await _localFallback.recordFailure(habitId);
     }
   }
   
@@ -187,6 +305,7 @@ class RemoteHabitsRepository implements HabitsRepository {
   Future<void> dispose() async {
     await _ownHabitsController.close();
     await _partnerHabitsController.close();
+    SyncQueue.instance.dispose();
     await _localFallback.dispose();
     _logger.i('RemoteHabitsRepository disposed');
   }

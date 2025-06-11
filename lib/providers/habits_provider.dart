@@ -271,11 +271,16 @@ class HabitsNotifier extends StateNotifier<AsyncValue<void>> {
     );
   }
 
-  // Stub methods for missing functionality
   Future<String?> recordFailure(String habitId) async {
-    // TODO: Implement avoidance habit failure recording
-    _logger.d('Record failure called for habit: $habitId');
-    return null; // Success
+    state = const AsyncValue.loading();
+    try {
+      final error = await _repository.recordFailure(habitId);
+      state = const AsyncValue.data(null);
+      return error;
+    } catch (e, stackTrace) {
+      state = AsyncValue.error(e, stackTrace);
+      return 'Failed to record failure: $e';
+    }
   }
 
   Future<String?> completeBundle(String bundleId) async {

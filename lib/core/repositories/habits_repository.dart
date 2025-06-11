@@ -23,6 +23,9 @@ abstract class HabitsRepository {
   /// Complete a habit and award XP
   Future<String?> completeHabit(String habitId, {int xpAwarded = 0});
   
+  /// Record a failure for an avoidance habit
+  Future<String?> recordFailure(String habitId);
+  
   /// Get the current user ID
   String getCurrentUserId();
   

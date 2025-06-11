@@ -151,6 +151,28 @@ class LocalHabitsRepository implements HabitsRepository {
   }
   
   @override
+  Future<String?> recordFailure(String habitId) async {
+    try {
+      final completion = CompletionCollection.fromHabitCompletion(
+        habitId: habitId,
+        userId: _currentUserId,
+        completedAt: DateTime.now(),
+        xpAwarded: -5, // Penalty for avoidance failure
+      );
+      
+      await _db.isar.writeTxn(() async {
+        await _db.isar.completionCollections.put(completion);
+      });
+      
+      _logger.d('Recorded failure for habit: $habitId');
+      return null; // Success
+    } catch (e, stackTrace) {
+      _logger.e('Failed to record failure', error: e, stackTrace: stackTrace);
+      return 'Failed to record failure: $e';
+    }
+  }
+  
+  @override
   Future<void> dispose() async {
     await _ownHabitsController.close();
     await _partnerHabitsController.close();
