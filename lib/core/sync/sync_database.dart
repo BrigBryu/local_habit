@@ -32,7 +32,7 @@ class SyncDatabase {
       final dir = await getApplicationDocumentsDirectory();
       
       _isar = await Isar.open(
-        [SyncOpSchema],
+        [], // [SyncOpSchema], // TODO: Re-enable when schema is generated
         directory: dir.path,
         name: 'habit_sync',
       );
