@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:domain/domain.dart';
 import 'package:data_local/repositories/bundle_service.dart' as bundle_service;
 import '../../../providers/habits_provider.dart';
-import '../../../core/theme/theme_extensions.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/flexible_theme_system.dart';
 import 'providers.dart';
@@ -213,7 +212,7 @@ class _ExpandableBundleTile extends ConsumerWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.15),
+                color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.15),
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
@@ -310,7 +309,7 @@ class _ExpandableBundleTile extends ConsumerWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.08),
+        color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.08),
         border: Border(
           top: BorderSide(
             color: colors.draculaComment.withOpacity(0.3),
@@ -324,7 +323,7 @@ class _ExpandableBundleTile extends ConsumerWidget {
           ...children.map((child) => Container(
             margin: const EdgeInsets.only(bottom: 1),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.05),
+              color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.05),
               border: Border(
                 bottom: BorderSide(
                   color: colors.draculaComment.withOpacity(0.3),
@@ -638,22 +637,6 @@ class _ExpandableBundleTile extends ConsumerWidget {
     }
   }
 
-  Widget _getHabitIcon(Habit habit) {
-    switch (habit.type) {
-      case HabitType.basic:
-        return const Icon(Icons.check_circle_outline, color: Colors.blue);
-      case HabitType.avoidance:
-        return const Icon(Icons.block, color: Colors.red);
-      // TODO: Re-enable when time-based habits are supported
-      // case HabitType.timedSession:
-      //   return const Icon(Icons.timer, color: Colors.orange);
-      // case HabitType.timeWindow:
-      // case HabitType.dailyTimeWindow:
-      //   return const Icon(Icons.schedule, color: Colors.green);
-      default:
-        return const Icon(Icons.circle, color: Colors.grey);
-    }
-  }
 
   Future<void> _addHabitToBundle(BuildContext context, WidgetRef ref, String habitId) async {
     final habitsNotifier = ref.read(habitsNotifierProvider.notifier);

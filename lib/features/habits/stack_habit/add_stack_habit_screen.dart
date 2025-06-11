@@ -8,7 +8,6 @@ import '../basic_habit/add_basic_habit_screen.dart';
 import '../avoidance_habit/add_avoidance_habit_screen.dart';
 import '../bundle_habit/add_bundle_habit_screen.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/theme_extensions.dart';
 import '../../../core/theme/flexible_theme_system.dart';
 
 class AddStackHabitScreen extends BaseAddHabitScreen {

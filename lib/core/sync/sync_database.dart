@@ -4,6 +4,7 @@ import 'package:logger/logger.dart';
 
 import 'sync_queue.dart';
 
+
 /// Separate database service for sync operations to avoid circular dependencies
 class SyncDatabase {
   static SyncDatabase? _instance;

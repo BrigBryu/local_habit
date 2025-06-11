@@ -3,8 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:domain/domain.dart';
 import 'package:data_local/repositories/stack_service.dart';
 import '../../../providers/habits_provider.dart';
-import '../../../core/theme/theme_extensions.dart';
-import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/flexible_theme_system.dart';
 
 const Duration kCompletionAnimationDuration = Duration(milliseconds: 600);

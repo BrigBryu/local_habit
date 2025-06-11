@@ -114,11 +114,9 @@ class RemoteHabitsRepository implements HabitsRepository {
       // Create DTO and insert to Supabase
       final dto = SupabaseHabitDto.fromDomain(habit, _currentUserId);
       
-      final response = await supabase
+      await supabase
           .from('habits')
-          .insert(dto.toJson())
-          .select()
-          .single();
+          .insert(dto.toJson());
       
       _logger.i('Successfully added habit to Supabase: ${habit.name}');
       

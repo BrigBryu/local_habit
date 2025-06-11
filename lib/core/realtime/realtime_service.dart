@@ -163,7 +163,7 @@ class RealtimeService {
       // Forward completion events to stream
       _completionsUpdateController.add({
         'event': payload.eventType.name,
-        'data': payload.newRecord != null ? payload.newRecord : payload.oldRecord,
+        'data': payload.newRecord ?? payload.oldRecord,
       });
     } catch (e, stackTrace) {
       _logger.e('Error handling completions change', error: e, stackTrace: stackTrace);
