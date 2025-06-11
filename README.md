@@ -264,8 +264,7 @@ flutter clean
 
 ## 📄 License
 
-MIT License - see LICENSE file for details.
-
+dont steal my code
 ---
 
 **Built with ❤️ using Flutter's latest best practices and professional architecture patterns.**
