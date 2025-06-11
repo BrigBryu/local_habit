@@ -105,16 +105,29 @@ class LocalHabitsRepository implements HabitsRepository {
   Future<String?> removeHabit(String habitId) async {
     try {
       await _db.isar.writeTxn(() async {
-        // Remove habit
-        // TODO: Fix Isar query methods - using placeholder for now
-        _logger.w('Isar query methods not available - skipping habit deletion');
+        // Remove habit - find matching habit manually
+        final allHabits = _db.isar.habitCollections.where();
+        HabitCollection? habitToDelete;
+        await for (final habit in allHabits) {
+          if (habit.id == habitId && habit.userId == _currentUserId) {
+            habitToDelete = habit;
+            break;
+          }
+        }
+        if (habitToDelete != null) {
+          await _db.isar.habitCollections.delete(habitToDelete.isarId);
+        }
         
-        // Remove associated completions
-        // TODO: Fix Isar query methods - using placeholder for now
-        final completions = <CompletionCollection>[];
-        _logger.w('Isar completion query not available - using empty list');
+        // Remove associated completions - find matching completions manually
+        final allCompletions = _db.isar.completionCollections.where();
+        final completionsToDelete = <CompletionCollection>[];
+        await for (final completion in allCompletions) {
+          if (completion.habitId == habitId && completion.userId == _currentUserId) {
+            completionsToDelete.add(completion);
+          }
+        }
             
-        for (final completion in completions) {
+        for (final completion in completionsToDelete) {
           await _db.isar.completionCollections.delete(completion.isarId);
         }
       });
@@ -160,9 +173,16 @@ class LocalHabitsRepository implements HabitsRepository {
   
   Future<void> _refreshOwnHabits() async {
     try {
-      // TODO: Fix Isar query methods - using placeholder for now
+      // Get all habits and filter for current user
+      final allCollections = _db.isar.habitCollections.where();
       final collections = <HabitCollection>[];
-      _logger.w('Isar habits query not available - using empty list');
+      
+      // Manual filtering since Isar filter API seems inconsistent
+      await for (final habit in allCollections) {
+        if (habit.userId == _currentUserId) {
+          collections.add(habit);
+        }
+      }
           
       final habits = collections.map((c) => c.toDomain()).toList();
       _ownHabitsController.add(habits);
@@ -210,9 +230,14 @@ class LocalHabitsRepository implements HabitsRepository {
   
   Future<void> _migrateTestDataIfNeeded() async {
     // Check if we already have habits
-    // TODO: Fix Isar query methods - using placeholder for now
-    final existingCount = 0; // Placeholder count
-    _logger.w('Isar count query not available - using 0');
+    // Get all habits and count for current user manually
+    final allHabits = _db.isar.habitCollections.where();
+    int existingCount = 0;
+    await for (final habit in allHabits) {
+      if (habit.userId == _currentUserId) {
+        existingCount++;
+      }
+    }
         
     if (existingCount > 0) {
       _logger.d('Database already has habits, skipping test data migration');

@@ -22,7 +22,8 @@ class _AddBundleHabitScreenState extends BaseAddHabitScreenState<AddBundleHabitS
   
   // Get available habits in a stable order
   List<Habit> get _availableHabits {
-    return _bundleService.getAvailableHabitsForBundle(ref.watch(habitsProvider));
+    final habitsAsync = ref.watch(habitsProvider);
+    return _bundleService.getAvailableHabitsForBundle(habitsAsync.value ?? []);
   }
   
   // Get selected habits in the order they were selected

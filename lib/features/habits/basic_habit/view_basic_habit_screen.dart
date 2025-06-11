@@ -339,9 +339,9 @@ class ViewBasicHabitScreen extends ConsumerWidget {
     return '${(difference / 30).round()}mo ago';
   }
 
-  void _completeHabit(BuildContext context, WidgetRef ref, Habit habit) {
+  Future<void> _completeHabit(BuildContext context, WidgetRef ref, Habit habit) async {
     final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
-    final result = habitsNotifier.completeHabit(habit.id);
+    final result = await habitsNotifier.completeHabit(habit.id);
     
     if (result != null) {
       ScaffoldMessenger.of(context).showSnackBar(

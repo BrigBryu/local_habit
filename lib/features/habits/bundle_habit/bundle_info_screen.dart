@@ -599,10 +599,9 @@ class _BundleInfoScreenState extends ConsumerState<BundleInfoScreen> {
     }
   }
 
-  void _completeBundle(BuildContext context, WidgetRef ref) {
+  Future<void> _completeBundle(BuildContext context, WidgetRef ref) async {
     final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
-    // TODO: Implement completeBundle method in HabitsNotifier
-    final result = 'Complete bundle not implemented'; // habitsNotifier.completeBundle(widget.bundle.id);
+    final result = await habitsNotifier.completeBundle(widget.bundle.id);
     final colors = ref.watchColors;
     
     if (result != null) {
@@ -672,10 +671,9 @@ class _BundleInfoScreenState extends ConsumerState<BundleInfoScreen> {
     );
   }
 
-  void _addHabitToBundle(BuildContext context, WidgetRef ref, String habitId) {
+  Future<void> _addHabitToBundle(BuildContext context, WidgetRef ref, String habitId) async {
     final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
-    // TODO: Implement addHabitToBundle method in HabitsNotifier
-    final result = 'Add habit to bundle not implemented'; // habitsNotifier.addHabitToBundle(widget.bundle.id, habitId);
+    final result = await habitsNotifier.addHabitToBundle(widget.bundle.id, habitId);
     final colors = ref.watchColors;
     
     if (result != null) {

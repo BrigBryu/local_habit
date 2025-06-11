@@ -456,11 +456,11 @@ class _ExpandableStackTile extends ConsumerWidget {
     );
   }
 
-  void _handleNestedStepTap(BuildContext context, WidgetRef ref, Habit step) {
+  Future<void> _handleNestedStepTap(BuildContext context, WidgetRef ref, Habit step) async {
     if (_isHabitCompletedToday(step)) return; // Already completed
     
     final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
-    final result = habitsNotifier.completeHabit(step.id);
+    final result = await habitsNotifier.completeHabit(step.id);
     final colors = ref.watchColors;
     
     if (result != null) {

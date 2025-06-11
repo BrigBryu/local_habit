@@ -1,3 +1,5 @@
+// ignore_for_file: directives_ordering, unused_import, dead_code, unused_local_variable
+
 // TODO(bridger): Re-enable after rewrite. Currently EXCLUDED.
 // TimedHabitService is temporarily disabled to resolve TimeOfDay conflicts and
 // simplify the domain model. Will be re-enabled in a future iteration.

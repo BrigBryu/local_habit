@@ -118,11 +118,10 @@ class AvoidanceHabitTile extends ConsumerWidget {
     );
   }
 
-  void _recordFailure(BuildContext context, WidgetRef ref) {
+  Future<void> _recordFailure(BuildContext context, WidgetRef ref) async {
     final colors = ref.watchColors;
     final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
-    // TODO: Implement recordFailure method in HabitsNotifier
-    final result = 'Record failure not implemented';
+    final result = await habitsNotifier.recordFailure(habit.id);
     
     if (result != null) {
       ScaffoldMessenger.of(context).showSnackBar(

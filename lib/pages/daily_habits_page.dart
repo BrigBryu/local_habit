@@ -378,7 +378,7 @@ class HabitListTile extends ConsumerWidget {
     //     break;
     //   
     //   default:
-        final result = habitsNotifier.completeHabit(habit.id);
+        final result = await habitsNotifier.completeHabit(habit.id);
         if (result != null) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(result)),
@@ -447,9 +447,9 @@ class BasicHabitCheckButton extends ConsumerWidget {
            now.day == lastCompleted.day;
   }
 
-  void _completeHabit(BuildContext context) {
+  Future<void> _completeHabit(BuildContext context) async {
     final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
-    final result = habitsNotifier.completeHabit(habit.id);
+    final result = await habitsNotifier.completeHabit(habit.id);
     final completionColors = Theme.of(context).completionColors;
     
     if (result != null) {
@@ -549,9 +549,9 @@ class AvoidanceHabitButtons extends ConsumerWidget {
     }
   }
 
-  void _markSuccess(BuildContext context) {
+  Future<void> _markSuccess(BuildContext context) async {
     final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
-    final result = habitsNotifier.completeHabit(habit.id);
+    final result = await habitsNotifier.completeHabit(habit.id);
     final completionColors = Theme.of(context).completionColors;
     
     if (result != null) {

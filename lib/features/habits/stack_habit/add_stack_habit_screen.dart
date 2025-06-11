@@ -24,7 +24,8 @@ class _AddStackHabitScreenState extends BaseAddHabitScreenState<AddStackHabitScr
   
   // Get available habits in a stable order
   List<Habit> get _availableHabits {
-    return _stackService.getAvailableHabitsForStack(ref.watch(habitsProvider));
+    final habitsAsync = ref.watch(habitsProvider);
+    return _stackService.getAvailableHabitsForStack(habitsAsync.value ?? []);
   }
   
   // Get selected habits in the order they were selected
@@ -543,10 +544,10 @@ class _AddStackHabitScreenState extends BaseAddHabitScreenState<AddStackHabitScr
   }
 
   @override
-  void submitHabit() {
+  Future<void> submitHabit() async {
     try {
       final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
-      final result = habitsNotifier.addStack(
+      final result = await habitsNotifier.addStack(
         nameController.text.trim(),
         descriptionController.text.trim(),
         _selectedHabitIds,

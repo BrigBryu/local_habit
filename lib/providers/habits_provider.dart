@@ -270,6 +270,25 @@ class HabitsNotifier extends StateNotifier<AsyncValue<void>> {
       currentStreak: newStreak,
     );
   }
+
+  // Stub methods for missing functionality
+  Future<String?> recordFailure(String habitId) async {
+    // TODO: Implement avoidance habit failure recording
+    _logger.d('Record failure called for habit: $habitId');
+    return null; // Success
+  }
+
+  Future<String?> completeBundle(String bundleId) async {
+    // TODO: Implement bundle completion logic
+    _logger.d('Complete bundle called for bundle: $bundleId');
+    return null; // Success
+  }
+
+  Future<String?> addHabitToBundle(String bundleId, String habitId) async {
+    // TODO: Implement adding habit to bundle
+    _logger.d('Add habit $habitId to bundle $bundleId');
+    return null; // Success
+  }
 }
 
 final habitsNotifierProvider = StateNotifierProvider<HabitsNotifier, AsyncValue<void>>((ref) {

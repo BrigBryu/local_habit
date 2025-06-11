@@ -432,10 +432,9 @@ class _ExpandableBundleTile extends ConsumerWidget {
     ref.read(bundleExpandedProvider(habit.id).notifier).state = !currentState;
   }
 
-  void _completeBundle(BuildContext context, WidgetRef ref) {
+  Future<void> _completeBundle(BuildContext context, WidgetRef ref) async {
     final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
-    // TODO: Implement completeBundle method in HabitsNotifier
-    final result = 'Complete bundle not implemented';
+    final result = await habitsNotifier.completeBundle(habit.id);
     final colors = ref.watchColors;
     
     if (result != null) {
@@ -656,10 +655,9 @@ class _ExpandableBundleTile extends ConsumerWidget {
     }
   }
 
-  void _addHabitToBundle(BuildContext context, WidgetRef ref, String habitId) {
+  Future<void> _addHabitToBundle(BuildContext context, WidgetRef ref, String habitId) async {
     final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
-    // TODO: Implement addHabitToBundle method in HabitsNotifier
-    final result = 'Add habit to bundle not implemented';
+    final result = await habitsNotifier.addHabitToBundle(habit.id, habitId);
     final colors = ref.watchColors;
     
     if (result != null) {

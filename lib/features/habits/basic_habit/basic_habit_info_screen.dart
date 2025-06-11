@@ -403,11 +403,11 @@ class BasicHabitInfoScreen extends ConsumerWidget {
            now.day == lastCompleted.day;
   }
 
-  void _completeHabit(BuildContext context, WidgetRef ref) {
+  Future<void> _completeHabit(BuildContext context, WidgetRef ref) async {
     if (_isHabitCompletedToday(habit)) return;
     
     final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
-    final result = habitsNotifier.completeHabit(habit.id);
+    final result = await habitsNotifier.completeHabit(habit.id);
     final colors = ref.watchColors;
     
     if (result != null) {

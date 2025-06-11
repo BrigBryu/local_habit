@@ -538,7 +538,7 @@ class _StackStepCardState extends ConsumerState<StackStepCard>
     await _flipController.forward();
     
     // Complete the habit
-    final result = habitsNotifier.completeHabit(step.id);
+    final result = await habitsNotifier.completeHabit(step.id);
     
     if (result != null) {
       ScaffoldMessenger.of(context).showSnackBar(
