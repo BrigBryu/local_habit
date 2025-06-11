@@ -545,7 +545,7 @@ class _AddStackHabitScreenState extends BaseAddHabitScreenState<AddStackHabitScr
   @override
   void submitHabit() {
     try {
-      final habitsNotifier = ref.read(habitsProvider.notifier);
+      final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
       final result = habitsNotifier.addStack(
         nameController.text.trim(),
         descriptionController.text.trim(),

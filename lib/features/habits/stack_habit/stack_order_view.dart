@@ -457,7 +457,7 @@ class _StackOrderViewState extends ConsumerState<StackOrderView> {
   }
 
   void _saveOrder() {
-    final habitsNotifier = ref.read(habitsProvider.notifier);
+    final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
     final colors = ref.watchColors;
     
     try {

@@ -1,0 +1,14 @@
+targets:
+  $default:
+    builders:
+      freezed:
+        generate_for:
+          - lib/core/database/**.dart
+          - lib/core/repositories/**.dart
+      json_serializable:
+        generate_for:
+          - lib/core/database/**.dart
+          - lib/core/repositories/**.dart
+      isar_generator:
+        generate_for:
+          - lib/core/database/**.dart

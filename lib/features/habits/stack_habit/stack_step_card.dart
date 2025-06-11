@@ -531,7 +531,7 @@ class _StackStepCardState extends ConsumerState<StackStepCard>
   }
 
   void _completeStep(Habit step) async {
-    final habitsNotifier = ref.read(habitsProvider.notifier);
+    final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
     final colors = ref.watchColors;
     
     // Start flip animation

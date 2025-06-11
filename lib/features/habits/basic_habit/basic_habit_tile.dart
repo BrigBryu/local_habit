@@ -280,9 +280,9 @@ class HomeHabitCheckButton extends ConsumerWidget {
     );
   }
 
-  void _completeHabit(BuildContext context, WidgetRef ref) {
-    final habitsNotifier = ref.read(habitsProvider.notifier);
-    final result = habitsNotifier.completeHabit(habit.id);
+  Future<void> _completeHabit(BuildContext context, WidgetRef ref) async {
+    final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
+    final result = await habitsNotifier.completeHabit(habit.id);
     
     if (result != null) {
       ScaffoldMessenger.of(context).showSnackBar(

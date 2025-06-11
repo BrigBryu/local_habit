@@ -9,7 +9,7 @@ final homeHabitsProvider = Provider<List<Habit>>((ref) {
   final today = timeService.today();
   
   // Return only top-level habits (not children of bundles) that are visible for today
-  return habits.where((habit) {
+  return habits.value?.where((habit) {
     // Filter out habits that belong to bundles
     if (habit.parentBundleId != null) {
       return false;
@@ -23,7 +23,7 @@ final homeHabitsProvider = Provider<List<Habit>>((ref) {
       }
     }
     return true;
-  }).toList();
+  }).toList() ?? [];
 });
 
 /// Provider for level state

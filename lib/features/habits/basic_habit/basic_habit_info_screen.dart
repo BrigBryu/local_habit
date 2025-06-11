@@ -16,7 +16,8 @@ class BasicHabitInfoScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final currentHabit = ref.watch(habitsProvider).firstWhere((h) => h.id == habit.id);
+    final habitsAsync = ref.watch(habitsProvider);
+    final currentHabit = habitsAsync.value?.firstWhere((h) => h.id == habit.id) ?? habit;
     final isCompleted = _isHabitCompletedToday(currentHabit);
     final colors = ref.watchColors;
 
@@ -405,7 +406,7 @@ class BasicHabitInfoScreen extends ConsumerWidget {
   void _completeHabit(BuildContext context, WidgetRef ref) {
     if (_isHabitCompletedToday(habit)) return;
     
-    final habitsNotifier = ref.read(habitsProvider.notifier);
+    final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
     final result = habitsNotifier.completeHabit(habit.id);
     final colors = ref.watchColors;
     

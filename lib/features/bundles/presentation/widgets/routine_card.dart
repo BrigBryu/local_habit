@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:domain/domain.dart';
 import 'package:domain/use_cases/complete_bundle_use_case.dart';
 import 'package:data_local/repositories/habit_service.dart';
 

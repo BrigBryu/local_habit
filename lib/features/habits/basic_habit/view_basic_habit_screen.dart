@@ -12,8 +12,8 @@ class ViewBasicHabitScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final habits = ref.watch(habitsProvider);
-    final habit = habits.firstWhere((h) => h.id == habitId);
+    final habitsAsync = ref.watch(habitsProvider);
+    final habit = habitsAsync.value?.firstWhere((h) => h.id == habitId, orElse: () => Habit.create(name: 'Unknown', description: '', type: HabitType.basic)) ?? Habit.create(name: 'Unknown', description: '', type: HabitType.basic);
 
     return Scaffold(
       appBar: AppBar(
@@ -340,7 +340,7 @@ class ViewBasicHabitScreen extends ConsumerWidget {
   }
 
   void _completeHabit(BuildContext context, WidgetRef ref, Habit habit) {
-    final habitsNotifier = ref.read(habitsProvider.notifier);
+    final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
     final result = habitsNotifier.completeHabit(habit.id);
     
     if (result != null) {

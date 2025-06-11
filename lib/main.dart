@@ -1,10 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'features/home/presentation/pages/home_page.dart';
+import 'widgets/home_tab_scaffold.dart';
 import 'core/theme/app_colors.dart';
 import 'core/theme/flexible_theme_system.dart';
+import 'core/auth/auth_service.dart';
+import 'core/network/supabase_client.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  try {
+    // Initialize core services
+    await SupabaseClientService.instance.initialize();
+    await AuthService.init();
+  } catch (e) {
+    // Don't crash on initialization failure - app will fall back to local mode
+    debugPrint('Service initialization failed: $e');
+  }
+  
   runApp(const ProviderScope(child: HabitLevelUpApp()));
 }
 
@@ -31,7 +44,7 @@ class HabitLevelUpApp extends ConsumerWidget {
         useMaterial3: true,
         fontFamily: 'SF Pro Display',
       ),
-      home: const HomePage(),
+      home: const HomeTabScaffold(),
       debugShowCheckedModeBanner: false,
     );
   }

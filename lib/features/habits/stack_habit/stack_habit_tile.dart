@@ -459,7 +459,7 @@ class _ExpandableStackTile extends ConsumerWidget {
   void _handleNestedStepTap(BuildContext context, WidgetRef ref, Habit step) {
     if (_isHabitCompletedToday(step)) return; // Already completed
     
-    final habitsNotifier = ref.read(habitsProvider.notifier);
+    final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
     final result = habitsNotifier.completeHabit(step.id);
     final colors = ref.watchColors;
     
@@ -493,7 +493,7 @@ class _ExpandableStackTile extends ConsumerWidget {
   }
 
   void _showAddStepDialog(BuildContext context, WidgetRef ref) {
-    final habitsNotifier = ref.read(habitsProvider.notifier);
+    final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
     final allAvailableHabits = _stackService.getAvailableHabitsForStack(allHabits);
     final colors = ref.watchColors;
     
@@ -672,7 +672,7 @@ class _ExpandableStackTile extends ConsumerWidget {
   }
 
   void _addHabitToStack(BuildContext context, WidgetRef ref, String habitId) {
-    final habitsNotifier = ref.read(habitsProvider.notifier);
+    final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
     final colors = ref.watchColors;
     
     // Add logic to add habit to stack

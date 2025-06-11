@@ -407,7 +407,7 @@ class _ExpandableBundleTile extends ConsumerWidget {
   void _handleNestedHabitTap(BuildContext context, WidgetRef ref, Habit habit) {
     if (_isHabitCompletedToday(habit)) return; // Already completed
     
-    final habitsNotifier = ref.read(habitsProvider.notifier);
+    final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
     final result = habitsNotifier.completeHabit(habit.id);
     
     if (result != null) {
@@ -433,8 +433,9 @@ class _ExpandableBundleTile extends ConsumerWidget {
   }
 
   void _completeBundle(BuildContext context, WidgetRef ref) {
-    final habitsNotifier = ref.read(habitsProvider.notifier);
-    final result = habitsNotifier.completeBundle(habit.id);
+    final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
+    // TODO: Implement completeBundle method in HabitsNotifier
+    final result = 'Complete bundle not implemented';
     final colors = ref.watchColors;
     
     if (result != null) {
@@ -449,7 +450,7 @@ class _ExpandableBundleTile extends ConsumerWidget {
   }
 
   void _showAddHabitDialog(BuildContext context, WidgetRef ref) {
-    final habitsNotifier = ref.read(habitsProvider.notifier);
+    final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
     final allAvailableHabits = habitsNotifier.getAvailableHabitsForBundle();
     final colors = ref.watchColors;
     
@@ -656,8 +657,9 @@ class _ExpandableBundleTile extends ConsumerWidget {
   }
 
   void _addHabitToBundle(BuildContext context, WidgetRef ref, String habitId) {
-    final habitsNotifier = ref.read(habitsProvider.notifier);
-    final result = habitsNotifier.addHabitToBundle(habit.id, habitId);
+    final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
+    // TODO: Implement addHabitToBundle method in HabitsNotifier
+    final result = 'Add habit to bundle not implemented';
     final colors = ref.watchColors;
     
     if (result != null) {

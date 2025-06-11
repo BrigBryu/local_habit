@@ -15,12 +15,36 @@ class DailyHabitsPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final allHabits = ref.watch(habitsProvider);
+    final allHabitsAsync = ref.watch(ownHabitsProvider);
     
-    // Filter to show only top-level habits (not children of bundles or stacks)
-    final topLevelHabits = allHabits.where((habit) => 
-      habit.parentBundleId == null && habit.stackedOnHabitId == null
-    ).toList();
+    return allHabitsAsync.when(
+      loading: () => const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      ),
+      error: (error, stackTrace) => Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error, size: 64, color: Colors.red),
+              const SizedBox(height: 16),
+              Text('Error loading habits: $error'),
+            ],
+          ),
+        ),
+      ),
+      data: (allHabits) {
+        // Filter to show only top-level habits (not children of bundles or stacks)
+        final topLevelHabits = allHabits.where((habit) => 
+          habit.parentBundleId == null && habit.stackedOnHabitId == null
+        ).toList();
+
+        return _buildHabitsScaffold(context, ref, topLevelHabits, allHabits);
+      },
+    );
+  }
+
+  Widget _buildHabitsScaffold(BuildContext context, WidgetRef ref, List<Habit> topLevelHabits, List<Habit> allHabits) {
 
     return Scaffold(
       appBar: AppBar(
@@ -104,7 +128,7 @@ class DailyHabitsPage extends ConsumerWidget {
             ),
             onPressed: () {
               // Add some sample habits for testing
-              final habitsNotifier = ref.read(habitsProvider.notifier);
+              final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
               
               // Add a basic habit
               habitsNotifier.addHabit(Habit.create(
@@ -292,7 +316,7 @@ class HabitListTile extends ConsumerWidget {
   }
 
   void _handleTap(BuildContext context, WidgetRef ref, TimedHabitService timedHabitService) {
-    final habitsNotifier = ref.read(habitsProvider.notifier);
+    final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
     
     if (_isHabitCompletedToday(habit)) {
       return; // Already completed
@@ -424,7 +448,7 @@ class BasicHabitCheckButton extends ConsumerWidget {
   }
 
   void _completeHabit(BuildContext context) {
-    final habitsNotifier = ref.read(habitsProvider.notifier);
+    final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
     final result = habitsNotifier.completeHabit(habit.id);
     final completionColors = Theme.of(context).completionColors;
     
@@ -508,8 +532,9 @@ class AvoidanceHabitButtons extends ConsumerWidget {
   }
 
   void _recordFailure(BuildContext context) {
-    final habitsNotifier = ref.read(habitsProvider.notifier);
-    final result = habitsNotifier.recordFailure(habit.id);
+    final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
+    // TODO: Implement recordFailure method in new provider
+    final result = 'Failure recording not implemented yet';
     final completionColors = Theme.of(context).completionColors;
     
     if (result != null) {
@@ -525,7 +550,7 @@ class AvoidanceHabitButtons extends ConsumerWidget {
   }
 
   void _markSuccess(BuildContext context) {
-    final habitsNotifier = ref.read(habitsProvider.notifier);
+    final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
     final result = habitsNotifier.completeHabit(habit.id);
     final completionColors = Theme.of(context).completionColors;
     

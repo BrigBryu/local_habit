@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart' as flutter;
-import 'package:domain/domain.dart' as domain;
+import 'package:flutter/material.dart';
+import 'package:domain/entities/time_of_day.dart' as domain;
 
 /// Extensions to convert between Flutter TimeOfDay and Domain TimeOfDay
-extension FlutterTimeOfDayExtension on flutter.TimeOfDay {
+extension FlutterTimeOfDayExtension on TimeOfDay {
   /// Convert Flutter TimeOfDay to Domain TimeOfDay
   domain.TimeOfDay toDomain() {
     return domain.TimeOfDay(hour: hour, minute: minute);
@@ -11,12 +11,12 @@ extension FlutterTimeOfDayExtension on flutter.TimeOfDay {
 
 extension DomainTimeOfDayExtension on domain.TimeOfDay {
   /// Convert Domain TimeOfDay to Flutter TimeOfDay
-  flutter.TimeOfDay toFlutter() {
-    return flutter.TimeOfDay(hour: hour, minute: minute);
+  TimeOfDay toFlutter() {
+    return TimeOfDay(hour: hour, minute: minute);
   }
 
   /// Format using Flutter's TimeOfDay formatting
-  String format(flutter.BuildContext context) {
+  String format(BuildContext context) {
     return toFlutter().format(context);
   }
 }

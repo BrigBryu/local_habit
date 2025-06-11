@@ -34,7 +34,8 @@ class _BundleInfoScreenState extends ConsumerState<BundleInfoScreen> {
   @override
   Widget build(BuildContext context) {
     final bundleService = bundle_service.BundleService();
-    final currentBundle = ref.watch(habitsProvider).firstWhere((h) => h.id == widget.bundle.id);
+    final habitsAsync = ref.watch(habitsProvider);
+    final currentBundle = habitsAsync.value?.firstWhere((h) => h.id == widget.bundle.id) ?? widget.bundle;
     final progress = bundleService.getBundleProgress(currentBundle, widget.allHabits);
     final isCompleted = bundleService.isBundleCompleted(currentBundle, widget.allHabits);
     final children = bundleService.getChildHabits(currentBundle, widget.allHabits);
@@ -329,7 +330,8 @@ class _BundleInfoScreenState extends ConsumerState<BundleInfoScreen> {
     if (newIndex > oldIndex) newIndex -= 1;
     
     // Get current bundle from provider to ensure we have latest state
-    final currentBundle = ref.read(habitsProvider).firstWhere((h) => h.id == widget.bundle.id);
+    final habitsAsync = ref.read(habitsProvider);
+    final currentBundle = habitsAsync.value?.firstWhere((h) => h.id == widget.bundle.id) ?? widget.bundle;
     final currentChildIds = List<String>.from(currentBundle.bundleChildIds ?? []);
     
     // Reorder the IDs
@@ -361,7 +363,7 @@ class _BundleInfoScreenState extends ConsumerState<BundleInfoScreen> {
       currentStreak: currentBundle.currentStreak,
     );
     
-    ref.read(habitsProvider.notifier).updateHabit(updatedBundle);
+    ref.read(habitsNotifierProvider.notifier).updateHabit(updatedBundle);
   }
 
   Widget _buildHabitCard(BuildContext context, WidgetRef ref, Habit habit) {
@@ -583,7 +585,7 @@ class _BundleInfoScreenState extends ConsumerState<BundleInfoScreen> {
   void _completeHabit(BuildContext context, WidgetRef ref, Habit habit) {
     if (_isHabitCompletedToday(habit)) return;
     
-    final habitsNotifier = ref.read(habitsProvider.notifier);
+    final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
     final result = habitsNotifier.completeHabit(habit.id);
     
     if (result != null) {
@@ -598,8 +600,9 @@ class _BundleInfoScreenState extends ConsumerState<BundleInfoScreen> {
   }
 
   void _completeBundle(BuildContext context, WidgetRef ref) {
-    final habitsNotifier = ref.read(habitsProvider.notifier);
-    final result = habitsNotifier.completeBundle(widget.bundle.id);
+    final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
+    // TODO: Implement completeBundle method in HabitsNotifier
+    final result = 'Complete bundle not implemented'; // habitsNotifier.completeBundle(widget.bundle.id);
     final colors = ref.watchColors;
     
     if (result != null) {
@@ -614,7 +617,7 @@ class _BundleInfoScreenState extends ConsumerState<BundleInfoScreen> {
   }
 
   void _showAddHabitDialog(BuildContext context, WidgetRef ref) {
-    final habitsNotifier = ref.read(habitsProvider.notifier);
+    final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
     final availableHabits = habitsNotifier.getAvailableHabitsForBundle();
     
     if (availableHabits.isEmpty) {
@@ -670,8 +673,9 @@ class _BundleInfoScreenState extends ConsumerState<BundleInfoScreen> {
   }
 
   void _addHabitToBundle(BuildContext context, WidgetRef ref, String habitId) {
-    final habitsNotifier = ref.read(habitsProvider.notifier);
-    final result = habitsNotifier.addHabitToBundle(widget.bundle.id, habitId);
+    final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
+    // TODO: Implement addHabitToBundle method in HabitsNotifier
+    final result = 'Add habit to bundle not implemented'; // habitsNotifier.addHabitToBundle(widget.bundle.id, habitId);
     final colors = ref.watchColors;
     
     if (result != null) {

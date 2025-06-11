@@ -36,7 +36,21 @@ habit_level_up/
 
 ### 📋 Setup Instructions
 
-#### 1. **Clone and Setup Workspace**
+#### 1. **Environment Configuration**
+Copy `.env.example` to `.env` and configure your Supabase credentials:
+```bash
+cp .env.example .env
+```
+
+Then edit `.env` with your actual Supabase values:
+```
+SUPABASE_URL=your-supabase-url
+SUPABASE_ANON_KEY=your-anon-key
+TEST_EMAIL=test@example.com
+TEST_PASSWORD=secret123
+```
+
+#### 2. **Clone and Setup Workspace**
 ```bash
 cd habit_level_up
 

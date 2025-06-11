@@ -412,7 +412,7 @@ class _AddBundleHabitScreenState extends BaseAddHabitScreenState<AddBundleHabitS
 
   @override
   Future<void> performSave() async {
-    final habitsNotifier = ref.read(habitsProvider.notifier);
+    final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
     habitsNotifier.addBundle(
       nameController.text.trim(),
       descriptionController.text.trim().isEmpty 

@@ -323,14 +323,15 @@ class _CreateBundleSheetState extends ConsumerState<CreateBundleSheet> {
         return Icons.layers;
       case HabitType.bundle:
         return Icons.folder;
-      case HabitType.alarmHabit:
-        return Icons.alarm;
-      case HabitType.timedSession:
-        return Icons.timer;
-      case HabitType.timeWindow:
-        return Icons.schedule;
-      case HabitType.dailyTimeWindow:
-        return Icons.calendar_today;
+      // TODO: Re-enable when time-based habits are ready
+      // case HabitType.alarmHabit:
+      //   return Icons.alarm;
+      // case HabitType.timedSession:
+      //   return Icons.timer;
+      // case HabitType.timeWindow:
+      //   return Icons.schedule;
+      // case HabitType.dailyTimeWindow:
+      //   return Icons.calendar_today;
     }
   }
 }

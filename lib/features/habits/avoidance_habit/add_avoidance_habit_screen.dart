@@ -124,7 +124,7 @@ class _AddAvoidanceHabitScreenState extends BaseAddHabitScreenState<AddAvoidance
     );
 
     // Add to Riverpod state
-    ref.read(habitsProvider.notifier).addHabit(habit);
+    ref.read(habitsNotifierProvider.notifier).addHabit(habit);
   }
 
   @override
