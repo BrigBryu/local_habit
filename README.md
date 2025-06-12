@@ -50,6 +50,13 @@ TEST_EMAIL=test@example.com
 TEST_PASSWORD=secret123
 ```
 
+#### 1.1 **Android Release Signing (Optional)**
+For Android release builds, configure your signing key. A placeholder stub key is included for development:
+```bash
+# The default stub key is already configured in android/app/build.gradle.kts
+# For production, replace with your actual signing key
+```
+
 #### 2. **Clone and Setup Workspace**
 ```bash
 cd habit_level_up
@@ -164,6 +171,38 @@ fvm dart run melos run analyze     # Static analysis
 cd packages/domain && fvm dart run build_runner build --delete-conflicting-outputs
 cd packages/data_local && fvm dart run build_runner build --delete-conflicting-outputs
 ```
+
+#### **SyncQueue Self-Test**
+To run the SyncQueue offline/online simulation:
+```bash
+flutter run --dart-define=SYNC_QUEUE_SELFTEST=true
+```
+
+#### **Clean Android Build**
+If Android builds are serving stale binaries:
+```bash
+./tooling/clean_android_build.sh debug   # or 'release'
+```
+
+#### **Development CLI Tools**
+```bash
+# Sync queue management
+dart tooling/dev_cli.dart sync ls        # List sync operations
+dart tooling/dev_cli.dart sync clear     # Clear all sync operations
+
+# Supabase connectivity
+dart tooling/dev_cli.dart supabase ping  # Test Supabase connection
+```
+
+### 🔧 Environment Variables
+
+| Variable | Description | Required | Example |
+|----------|-------------|----------|---------|
+| `SUPABASE_URL` | Supabase project URL | Yes | `https://xxx.supabase.co` |
+| `SUPABASE_ANON_KEY` | Supabase anonymous key | Yes | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...` |
+| `TEST_EMAIL` | Test user email | Development | `test@example.com` |
+| `TEST_PASSWORD` | Test user password | Development | `secret123` |
+| `SYNC_QUEUE_SELFTEST` | Enable sync queue simulation | Development | `true` |
 
 ## 🎯 Current MVP Features
 

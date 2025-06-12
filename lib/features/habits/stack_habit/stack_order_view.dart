@@ -36,7 +36,7 @@ class _StackOrderViewState extends ConsumerState<StackOrderView> {
     final colors = ref.watchColors;
     
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         title: Text(
           'Reorder Steps',

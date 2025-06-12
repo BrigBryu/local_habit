@@ -1,4 +1,4 @@
-library data_local;
+library;
 
 // Repository exports (migrated services)
 export 'repositories/habit_service.dart';

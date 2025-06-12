@@ -26,7 +26,6 @@ class _StackProgressChipState extends ConsumerState<StackProgressChip>
   final _stackService = StackService();
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
-  late Animation<Color?> _colorAnimation;
 
   @override
   void initState() {
@@ -77,11 +76,7 @@ class _StackProgressChipState extends ConsumerState<StackProgressChip>
     final isCompleted = _stackService.isStackCompleted(widget.stack, widget.allHabits);
     final colors = ref.watchColors;
 
-    // Update color animation based on completion state
-    _colorAnimation = ColorTween(
-      begin: colors.stackHabit,
-      end: isCompleted ? colors.success : colors.stackHabit,
-    ).animate(_animationController);
+    // Update animation based on completion state
 
     if (progress.total == 0) {
       return _buildEmptyChip(colors);

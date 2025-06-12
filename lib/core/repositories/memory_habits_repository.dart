@@ -3,16 +3,17 @@ import 'package:domain/domain.dart';
 import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../database/database_service.dart';
-import '../database/habit_collection.dart';
-import '../database/completion_collection.dart';
 import 'habits_repository.dart';
 
-class LocalHabitsRepository implements HabitsRepository {
-  final DatabaseService _db = DatabaseService.instance;
+/// In-memory repository for web development - bypasses Isar database issues
+class MemoryHabitsRepository implements HabitsRepository {
   final Logger _logger = Logger();
   
-  String _currentUserId = 'default_user'; // Default for development
+  String _currentUserId = 'dev_user';
+  
+  // In-memory storage
+  final List<Habit> _habits = [];
+  final List<CompletionRecord> _completions = [];
   
   // Stream controllers for reactive updates
   final _ownHabitsController = StreamController<List<Habit>>.broadcast();
@@ -24,8 +25,14 @@ class LocalHabitsRepository implements HabitsRepository {
   @override
   Future<void> setCurrentUserId(String userId) async {
     _currentUserId = userId;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('current_user_id', userId);
+    
+    // Try to save user ID, but don't block if it fails
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('current_user_id', userId);
+    } catch (e) {
+      _logger.w('Failed to save user ID: $e');
+    }
     
     // Refresh streams with new user context
     await _refreshOwnHabits();
@@ -34,23 +41,31 @@ class LocalHabitsRepository implements HabitsRepository {
   
   @override
   Future<void> initialize() async {
-    await _db.initialize();
-    
-    // Load saved user ID
-    final prefs = await SharedPreferences.getInstance();
-    final savedUserId = prefs.getString('current_user_id');
-    if (savedUserId != null) {
-      _currentUserId = savedUserId;
+    try {
+      // Try to load saved user ID, but don't block if it fails
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final savedUserId = prefs.getString('current_user_id');
+        if (savedUserId != null) {
+          _currentUserId = savedUserId;
+        }
+      } catch (e) {
+        _logger.w('Failed to load saved user ID, using default: $e');
+        // Continue with default user ID
+      }
+      
+      // Create some test habits for development
+      await _createTestHabits();
+      
+      // Start streaming data
+      await _refreshOwnHabits();
+      await _refreshPartnerHabits();
+      
+      _logger.i('MemoryHabitsRepository initialized for user: $_currentUserId');
+    } catch (e) {
+      _logger.e('Failed to initialize MemoryHabitsRepository: $e');
+      rethrow;
     }
-    
-    // Migrate existing test data if database is empty
-    await _migrateTestDataIfNeeded();
-    
-    // Start streaming data
-    await _refreshOwnHabits();
-    await _refreshPartnerHabits();
-    
-    _logger.i('LocalHabitsRepository initialized for user: $_currentUserId');
   }
   
   @override
@@ -60,25 +75,18 @@ class LocalHabitsRepository implements HabitsRepository {
   
   @override
   Stream<List<Habit>> partnerHabits(String partnerId) {
-    // For now, return from the same stream but filtered by partner ID
-    // TODO: Implement proper partner relationship checking
     return _partnerHabitsController.stream;
   }
   
   @override
   Future<String?> addHabit(Habit habit) async {
     try {
-      final collection = HabitCollection.fromDomain(habit, _currentUserId);
-      
-      await _db.isar.writeTxn(() async {
-        await _db.isar.habitCollections.put(collection);
-      });
-      
+      _habits.add(habit);
       await _refreshOwnHabits();
       _logger.d('Added habit: ${habit.name}');
       return null; // Success
-    } catch (e, stackTrace) {
-      _logger.e('Failed to add habit', error: e, stackTrace: stackTrace);
+    } catch (e) {
+      _logger.e('Failed to add habit', error: e);
       return 'Failed to add habit: $e';
     }
   }
@@ -86,17 +94,16 @@ class LocalHabitsRepository implements HabitsRepository {
   @override
   Future<String?> updateHabit(Habit habit) async {
     try {
-      final collection = HabitCollection.fromDomain(habit, _currentUserId);
-      
-      await _db.isar.writeTxn(() async {
-        await _db.isar.habitCollections.put(collection);
-      });
-      
-      await _refreshOwnHabits();
-      _logger.d('Updated habit: ${habit.name}');
-      return null; // Success
-    } catch (e, stackTrace) {
-      _logger.e('Failed to update habit', error: e, stackTrace: stackTrace);
+      final index = _habits.indexWhere((h) => h.id == habit.id);
+      if (index != -1) {
+        _habits[index] = habit;
+        await _refreshOwnHabits();
+        _logger.d('Updated habit: ${habit.name}');
+        return null; // Success
+      }
+      return 'Habit not found';
+    } catch (e) {
+      _logger.e('Failed to update habit', error: e);
       return 'Failed to update habit: $e';
     }
   }
@@ -104,27 +111,14 @@ class LocalHabitsRepository implements HabitsRepository {
   @override
   Future<String?> removeHabit(String habitId) async {
     try {
-      await _db.isar.writeTxn(() async {
-        final allHabits = await _db.isar.habitCollections.where().anyId().findAll();
-        final habitToDelete = allHabits.where((h) => h.userId == _currentUserId && h.id == habitId).firstOrNull;
-            
-        if (habitToDelete != null) {
-          await _db.isar.habitCollections.delete(habitToDelete.isarId);
-        }
-        
-        final allCompletions = await _db.isar.completionCollections.where().anyId().findAll();
-        final completionsToDelete = allCompletions.where((c) => c.userId == _currentUserId && c.habitId == habitId).toList();
-            
-        for (final completion in completionsToDelete) {
-          await _db.isar.completionCollections.delete(completion.isarId);
-        }
-      });
+      _habits.removeWhere((h) => h.id == habitId);
+      _completions.removeWhere((c) => c.habitId == habitId);
       
       await _refreshOwnHabits();
       _logger.d('Removed habit: $habitId');
       return null; // Success
-    } catch (e, stackTrace) {
-      _logger.e('Failed to remove habit', error: e, stackTrace: stackTrace);
+    } catch (e) {
+      _logger.e('Failed to remove habit', error: e);
       return 'Failed to remove habit: $e';
     }
   }
@@ -132,21 +126,19 @@ class LocalHabitsRepository implements HabitsRepository {
   @override
   Future<String?> completeHabit(String habitId, {int xpAwarded = 0}) async {
     try {
-      final completion = CompletionCollection.fromHabitCompletion(
+      final completion = CompletionRecord(
         habitId: habitId,
         userId: _currentUserId,
         completedAt: DateTime.now(),
         xpAwarded: xpAwarded,
       );
       
-      await _db.isar.writeTxn(() async {
-        await _db.isar.completionCollections.put(completion);
-      });
+      _completions.add(completion);
       
       _logger.d('Completed habit: $habitId (XP: $xpAwarded)');
       return null; // Success
-    } catch (e, stackTrace) {
-      _logger.e('Failed to complete habit', error: e, stackTrace: stackTrace);
+    } catch (e) {
+      _logger.e('Failed to complete habit', error: e);
       return 'Failed to complete habit: $e';
     }
   }
@@ -154,21 +146,19 @@ class LocalHabitsRepository implements HabitsRepository {
   @override
   Future<String?> recordFailure(String habitId) async {
     try {
-      final completion = CompletionCollection.fromHabitCompletion(
+      final completion = CompletionRecord(
         habitId: habitId,
         userId: _currentUserId,
         completedAt: DateTime.now(),
         xpAwarded: -5, // Penalty for avoidance failure
       );
       
-      await _db.isar.writeTxn(() async {
-        await _db.isar.completionCollections.put(completion);
-      });
+      _completions.add(completion);
       
       _logger.d('Recorded failure for habit: $habitId');
       return null; // Success
-    } catch (e, stackTrace) {
-      _logger.e('Failed to record failure', error: e, stackTrace: stackTrace);
+    } catch (e) {
+      _logger.e('Failed to record failure', error: e);
       return 'Failed to record failure: $e';
     }
   }
@@ -177,37 +167,31 @@ class LocalHabitsRepository implements HabitsRepository {
   Future<void> dispose() async {
     await _ownHabitsController.close();
     await _partnerHabitsController.close();
-    await _db.close();
-    _logger.i('LocalHabitsRepository disposed');
+    _logger.i('MemoryHabitsRepository disposed');
   }
   
   Future<void> _refreshOwnHabits() async {
     try {
-      final allCollections = await _db.isar.habitCollections.where().anyId().findAll();
-      final collections = allCollections.where((c) => c.userId == _currentUserId).toList();
-          
-      final habits = collections.map((c) => c.toDomain()).toList();
-      _ownHabitsController.add(habits);
-    } catch (e, stackTrace) {
-      _logger.e('Failed to refresh own habits', error: e, stackTrace: stackTrace);
+      // Since this is in-memory, just return all habits
+      _ownHabitsController.add(List.from(_habits));
+    } catch (e) {
+      _logger.e('Failed to refresh own habits', error: e);
       _ownHabitsController.addError(RepositoryException('Failed to load habits', e));
     }
   }
   
   Future<void> _refreshPartnerHabits() async {
     try {
-      // TODO: Implement proper partner relationships
-      // For now, create some dummy partner data for development
+      // Create some dummy partner data for development
       final dummyPartnerHabits = await _createDummyPartnerHabits();
       _partnerHabitsController.add(dummyPartnerHabits);
-    } catch (e, stackTrace) {
-      _logger.e('Failed to refresh partner habits', error: e, stackTrace: stackTrace);
+    } catch (e) {
+      _logger.e('Failed to refresh partner habits', error: e);
       _partnerHabitsController.addError(RepositoryException('Failed to load partner habits', e));
     }
   }
   
   Future<List<Habit>> _createDummyPartnerHabits() async {
-    // TODO: Replace with real partner data from relationships
     return [
       Habit(
         id: 'partner_habit_1',
@@ -230,16 +214,13 @@ class LocalHabitsRepository implements HabitsRepository {
     ];
   }
   
-  Future<void> _migrateTestDataIfNeeded() async {
-    final allHabits = await _db.isar.habitCollections.where().anyId().findAll();
-    final existingCount = allHabits.where((h) => h.userId == _currentUserId).length;
-        
-    if (existingCount > 0) {
-      _logger.d('Database already has habits, skipping test data migration');
+  Future<void> _createTestHabits() async {
+    if (_habits.isNotEmpty) {
+      _logger.d('Memory already has habits, skipping test data creation');
       return;
     }
     
-    _logger.i('Migrating test habits to database...');
+    _logger.i('Creating test habits in memory...');
     
     // Create some initial test habits
     final testHabits = [
@@ -269,10 +250,23 @@ class LocalHabitsRepository implements HabitsRepository {
       ),
     ];
     
-    for (final habit in testHabits) {
-      await addHabit(habit);
-    }
+    _habits.addAll(testHabits);
     
-    _logger.i('Test data migration completed');
+    _logger.i('Test habits created in memory');
   }
+}
+
+/// Simple completion record for in-memory storage
+class CompletionRecord {
+  final String habitId;
+  final String userId;
+  final DateTime completedAt;
+  final int xpAwarded;
+  
+  CompletionRecord({
+    required this.habitId,
+    required this.userId,
+    required this.completedAt,
+    required this.xpAwarded,
+  });
 }

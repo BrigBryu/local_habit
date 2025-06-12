@@ -25,7 +25,7 @@ class StackInfoScreen extends ConsumerWidget {
     final isCompleted = stackService.isStackCompleted(stack, allHabits);
 
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         title: Text(
           stack.name,

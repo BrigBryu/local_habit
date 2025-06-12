@@ -296,12 +296,7 @@ class HabitUseCases {
 
   /// Get base habits (for creating stacks)
   List<BaseHabit> getBaseHabits() {
-    return _habits.where((habit) => 
-      habit is BasicHabit
-      // TODO(bridger): Disabled habit types
-      // || habit is TimedSessionHabit 
-      // || habit is TimeWindowHabit
-    ).toList();
+    return _habits.whereType<BasicHabit>().toList();
   }
 
   /// Reset all habits (for testing)

@@ -213,7 +213,7 @@ class _ExpandableStackTile extends ConsumerWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.15),
+                color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.15),
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
@@ -312,7 +312,7 @@ class _ExpandableStackTile extends ConsumerWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.08),
+        color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.08),
         border: Border(
           top: BorderSide(
             color: colors.draculaComment.withOpacity(0.3),
@@ -329,7 +329,7 @@ class _ExpandableStackTile extends ConsumerWidget {
             return Container(
               margin: const EdgeInsets.only(bottom: 1),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.05),
+                color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.05),
                 border: Border(
                   bottom: BorderSide(
                     color: colors.draculaComment.withOpacity(0.3),
@@ -492,7 +492,6 @@ class _ExpandableStackTile extends ConsumerWidget {
   }
 
   void _showAddStepDialog(BuildContext context, WidgetRef ref) {
-    final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
     final allAvailableHabits = _stackService.getAvailableHabitsForStack(allHabits);
     final colors = ref.watchColors;
     
@@ -671,7 +670,6 @@ class _ExpandableStackTile extends ConsumerWidget {
   }
 
   void _addHabitToStack(BuildContext context, WidgetRef ref, String habitId) {
-    final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
     final colors = ref.watchColors;
     
     // Add logic to add habit to stack

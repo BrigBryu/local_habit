@@ -2,7 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:domain/domain.dart';
 // TODO(bridger): Timed habit service disabled
 // import 'package:data_local/repositories/timed_habit_service.dart';
-import 'package:domain/domain.dart';
 import 'package:data_local/repositories/bundle_service.dart';
 import 'package:data_local/repositories/stack_service.dart';
 
@@ -160,14 +159,14 @@ class HabitsNotifier extends StateNotifier<List<Habit>> {
     // Return success message with completion count for basic habits
     if (habit.type == HabitType.basic) {
       final count = completedHabit.dailyCompletionCount;
-      final xpText = totalXP > 0 ? ' (+${totalXP} XP)' : '';
+      final xpText = totalXP > 0 ? ' (+$totalXP XP)' : '';
       if (count == 1) {
         return '${habit.name} completed!$xpText${leveledUp ? ' 🎉 LEVEL UP!' : ''}';
       } else {
         return '${habit.name} completed ${count}x today!$xpText${leveledUp ? ' 🎉 LEVEL UP!' : ''}';
       }
     } else if (habit.type == HabitType.avoidance) {
-      final xpText = totalXP > 0 ? ' (+${totalXP} XP)' : '';
+      final xpText = totalXP > 0 ? ' (+$totalXP XP)' : '';
       if (completedHabit.dailyFailureCount == 0) {
         return '${habit.name} avoided successfully!$xpText${leveledUp ? ' 🎉 LEVEL UP!' : ''}';
       } else {
@@ -201,7 +200,7 @@ class HabitsNotifier extends StateNotifier<List<Habit>> {
       String xpBreakdown = '';
       if (result.comboBonus > 0) {
         final baseXP = result.totalXP - result.comboBonus;
-        xpBreakdown = ' (+${baseXP} XP + ${result.comboBonus} combo bonus)';
+        xpBreakdown = ' (+$baseXP XP + ${result.comboBonus} combo bonus)';
       } else {
         xpBreakdown = ' (+${result.totalXP} XP)';
       }

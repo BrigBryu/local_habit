@@ -2,18 +2,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
 
 import '../core/repositories/habits_repository.dart';
-import '../core/repositories/local_habits_repository.dart';
+import '../core/repositories/simple_memory_repository.dart';
 
 final _logger = Logger();
 
-/// Provider for production - uses local Isar database with real persistence
+/// Provider for Supabase testing - uses simple memory repository with Supabase sync
 final repositoryProvider = FutureProvider<HabitsRepository>((ref) async {
-  _logger.i('Using LocalHabitsRepository with Isar database');
-  final repository = LocalHabitsRepository();
+  _logger.i('Using SimpleMemoryRepository with Supabase integration');
+  final repository = SimpleMemoryRepository();
   
-  // Initialize database connection
+  // Initialize immediately - no async dependencies
   await repository.initialize();
-  _logger.i('LocalHabitsRepository initialized successfully');
+  _logger.i('SimpleMemoryRepository initialized successfully');
   return repository;
 });
 

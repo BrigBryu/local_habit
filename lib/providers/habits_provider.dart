@@ -5,12 +5,24 @@ import 'package:data_local/repositories/stack_service.dart';
 import 'package:logger/logger.dart';
 
 import '../core/repositories/habits_repository.dart';
+import '../core/repositories/simple_memory_repository.dart';
 import 'repository_init_provider.dart';
 
 // Stream provider for own habits
 final ownHabitsProvider = StreamProvider<List<Habit>>((ref) {
   final repository = ref.watch(habitsRepositoryProvider);
   return repository.ownHabits();
+});
+
+// Immediate provider that bypasses streams for initial load
+final immediateHabitsProvider = FutureProvider<List<Habit>>((ref) async {
+  final repository = ref.watch(habitsRepositoryProvider);
+  // For SimpleMemoryRepository, we can get data immediately
+  if (repository is SimpleMemoryRepository) {
+    return repository.habits; // Direct access to avoid stream delays
+  }
+  // Fallback to stream for other repositories
+  return await repository.ownHabits().first;
 });
 
 // Stream provider for partner habits (hardcoded partner for now)
@@ -34,7 +46,6 @@ class HabitsNotifier extends StateNotifier<AsyncValue<void>> {
   final _logger = Logger();
   
   // Business logic services (kept from original)
-  final _levelService = LevelService();
   final _bundleService = BundleService();
   final _stackService = StackService();
 
@@ -284,15 +295,105 @@ class HabitsNotifier extends StateNotifier<AsyncValue<void>> {
   }
 
   Future<String?> completeBundle(String bundleId) async {
-    // TODO: Implement bundle completion logic
-    _logger.d('Complete bundle called for bundle: $bundleId');
-    return null; // Success
+    state = const AsyncValue.loading();
+    try {
+      final habitsAsync = _ref.read(ownHabitsProvider);
+      if (habitsAsync.value == null) {
+        return 'Failed to load habits';
+      }
+      
+      final allHabits = habitsAsync.value!;
+      final bundle = allHabits.firstWhere(
+        (h) => h.id == bundleId,
+        orElse: () => throw Exception('Bundle not found'),
+      );
+      
+      if (bundle.type != HabitType.bundle) {
+        return 'Not a bundle habit';
+      }
+      
+      // Complete all incomplete children using bundle service
+      final result = _bundleService.completeBundle(bundle, allHabits);
+      
+      // Update all completed child habits
+      for (final completedHabit in result.completedHabits) {
+        await updateHabit(completedHabit);
+      }
+      
+      // Mark the bundle itself as completed if all children are done
+      if (_bundleService.isBundleCompleted(bundle, allHabits)) {
+        final completedBundle = _markHabitCompleted(bundle);
+        await updateHabit(completedBundle);
+      }
+      
+      state = const AsyncValue.data(null);
+      _logger.i('Completed bundle ${bundle.name} with ${result.completedHabits.length} habits for ${result.totalXP}XP');
+      return null; // Success
+    } catch (e, stackTrace) {
+      state = AsyncValue.error(e, stackTrace);
+      return 'Failed to complete bundle: $e';
+    }
   }
 
   Future<String?> addHabitToBundle(String bundleId, String habitId) async {
-    // TODO: Implement adding habit to bundle
-    _logger.d('Add habit $habitId to bundle $bundleId');
-    return null; // Success
+    state = const AsyncValue.loading();
+    try {
+      final habitsAsync = _ref.read(ownHabitsProvider);
+      if (habitsAsync.value == null) {
+        return 'Failed to load habits';
+      }
+      
+      final allHabits = habitsAsync.value!;
+      final bundle = allHabits.firstWhere(
+        (h) => h.id == bundleId,
+        orElse: () => throw Exception('Bundle not found'),
+      );
+      final habitToAdd = allHabits.firstWhere(
+        (h) => h.id == habitId,
+        orElse: () => throw Exception('Habit not found'),
+      );
+      
+      if (bundle.type != HabitType.bundle) {
+        return 'Not a bundle habit';
+      }
+      
+      // Add habit to bundle using bundle service
+      final updatedBundle = _bundleService.addHabitToBundle(bundle, habitId, allHabits);
+      await updateHabit(updatedBundle);
+      
+      // Update the child habit to reference the bundle
+      final updatedChild = Habit(
+        id: habitToAdd.id,
+        name: habitToAdd.name,
+        description: habitToAdd.description,
+        type: habitToAdd.type,
+        stackedOnHabitId: habitToAdd.stackedOnHabitId,
+        bundleChildIds: habitToAdd.bundleChildIds,
+        parentBundleId: bundleId,
+        timeoutMinutes: habitToAdd.timeoutMinutes,
+        availableDays: habitToAdd.availableDays,
+        createdAt: habitToAdd.createdAt,
+        lastCompleted: habitToAdd.lastCompleted,
+        lastAlarmTriggered: habitToAdd.lastAlarmTriggered,
+        sessionStartTime: habitToAdd.sessionStartTime,
+        lastSessionStarted: habitToAdd.lastSessionStarted,
+        sessionCompletedToday: habitToAdd.sessionCompletedToday,
+        dailyCompletionCount: habitToAdd.dailyCompletionCount,
+        lastCompletionCountReset: habitToAdd.lastCompletionCountReset,
+        dailyFailureCount: habitToAdd.dailyFailureCount,
+        lastFailureCountReset: habitToAdd.lastFailureCountReset,
+        avoidanceSuccessToday: habitToAdd.avoidanceSuccessToday,
+        currentStreak: habitToAdd.currentStreak,
+      );
+      await updateHabit(updatedChild);
+      
+      state = const AsyncValue.data(null);
+      _logger.i('Added habit ${habitToAdd.name} to bundle ${bundle.name}');
+      return null; // Success
+    } catch (e, stackTrace) {
+      state = AsyncValue.error(e, stackTrace);
+      return 'Failed to add habit to bundle: $e';
+    }
   }
 }
 

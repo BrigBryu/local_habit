@@ -252,9 +252,7 @@ class HabitService {
     );
 
     final timeService = TimeService();
-    final daysSinceCreated = habit.createdAt != null 
-        ? timeService.daysBetween(habit.createdAt, timeService.now())
-        : 0;
+    final daysSinceCreated = timeService.daysBetween(habit.createdAt, timeService.now());
     
     final daysSinceLastCompleted = habit.lastCompleted != null
         ? timeService.daysBetween(habit.lastCompleted!, timeService.now())

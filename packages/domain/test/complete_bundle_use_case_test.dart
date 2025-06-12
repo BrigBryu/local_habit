@@ -1,6 +1,6 @@
 import 'package:test/test.dart';
-import '../lib/entities/habit.dart';
-import '../lib/use_cases/complete_bundle_use_case.dart';
+import 'package:domain/entities/habit.dart';
+import 'package:domain/use_cases/complete_bundle_use_case.dart';
 
 void main() {
   group('CompleteBundleUseCase', () {

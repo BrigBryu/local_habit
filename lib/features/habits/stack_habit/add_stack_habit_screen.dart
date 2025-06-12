@@ -529,7 +529,6 @@ class _AddStackHabitScreenState extends BaseAddHabitScreenState<AddStackHabitScr
     );
   }
 
-  @override
   String? validateAdditionalFields() {
     if (_selectedHabitIds.isEmpty) {
       return 'Please select at least one habit for your stack';
@@ -542,7 +541,6 @@ class _AddStackHabitScreenState extends BaseAddHabitScreenState<AddStackHabitScr
     return null;
   }
 
-  @override
   Future<void> submitHabit() async {
     try {
       final habitsNotifier = ref.read(habitsNotifierProvider.notifier);

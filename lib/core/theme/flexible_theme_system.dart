@@ -72,7 +72,7 @@ class FlexibleColors {
       case ThemeVariant.gruvboxDark:
         return const Color(0xFFEBDBB2); // Gruvbox dark fg1
       case ThemeVariant.gruvboxLight:
-        return const Color(0xFF3C3836); // Gruvbox light fg (primary)
+        return const Color(0xFF1D2021); // Much darker color for better contrast
     }
   }
 

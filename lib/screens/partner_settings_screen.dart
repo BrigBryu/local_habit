@@ -6,6 +6,7 @@ import 'package:logger/logger.dart';
 import '../core/network/relationship_dto.dart';
 import '../core/auth/auth_service.dart';
 import '../core/theme/app_colors.dart';
+import '../core/theme/flexible_theme_system.dart';
 
 /// Provider for partner relationships
 final partnerRelationshipsProvider = FutureProvider<List<RelationshipDto>>((ref) async {
@@ -19,7 +20,7 @@ final partnerRelationshipsProvider = FutureProvider<List<RelationshipDto>>((ref)
 final inviteCodeProvider = StateProvider<String?>((ref) => null);
 
 class PartnerSettingsScreen extends ConsumerStatefulWidget {
-  const PartnerSettingsScreen({Key? key}) : super(key: key);
+  const PartnerSettingsScreen({super.key});
 
   @override
   ConsumerState<PartnerSettingsScreen> createState() => _PartnerSettingsScreenState();
@@ -90,8 +91,67 @@ class _PartnerSettingsScreenState extends ConsumerState<PartnerSettingsScreen> {
         content: Text(message),
         backgroundColor: color,
         duration: const Duration(seconds: 3),
+        behavior: SnackBarBehavior.floating,
       ),
     );
+  }
+
+  void _showRemovePartnerDialog(RelationshipDto partner) {
+    final colors = ref.read(flexibleColorsProvider);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: colors.cardBackgroundDark,
+        title: Text(
+          'Remove Partner',
+          style: TextStyle(color: colors.draculaForeground),
+        ),
+        content: Text(
+          'Are you sure you want to remove this partner? This will disconnect your habit tracking.',
+          style: TextStyle(color: colors.draculaComment),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: colors.draculaComment),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _removePartner();
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: colors.error,
+            ),
+            child: const Text('Remove'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _removePartner() async {
+    setState(() => _isLoading = true);
+    
+    try {
+      final result = await PartnerService.instance.removePartner();
+      
+      if (result.success) {
+        _showSnackBar('Partner removed successfully', Colors.green);
+        // Refresh relationships
+        ref.invalidate(partnerRelationshipsProvider);
+      } else {
+        _showSnackBar(result.error ?? 'Failed to remove partner', Colors.red);
+      }
+    } catch (e) {
+      _logger.e('Error removing partner', error: e);
+      _showSnackBar('Error removing partner', Colors.red);
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 
   Future<void> _copyInviteCode(String code) async {
@@ -103,14 +163,15 @@ class _PartnerSettingsScreenState extends ConsumerState<PartnerSettingsScreen> {
   Widget build(BuildContext context) {
     final relationships = ref.watch(partnerRelationshipsProvider);
     final currentInviteCode = ref.watch(inviteCodeProvider);
+    final colors = ref.watchColors;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Partner Settings'),
-        backgroundColor: AppColors.draculaBackground,
-        foregroundColor: AppColors.draculaForeground,
+        backgroundColor: colors.draculaBackground,
+        foregroundColor: colors.draculaForeground,
       ),
-      backgroundColor: AppColors.backgroundDark,
+      backgroundColor: colors.backgroundDark,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -118,7 +179,7 @@ class _PartnerSettingsScreenState extends ConsumerState<PartnerSettingsScreen> {
           children: [
             // Current Partners Section
             Card(
-              color: AppColors.cardBackgroundDark,
+              color: colors.cardBackgroundDark,
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
@@ -126,14 +187,14 @@ class _PartnerSettingsScreenState extends ConsumerState<PartnerSettingsScreen> {
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.people, color: AppColors.completedBackground),
+                        Icon(Icons.people, color: colors.completedBackground),
                         const SizedBox(width: 8),
                         Text(
                           'Current Partners',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.draculaForeground,
+                            color: colors.draculaForeground,
                           ),
                         ),
                       ],
@@ -145,26 +206,42 @@ class _PartnerSettingsScreenState extends ConsumerState<PartnerSettingsScreen> {
                           return Text(
                             'No partners linked yet',
                             style: TextStyle(
-                              color: AppColors.draculaComment,
+                              color: colors.draculaComment,
                               fontStyle: FontStyle.italic,
                             ),
                           );
                         }
                         
                         return Column(
-                          children: partners.map((partner) => ListTile(
-                            leading: Icon(Icons.person, color: AppColors.completedBackground),
-                            title: Text(
-                              'Partner ${partner.partnerId?.substring(0, 8) ?? 'Unknown'}',
-                              style: TextStyle(color: AppColors.draculaForeground),
-                            ),
-                            subtitle: Text(
-                              'Status: ${partner.status}',
-                              style: TextStyle(color: AppColors.draculaComment),
-                            ),
-                            trailing: Chip(
-                              label: Text(partner.relationshipType),
-                              backgroundColor: AppColors.completedBackground.withOpacity(0.2),
+                          children: partners.map((partner) => Card(
+                            color: colors.backgroundDark,
+                            margin: const EdgeInsets.only(bottom: 8),
+                            child: ListTile(
+                              leading: Icon(Icons.person, color: colors.completedBackground),
+                              title: Text(
+                                'Partner ${partner.partnerId?.substring(0, 8) ?? 'Unknown'}',
+                                style: TextStyle(color: colors.draculaForeground),
+                              ),
+                              subtitle: Text(
+                                'Status: ${partner.status}',
+                                style: TextStyle(color: colors.draculaComment),
+                              ),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Chip(
+                                    label: Text(partner.relationshipType),
+                                    backgroundColor: colors.completedBackground.withOpacity(0.2),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  IconButton(
+                                    onPressed: () => _showRemovePartnerDialog(partner),
+                                    icon: const Icon(Icons.remove_circle),
+                                    color: Colors.red,
+                                    tooltip: 'Remove Partner',
+                                  ),
+                                ],
+                              ),
                             ),
                           )).toList(),
                         );
@@ -172,7 +249,7 @@ class _PartnerSettingsScreenState extends ConsumerState<PartnerSettingsScreen> {
                       loading: () => const Center(child: CircularProgressIndicator()),
                       error: (error, stack) => Text(
                         'Error loading partners: $error',
-                        style: TextStyle(color: AppColors.error),
+                        style: TextStyle(color: colors.error),
                       ),
                     ),
                   ],
@@ -184,7 +261,7 @@ class _PartnerSettingsScreenState extends ConsumerState<PartnerSettingsScreen> {
             
             // Create Invite Code Section
             Card(
-              color: AppColors.cardBackgroundDark,
+              color: colors.cardBackgroundDark,
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
@@ -192,14 +269,14 @@ class _PartnerSettingsScreenState extends ConsumerState<PartnerSettingsScreen> {
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.share, color: AppColors.primaryPurple),
+                        Icon(Icons.share, color: colors.primaryPurple),
                         const SizedBox(width: 8),
                         Text(
                           'Share Invite Code',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.draculaForeground,
+                            color: colors.draculaForeground,
                           ),
                         ),
                       ],
@@ -207,7 +284,7 @@ class _PartnerSettingsScreenState extends ConsumerState<PartnerSettingsScreen> {
                     const SizedBox(height: 12),
                     Text(
                       'Create an invite code to share with someone you want to partner with.',
-                      style: TextStyle(color: AppColors.draculaComment),
+                      style: TextStyle(color: colors.draculaComment),
                     ),
                     const SizedBox(height: 16),
                     
@@ -215,9 +292,9 @@ class _PartnerSettingsScreenState extends ConsumerState<PartnerSettingsScreen> {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: AppColors.primaryPurple.withOpacity(0.1),
+                          color: colors.primaryPurple.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: AppColors.primaryPurple.withOpacity(0.3)),
+                          border: Border.all(color: colors.primaryPurple.withOpacity(0.3)),
                         ),
                         child: Row(
                           children: [
@@ -227,14 +304,14 @@ class _PartnerSettingsScreenState extends ConsumerState<PartnerSettingsScreen> {
                                 style: TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
-                                  color: AppColors.primaryPurple,
+                                  color: colors.primaryPurple,
                                   letterSpacing: 2,
                                 ),
                               ),
                             ),
                             IconButton(
                               onPressed: () => _copyInviteCode(currentInviteCode),
-                              icon: Icon(Icons.copy, color: AppColors.primaryPurple),
+                              icon: Icon(Icons.copy, color: colors.primaryPurple),
                               tooltip: 'Copy to clipboard',
                             ),
                           ],
@@ -246,7 +323,7 @@ class _PartnerSettingsScreenState extends ConsumerState<PartnerSettingsScreen> {
                     ElevatedButton.icon(
                       onPressed: _isLoading ? null : _createInviteCode,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primaryPurple,
+                        backgroundColor: colors.primaryPurple,
                         foregroundColor: Colors.white,
                         minimumSize: const Size(double.infinity, 48),
                       ),
@@ -264,7 +341,7 @@ class _PartnerSettingsScreenState extends ConsumerState<PartnerSettingsScreen> {
             
             // Join Partner Section
             Card(
-              color: AppColors.cardBackgroundDark,
+              color: colors.cardBackgroundDark,
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
@@ -272,14 +349,14 @@ class _PartnerSettingsScreenState extends ConsumerState<PartnerSettingsScreen> {
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.link, color: AppColors.completedBackground),
+                        Icon(Icons.link, color: colors.completedBackground),
                         const SizedBox(width: 8),
                         Text(
                           'Join Partner',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.draculaForeground,
+                            color: colors.draculaForeground,
                           ),
                         ),
                       ],
@@ -287,26 +364,26 @@ class _PartnerSettingsScreenState extends ConsumerState<PartnerSettingsScreen> {
                     const SizedBox(height: 12),
                     Text(
                       'Enter an invite code from someone you want to partner with.',
-                      style: TextStyle(color: AppColors.draculaComment),
+                      style: TextStyle(color: colors.draculaComment),
                     ),
                     const SizedBox(height: 16),
                     
                     TextField(
                       controller: _inviteCodeController,
-                      style: TextStyle(color: AppColors.draculaForeground),
+                      style: TextStyle(color: colors.draculaForeground),
                       decoration: InputDecoration(
                         labelText: 'Invite Code',
-                        labelStyle: TextStyle(color: AppColors.draculaComment),
+                        labelStyle: TextStyle(color: colors.draculaComment),
                         hintText: 'Enter 6-character code',
-                        hintStyle: TextStyle(color: AppColors.draculaComment.withOpacity(0.7)),
+                        hintStyle: TextStyle(color: colors.draculaComment.withOpacity(0.7)),
                         enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: AppColors.draculaComment),
+                          borderSide: BorderSide(color: colors.draculaComment),
                         ),
                         focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: AppColors.completedBackground),
+                          borderSide: BorderSide(color: colors.completedBackground),
                         ),
                         filled: true,
-                        fillColor: AppColors.backgroundDark,
+                        fillColor: colors.backgroundDark,
                       ),
                       textCapitalization: TextCapitalization.characters,
                       maxLength: 6,
@@ -317,7 +394,7 @@ class _PartnerSettingsScreenState extends ConsumerState<PartnerSettingsScreen> {
                     ElevatedButton.icon(
                       onPressed: _isLoading ? null : _linkPartner,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.completedBackground,
+                        backgroundColor: colors.completedBackground,
                         foregroundColor: Colors.white,
                         minimumSize: const Size(double.infinity, 48),
                       ),

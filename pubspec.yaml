@@ -43,6 +43,7 @@ dev_dependencies:
   json_serializable: ^6.7.1
   isar_generator: ^3.1.0+1
 
+  path: any
 flutter:
   uses-material-design: true
   

@@ -8,10 +8,10 @@ import 'package:logger/logger.dart';
 import 'sync_database.dart';
 import '../repositories/remote_habits_repository.dart';
 
-// part 'sync_queue.g.dart';
+part 'sync_queue.g.dart';
 
 /// Sync operation stored in Isar for offline queue
-@collection
+@Collection()
 class SyncOp {
   Id id = Isar.autoIncrement;
   
@@ -90,9 +90,6 @@ class SyncQueue {
   
   /// Add operation to sync queue
   Future<void> enqueue(SyncOp operation) async {
-    // TODO: Re-implement when Isar schema is properly generated
-    _logger.d('Sync queue disabled - operation skipped: ${operation.operationType} for habit ${operation.habitId}');
-    /*
     try {
       await _db.isar.writeTxn(() async {
         await _db.isar.syncOps.put(operation);
@@ -104,7 +101,6 @@ class SyncQueue {
     } catch (e, stackTrace) {
       _logger.e('Failed to enqueue sync operation', error: e, stackTrace: stackTrace);
     }
-    */
   }
   
   /// Start background processing of sync queue
@@ -120,29 +116,34 @@ class SyncQueue {
   
   /// Process all pending operations in the queue
   Future<void> _processQueue() async {
-    // TODO: Re-implement when Isar schema is properly generated
-    _logger.d('Sync queue processing disabled');
-    return;
-    /*
     if (_repository == null) return;
     
     try {
-      final pendingOps = await _db.isar.syncOps
-          .where()
+      final pendingOpsBefore = await _db.isar.syncOps
+          .filter()
           .completedEqualTo(false)
           .findAll();
       
-      if (pendingOps.isEmpty) return;
+      if (pendingOpsBefore.isEmpty) {
+        // Log pending count when queue is empty
+        final finalCount = await getPendingCount();
+        _logger.i('SyncQueue: Pending: $finalCount');
+        return;
+      }
       
-      _logger.d('Processing ${pendingOps.length} pending sync operations');
+      _logger.d('Processing ${pendingOpsBefore.length} pending sync operations');
       
-      for (final op in pendingOps) {
+      for (final op in pendingOpsBefore) {
         await _processOperation(op);
       }
+      
+      // Log pending count after processing
+      final finalCount = await getPendingCount();
+      _logger.i('SyncQueue: Pending after processing: $finalCount');
+      
     } catch (e, stackTrace) {
       _logger.e('Error processing sync queue', error: e, stackTrace: stackTrace);
     }
-    */
   }
   
   /// Process a single sync operation
@@ -155,9 +156,9 @@ class SyncQueue {
       return;
     }
     
-    // Calculate exponential backoff delay
-    final delayMinutes = pow(2, op.attemptCount).toInt();
-    final nextAttemptTime = (op.lastAttempt ?? op.createdAt).add(Duration(minutes: delayMinutes));
+    // Calculate exponential backoff delay with max 300 seconds (5 minutes)
+    final retrySec = min(300, 2 << op.attemptCount);
+    final nextAttemptTime = (op.lastAttempt ?? op.createdAt).add(Duration(seconds: retrySec));
     
     if (DateTime.now().isBefore(nextAttemptTime)) {
       return; // Too early to retry
@@ -223,13 +224,9 @@ class SyncQueue {
   
   /// Mark operation as completed and remove from queue
   Future<void> _markOperationCompleted(SyncOp op) async {
-    // TODO: Re-implement when Isar schema is properly generated
-    _logger.d('Sync queue disabled - mark completed skipped');
-    /*
     await _db.isar.writeTxn(() async {
       await _db.isar.syncOps.delete(op.id);
     });
-    */
   }
   
   /// Mark operation as permanently failed
@@ -241,35 +238,24 @@ class SyncQueue {
   
   /// Update operation in database
   Future<void> _updateOperation(SyncOp op) async {
-    // TODO: Re-implement when Isar schema is properly generated
-    _logger.d('Sync queue disabled - update operation skipped');
-    /*
     await _db.isar.writeTxn(() async {
       await _db.isar.syncOps.put(op);
     });
-    */
   }
   
   /// Get pending operations count for debugging
   Future<int> getPendingCount() async {
-    // TODO: Re-implement when Isar schema is properly generated
-    return 0;
-    /*
     return await _db.isar.syncOps
-        .where()
+        .filter()
         .completedEqualTo(false)
         .count();
-    */
   }
   
   /// Clear all completed/failed operations from queue
   Future<void> clearCompleted() async {
-    // TODO: Re-implement when Isar schema is properly generated
-    _logger.i('Sync queue disabled - clear completed skipped');
-    /*
     await _db.isar.writeTxn(() async {
       final completedIds = await _db.isar.syncOps
-          .where()
+          .filter()
           .completedEqualTo(true)
           .idProperty()
           .findAll();
@@ -278,7 +264,6 @@ class SyncQueue {
     });
     
     _logger.i('Cleared completed sync operations');
-    */
   }
   
   /// Dispose sync queue

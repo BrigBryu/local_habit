@@ -211,7 +211,7 @@ class TimeWindowHabit extends BaseHabit {
       lastCompleted: now,
       currentStreak: newStreak,
       dailyCompletionCount: dailyCompletionCount + 1,
-    ) as TimeWindowHabit;
+    );
   }
 
   @override

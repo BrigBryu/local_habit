@@ -122,7 +122,7 @@ class _AddBundleHabitScreenState extends BaseAddHabitScreenState<AddBundleHabitS
           ),
           padding: const EdgeInsets.all(16),
           child: availableHabits.isEmpty
-            ? Container(
+            ? SizedBox(
                 height: 200,
                 child: const Center(
                   child: Column(
@@ -143,7 +143,7 @@ class _AddBundleHabitScreenState extends BaseAddHabitScreenState<AddBundleHabitS
                   ),
                 ),
               )
-            : Container(
+            : SizedBox(
                 height: 300,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -170,7 +170,7 @@ class _AddBundleHabitScreenState extends BaseAddHabitScreenState<AddBundleHabitS
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Container(
+                  SizedBox(
                     height: 120,
                     child: ReorderableListView.builder(
                       itemCount: selectedHabits.length,

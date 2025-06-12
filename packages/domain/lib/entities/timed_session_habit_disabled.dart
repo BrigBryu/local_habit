@@ -124,7 +124,7 @@ class TimedSessionHabit extends BaseHabit {
     return copyWith(
       sessionStartTime: now,
       lastSessionStarted: now,
-    ) as TimedSessionHabit;
+    );
   }
 
   /// Get remaining time in current session (in minutes)
@@ -165,7 +165,7 @@ class TimedSessionHabit extends BaseHabit {
       dailyCompletionCount: dailyCompletionCount + 1,
       sessionCompletedToday: true,
       sessionStartTime: null, // Clear active session
-    ) as TimedSessionHabit;
+    );
   }
 
   @override

@@ -46,6 +46,19 @@ class HabitColorsExtension extends ThemeExtension<HabitColorsExtension> {
     stackHabitBackground: Color(0xFF3730A3),
   );
 
+  factory HabitColorsExtension.fromAppColors(AppColors colors) {
+    return HabitColorsExtension(
+      basicHabit: colors.basicHabit,
+      avoidanceHabit: colors.avoidanceHabit,
+      bundleHabit: colors.bundleHabit,
+      stackHabit: colors.stackHabit,
+      basicHabitBackground: colors.basicHabit.withOpacity(0.1),
+      avoidanceHabitBackground: colors.avoidanceHabit.withOpacity(0.1),
+      bundleHabitBackground: colors.bundleHabit.withOpacity(0.1),
+      stackHabitBackground: colors.stackHabit.withOpacity(0.1),
+    );
+  }
+
   @override
   HabitColorsExtension copyWith({
     Color? basicHabit,
@@ -148,6 +161,23 @@ class CompletionColorsExtension extends ThemeExtension<CompletionColorsExtension
     error: AppColors.errorLight,
     errorBackground: Color(0xFF7F1D1D),
   );
+
+  factory CompletionColorsExtension.fromAppColors(AppColors colors) {
+    return CompletionColorsExtension(
+      completed: colors.completedBackground,
+      completedBackground: colors.completedBackground,
+      incomplete: colors.incomplete,
+      incompleteBackground: colors.incompleteBackground,
+      completedBorder: colors.completedBackground,
+      incompleteBorder: colors.borderMedium,
+      success: colors.success,
+      successBackground: colors.success.withOpacity(0.1),
+      warning: colors.warning,
+      warningBackground: colors.warning.withOpacity(0.1),
+      error: colors.error,
+      errorBackground: colors.error.withOpacity(0.1),
+    );
+  }
 
   @override
   CompletionColorsExtension copyWith({

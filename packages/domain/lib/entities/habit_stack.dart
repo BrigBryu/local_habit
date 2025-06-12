@@ -72,7 +72,7 @@ class HabitStack extends BaseHabit {
       lastCompleted: now,
       currentStreak: newStreak,
       dailyCompletionCount: dailyCompletionCount + 1,
-    ) as HabitStack;
+    );
   }
 
   @override

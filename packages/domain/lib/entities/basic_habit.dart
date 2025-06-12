@@ -62,7 +62,7 @@ class BasicHabit extends BaseHabit {
       lastCompleted: now,
       currentStreak: newStreak,
       dailyCompletionCount: dailyCompletionCount + 1,
-    ) as BasicHabit;
+    );
   }
 
   @override

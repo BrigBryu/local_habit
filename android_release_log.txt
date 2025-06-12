@@ -1,0 +1,66 @@
+Error 1 retrieving device properties for sdk gphone64 arm64:
+error: closed
+
+Launching lib/main.dart on sdk gphone64 arm64 in release mode...
+Running Gradle task 'assembleRelease'...                        
+lib/main.dart:7:8: Error: Error when reading 'lib/tooling/sync_queue_sim.dart': No such file or directory
+import '../tooling/sync_queue_sim.dart';
+       ^
+lib/main.dart:26:11: Error: Method not found: 'runSyncQueueSimulation'.
+    await runSyncQueueSimulation();
+          ^^^^^^^^^^^^^^^^^^^^^^
+lib/features/habits/stack_habit/stack_progress_chip.dart:80:5: Error: The setter '_colorAnimation' isn't defined for the class '_StackProgressChipState'.
+ - '_StackProgressChipState' is from 'package:habit_level_up/features/habits/stack_habit/stack_progress_chip.dart' ('lib/features/habits/stack_habit/stack_progress_chip.dart').
+Try correcting the name to the name of an existing setter, or defining a setter or field named '_colorAnimation'.
+    _colorAnimation = ColorTween(
+    ^^^^^^^^^^^^^^^
+Target kernel_snapshot_program failed: Exception
+
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:compileFlutterBuildRelease'.
+> Process 'command '/Users/bridger/Documents/programming_projects/habit/flutter/bin/flutter'' finished with non-zero exit value 1
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 17s
+Running Gradle task 'assembleRelease'...                           17.8s
+Error: Gradle task assembleRelease failed with exit code 1
+#0      throwToolExit (package:flutter_tools/src/base/common.dart:10:3)
+#1      AndroidGradleBuilder.buildGradleApp (package:flutter_tools/src/android/gradle.dart:500:9)
+<asynchronous suspension>
+#2      AndroidGradleBuilder.buildApk (package:flutter_tools/src/android/gradle.dart:224:5)
+<asynchronous suspension>
+#3      AndroidDevice.startApp (package:flutter_tools/src/android/android_device.dart:584:7)
+<asynchronous suspension>
+#4      FlutterDevice.runCold (package:flutter_tools/src/resident_runner.dart:534:33)
+<asynchronous suspension>
+#5      ColdRunner.run (package:flutter_tools/src/run_cold.dart:55:28)
+<asynchronous suspension>
+#6      RunCommand.runCommand (package:flutter_tools/src/commands/run.dart:867:27)
+<asynchronous suspension>
+#7      FlutterCommand.run.<anonymous closure> (package:flutter_tools/src/runner/flutter_command.dart:1408:27)
+<asynchronous suspension>
+#8      AppContext.run.<anonymous closure> (package:flutter_tools/src/base/context.dart:153:19)
+<asynchronous suspension>
+#9      CommandRunner.runCommand (package:args/command_runner.dart:212:13)
+<asynchronous suspension>
+#10     FlutterCommandRunner.runCommand.<anonymous closure> (package:flutter_tools/src/runner/flutter_command_runner.dart:420:9)
+<asynchronous suspension>
+#11     AppContext.run.<anonymous closure> (package:flutter_tools/src/base/context.dart:153:19)
+<asynchronous suspension>
+#12     FlutterCommandRunner.runCommand (package:flutter_tools/src/runner/flutter_command_runner.dart:364:5)
+<asynchronous suspension>
+#13     run.<anonymous closure>.<anonymous closure> (package:flutter_tools/runner.dart:130:9)
+<asynchronous suspension>
+#14     AppContext.run.<anonymous closure> (package:flutter_tools/src/base/context.dart:153:19)
+<asynchronous suspension>
+#15     main (package:flutter_tools/executable.dart:93:3)
+<asynchronous suspension>
+

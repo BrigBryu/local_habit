@@ -77,9 +77,6 @@ class AlarmHabit extends BaseHabit {
     final currentMinutes = currentTime.hour * 60 + currentTime.minute;
     
     if (currentMinutes < alarmMinutes) {
-      final minutesUntilAlarm = alarmMinutes - currentMinutes;
-      final hours = minutesUntilAlarm ~/ 60;
-      final minutes = minutesUntilAlarm % 60;
       return '⏰ Alarm at ${_formatTime(alarmTime)}';
     }
     
@@ -145,7 +142,7 @@ class AlarmHabit extends BaseHabit {
       lastCompleted: now,
       currentStreak: newStreak,
       dailyCompletionCount: dailyCompletionCount + 1,
-    ) as AlarmHabit;
+    );
   }
 
   @override

@@ -12,3 +12,4 @@ targets:
       isar_generator:
         generate_for:
           - lib/core/database/**.dart
+          - lib/core/sync/**.dart

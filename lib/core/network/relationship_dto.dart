@@ -76,10 +76,11 @@ class PartnerService {
     try {
       final response = await supabase.rpc('create_invite_code');
       
-      if (response['success'] == true) {
-        return InviteCodeResult.success(response['invite_code'] as String);
+      // The RPC function now returns a string directly
+      if (response != null && response is String) {
+        return InviteCodeResult.success(response);
       } else {
-        return InviteCodeResult.error(response['error'] as String? ?? 'Unknown error');
+        return InviteCodeResult.error('Failed to generate invite code');
       }
     } catch (e, stackTrace) {
       _logger.e('Failed to create invite code', error: e, stackTrace: stackTrace);
@@ -142,6 +143,25 @@ class PartnerService {
       return [];
     }
   }
+  
+  /// Remove partner relationship
+  Future<RemovePartnerResult> removePartner() async {
+    try {
+      final response = await supabase.rpc('remove_partner');
+      
+      if (response['success'] == true) {
+        return RemovePartnerResult.success(
+          response['removed_partner_id'] as String?,
+          response['deleted_relationships'] as int? ?? 0,
+        );
+      } else {
+        return RemovePartnerResult.error(response['error'] as String? ?? 'Unknown error');
+      }
+    } catch (e, stackTrace) {
+      _logger.e('Failed to remove partner', error: e, stackTrace: stackTrace);
+      return RemovePartnerResult.error('Failed to remove partner: $e');
+    }
+  }
 }
 
 /// Result of creating an invite code
@@ -166,5 +186,29 @@ class LinkPartnerResult {
   
   factory LinkPartnerResult.success(String id) => LinkPartnerResult._(success: true, partnerId: id);
   factory LinkPartnerResult.error(String message) => LinkPartnerResult._(success: false, error: message);
+}
+
+/// Result of removing a partner
+class RemovePartnerResult {
+  final bool success;
+  final String? removedPartnerId;
+  final int deletedRelationships;
+  final String? error;
+  
+  const RemovePartnerResult._({
+    required this.success, 
+    this.removedPartnerId, 
+    this.deletedRelationships = 0,
+    this.error,
+  });
+  
+  factory RemovePartnerResult.success(String? partnerId, int deletedCount) => 
+      RemovePartnerResult._(
+        success: true, 
+        removedPartnerId: partnerId,
+        deletedRelationships: deletedCount,
+      );
+  factory RemovePartnerResult.error(String message) => 
+      RemovePartnerResult._(success: false, error: message);
 }
 

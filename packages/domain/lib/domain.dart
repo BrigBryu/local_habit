@@ -1,4 +1,4 @@
-library domain;
+library;
 
 // Entities
 export 'entities/base_habit.dart';
