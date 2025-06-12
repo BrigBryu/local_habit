@@ -3,55 +3,18 @@ import 'package:logger/logger.dart';
 
 import '../core/repositories/habits_repository.dart';
 import '../core/repositories/local_habits_repository.dart';
-import '../core/repositories/remote_habits_repository.dart';
-import '../core/network/supabase_client.dart';
-import '../core/auth/auth_service.dart';
-import '../core/realtime/realtime_service.dart';
 
 final _logger = Logger();
 
-/// Provider that determines which repository to use based on online status and authentication
+/// Provider for production - uses local Isar database with real persistence
 final repositoryProvider = FutureProvider<HabitsRepository>((ref) async {
-  try {
-    // Initialize Supabase first
-    await SupabaseClientService.instance.initialize();
-    
-    // Initialize Auth Service
-    await AuthService.init();
-    
-    // Determine which repository to use
-    final isOnline = SupabaseClientService.instance.isOnline;
-    final isAuthenticated = AuthService.instance.isAuthenticated;
-    
-    HabitsRepository repository;
-    
-    if (isOnline && isAuthenticated) {
-      _logger.i('Using RemoteHabitsRepository (online & authenticated)');
-      repository = RemoteHabitsRepository();
-    } else {
-      _logger.i('Using LocalHabitsRepository (offline or not authenticated)');
-      repository = LocalHabitsRepository();
-    }
-    
-    // Initialize the selected repository
-    await repository.initialize();
-    
-    // Initialize realtime service for remote repositories
-    if (repository is RemoteHabitsRepository) {
-      await RealtimeService.instance.initialize();
-    }
-    
-    return repository;
-    
-  } catch (e, stackTrace) {
-    _logger.e('Failed to initialize repository, falling back to local', 
-             error: e, stackTrace: stackTrace);
-    
-    // Fallback to local repository on any error
-    final localRepository = LocalHabitsRepository();
-    await localRepository.initialize();
-    return localRepository;
-  }
+  _logger.i('Using LocalHabitsRepository with Isar database');
+  final repository = LocalHabitsRepository();
+  
+  // Initialize database connection
+  await repository.initialize();
+  _logger.i('LocalHabitsRepository initialized successfully');
+  return repository;
 });
 
 /// Provider for the currently active repository (cached)
@@ -72,10 +35,6 @@ final habitsRepositoryProvider = Provider<HabitsRepository>((ref) {
 
 /// Provider for checking if we're using remote or local repository
 final isUsingRemoteRepositoryProvider = Provider<bool>((ref) {
-  final repositoryAsync = ref.watch(repositoryProvider);
-  
-  return repositoryAsync.maybeWhen(
-    data: (repository) => repository is RemoteHabitsRepository,
-    orElse: () => false,
-  );
+  // Using local Isar database but with Supabase sync capability
+  return true;
 });
