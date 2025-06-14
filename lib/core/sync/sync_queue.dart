@@ -80,10 +80,17 @@ class SyncQueue {
   
   /// Initialize sync queue and start processing
   Future<void> initialize(RemoteHabitsRepository repository) async {
-    _repository = repository;
-    await _db.initialize();
-    await _startProcessing();
-    _logger.i('SyncQueue initialized');
+    try {
+      _repository = repository;
+      await _db.initialize();
+      await _purgeStaleOperations();
+      await _startProcessing();
+      _logger.i('SyncQueue initialized');
+    } catch (e, stackTrace) {
+      _logger.e('Failed to initialize sync queue', error: e, stackTrace: stackTrace);
+      // Don't rethrow - allow app to continue without sync
+      _logger.w('Continuing without sync queue functionality');
+    }
   }
   
   RemoteHabitsRepository? _repository;
@@ -264,6 +271,44 @@ class SyncQueue {
     });
     
     _logger.i('Cleared completed sync operations');
+  }
+
+  /// Purge stale operations on startup
+  Future<void> _purgeStaleOperations() async {
+    try {
+      final totalCount = await _db.isar.syncOps.count();
+      final failedCount = await _db.isar.syncOps
+          .filter()
+          .attemptCountGreaterThan(5)
+          .count();
+      
+      _logger.i('SyncQueue startup: Total ops: $totalCount, High-retry ops: $failedCount');
+      
+      // If we have more than 1000 pending operations, purge them
+      if (totalCount > 1000) {
+        await _db.isar.writeTxn(() async {
+          await _db.isar.syncOps.clear();
+        });
+        _logger.w('Purged all sync operations due to excessive queue size: $totalCount');
+        return;
+      }
+      
+      // If we have operations that failed more than 5 times, purge them
+      if (failedCount > 0) {
+        await _db.isar.writeTxn(() async {
+          final staleIds = await _db.isar.syncOps
+              .filter()
+              .attemptCountGreaterThan(5)
+              .idProperty()
+              .findAll();
+          
+          await _db.isar.syncOps.deleteAll(staleIds);
+        });
+        _logger.w('Purged $failedCount high-retry sync operations');
+      }
+    } catch (e, stackTrace) {
+      _logger.e('Error purging stale operations', error: e, stackTrace: stackTrace);
+    }
   }
   
   /// Dispose sync queue
