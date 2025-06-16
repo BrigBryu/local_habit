@@ -27,11 +27,11 @@ class AppColors {
   static const Color success = draculaGreen;
   static const Color successLight = Color(0xFF7CFBA4);
   static const Color successDark = Color(0xFF2EF94E);
-  
+
   static const Color warning = draculaYellow;
   static const Color warningLight = Color(0xFFF4FBA9);
   static const Color warningDark = Color(0xFFEDF970);
-  
+
   static const Color error = draculaRed;
   static const Color errorLight = Color(0xFFFF7A7A);
   static const Color errorDark = Color(0xFFFF3030);
@@ -49,7 +49,7 @@ class AppColors {
   static const Color cardBackgroundDark = draculaCurrentLine;
   static const Color surfaceBackground = draculaForeground;
   static const Color habitCardBackground = draculaCurrentLine;
-  
+
   static const Color textPrimary = draculaBackground;
   static const Color textSecondary = draculaComment;
   static const Color textTertiary = Color(0xFF8892B0);

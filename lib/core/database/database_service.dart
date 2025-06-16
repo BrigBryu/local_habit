@@ -33,7 +33,7 @@ class DatabaseService {
 
     try {
       final dir = await getApplicationDocumentsDirectory();
-      
+
       _isar = await Isar.open(
         [
           HabitCollectionSchema,
@@ -43,10 +43,11 @@ class DatabaseService {
         directory: dir.path,
         name: 'habit_level_up',
       );
-      
+
       _logger.i('Database initialized successfully');
     } catch (e, stackTrace) {
-      _logger.e('Failed to initialize database', error: e, stackTrace: stackTrace);
+      _logger.e('Failed to initialize database',
+          error: e, stackTrace: stackTrace);
       rethrow;
     }
   }

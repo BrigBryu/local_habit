@@ -9,7 +9,8 @@ abstract class BaseAddHabitScreen extends ConsumerStatefulWidget {
   const BaseAddHabitScreen({super.key});
 }
 
-abstract class BaseAddHabitScreenState<T extends BaseAddHabitScreen> extends ConsumerState<T> {
+abstract class BaseAddHabitScreenState<T extends BaseAddHabitScreen>
+    extends ConsumerState<T> {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final TextEditingController nameController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
@@ -101,7 +102,8 @@ abstract class BaseAddHabitScreenState<T extends BaseAddHabitScreen> extends Con
           children: [
             Row(
               children: [
-                Icon(Icons.lightbulb_outline, color: ref.watchColors.draculaYellow),
+                Icon(Icons.lightbulb_outline,
+                    color: ref.watchColors.draculaYellow),
                 const SizedBox(width: 8),
                 Text(
                   'Tips for Great Habits',
@@ -142,7 +144,7 @@ abstract class BaseAddHabitScreenState<T extends BaseAddHabitScreen> extends Con
     if (newRoute == null || newRoute == currentRoute) return;
     navigateToHabitType(newRoute);
   }
-  
+
   /// Navigate to habit type - override this in concrete implementations to handle routing
   void navigateToHabitType(String route) {
     // Default implementation - each concrete screen should override this
@@ -156,7 +158,8 @@ abstract class BaseAddHabitScreenState<T extends BaseAddHabitScreen> extends Con
       context: context,
       builder: (context) => AlertDialog(
         title: Text('$habitTypeName Coming Soon'),
-        content: Text('$habitTypeName creation will be available in a future update.'),
+        content: Text(
+            '$habitTypeName creation will be available in a future update.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -174,7 +177,8 @@ abstract class BaseAddHabitScreenState<T extends BaseAddHabitScreen> extends Con
       const DropdownMenuItem(value: '/add-basic-habit', child: Text('Basic')),
       const DropdownMenuItem(value: '/add-bundle-habit', child: Text('Bundle')),
       const DropdownMenuItem(value: '/add-stack-habit', child: Text('Stack')),
-      const DropdownMenuItem(value: '/add-avoidance-habit', child: Text('Avoidance')),
+      const DropdownMenuItem(
+          value: '/add-avoidance-habit', child: Text('Avoidance')),
       // 🚧 add more here when new types arrive
     ];
 
@@ -200,7 +204,6 @@ abstract class BaseAddHabitScreenState<T extends BaseAddHabitScreen> extends Con
       ),
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -237,13 +240,16 @@ abstract class BaseAddHabitScreenState<T extends BaseAddHabitScreen> extends Con
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: ref.watchColors.formFieldBorder.withOpacity(0.3),
+                            color: ref.watchColors.formFieldBorder
+                                .withOpacity(0.3),
                             width: 2,
                           ),
                           gradient: LinearGradient(
                             colors: [
-                              ref.watchColors.draculaCurrentLine.withOpacity(0.2),
-                              ref.watchColors.draculaCurrentLine.withOpacity(0.1),
+                              ref.watchColors.draculaCurrentLine
+                                  .withOpacity(0.2),
+                              ref.watchColors.draculaCurrentLine
+                                  .withOpacity(0.1),
                             ],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
@@ -257,57 +263,80 @@ abstract class BaseAddHabitScreenState<T extends BaseAddHabitScreen> extends Con
                             if (showHabitTypeSelector) ...[
                               _buildHabitTypeDropdown(context),
                               const SizedBox(height: 16),
-                              Divider(color: ref.watchColors.draculaComment.withOpacity(0.3)),
+                              Divider(
+                                  color: ref.watchColors.draculaComment
+                                      .withOpacity(0.3)),
                               const SizedBox(height: 16),
                             ],
 
                             // Name field
                             TextFormField(
                               controller: nameController,
-                              style: TextStyle(color: ref.watchColors.draculaPurple),
+                              style: TextStyle(
+                                  color: ref.watchColors.draculaPurple),
                               decoration: InputDecoration(
                                 labelText: nameFieldLabel,
-                                labelStyle: TextStyle(color: ref.watchColors.formFieldLabel),
+                                labelStyle: TextStyle(
+                                    color: ref.watchColors.formFieldLabel),
                                 hintText: nameFieldHint,
-                                hintStyle: TextStyle(color: ref.watchColors.draculaComment),
+                                hintStyle: TextStyle(
+                                    color: ref.watchColors.draculaComment),
                                 border: OutlineInputBorder(
-                                  borderSide: BorderSide(color: ref.watchColors.formFieldBorder, width: 1.5),
+                                  borderSide: BorderSide(
+                                      color: ref.watchColors.formFieldBorder,
+                                      width: 1.5),
                                 ),
                                 enabledBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(color: ref.watchColors.formFieldBorder, width: 1.5),
+                                  borderSide: BorderSide(
+                                      color: ref.watchColors.formFieldBorder,
+                                      width: 1.5),
                                 ),
                                 focusedBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(color: ref.watchColors.draculaPink, width: 2),
+                                  borderSide: BorderSide(
+                                      color: ref.watchColors.draculaPink,
+                                      width: 2),
                                 ),
-                                prefixIcon: Icon(Icons.check_circle_outline, color: ref.watchColors.formFieldBorder),
+                                prefixIcon: Icon(Icons.check_circle_outline,
+                                    color: ref.watchColors.formFieldBorder),
                               ),
                               textInputAction: TextInputAction.next,
                               textCapitalization: TextCapitalization.sentences,
                               validator: validateName,
                               enabled: !isLoading,
-                              onChanged: (_) => setState(() {}), // For dynamic validation
+                              onChanged: (_) =>
+                                  setState(() {}), // For dynamic validation
                             ),
                             const SizedBox(height: 16),
 
                             // Description field
                             TextFormField(
                               controller: descriptionController,
-                              style: TextStyle(color: ref.watchColors.draculaPurple),
+                              style: TextStyle(
+                                  color: ref.watchColors.draculaPurple),
                               decoration: InputDecoration(
                                 labelText: descriptionFieldLabel,
-                                labelStyle: TextStyle(color: ref.watchColors.formFieldLabel),
+                                labelStyle: TextStyle(
+                                    color: ref.watchColors.formFieldLabel),
                                 hintText: descriptionFieldHint,
-                                hintStyle: TextStyle(color: ref.watchColors.draculaComment),
+                                hintStyle: TextStyle(
+                                    color: ref.watchColors.draculaComment),
                                 border: OutlineInputBorder(
-                                  borderSide: BorderSide(color: ref.watchColors.formFieldBorder, width: 1.5),
+                                  borderSide: BorderSide(
+                                      color: ref.watchColors.formFieldBorder,
+                                      width: 1.5),
                                 ),
                                 enabledBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(color: ref.watchColors.formFieldBorder, width: 1.5),
+                                  borderSide: BorderSide(
+                                      color: ref.watchColors.formFieldBorder,
+                                      width: 1.5),
                                 ),
                                 focusedBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(color: ref.watchColors.draculaPink, width: 2),
+                                  borderSide: BorderSide(
+                                      color: ref.watchColors.draculaPink,
+                                      width: 2),
                                 ),
-                                prefixIcon: Icon(Icons.description_outlined, color: ref.watchColors.formFieldBorder),
+                                prefixIcon: Icon(Icons.description_outlined,
+                                    color: ref.watchColors.formFieldBorder),
                               ),
                               textInputAction: TextInputAction.done,
                               textCapitalization: TextCapitalization.sentences,
@@ -339,7 +368,8 @@ abstract class BaseAddHabitScreenState<T extends BaseAddHabitScreen> extends Con
                 children: [
                   Expanded(
                     child: OutlinedButton(
-                      onPressed: isLoading ? null : () => Navigator.of(context).pop(),
+                      onPressed:
+                          isLoading ? null : () => Navigator.of(context).pop(),
                       style: OutlinedButton.styleFrom(
                         side: BorderSide(color: ref.watchColors.draculaComment),
                         foregroundColor: ref.watchColors.draculaComment,
@@ -362,7 +392,8 @@ abstract class BaseAddHabitScreenState<T extends BaseAddHabitScreen> extends Con
                               width: 20,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(Colors.white),
                               ),
                             )
                           : Text(saveButtonText),

@@ -86,7 +86,9 @@ class _HabitSelectorState extends ConsumerState<HabitSelector> {
       child: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          children: widget.availableHabits.map((habit) => _buildHabitTile(habit)).toList(),
+          children: widget.availableHabits
+              .map((habit) => _buildHabitTile(habit))
+              .toList(),
         ),
       ),
     );
@@ -108,12 +110,16 @@ class _HabitSelectorState extends ConsumerState<HabitSelector> {
         subtitle: Text(
           habit.description,
           style: TextStyle(
-            color: canSelect ? colors.draculaCyan : colors.draculaComment.withOpacity(0.6),
+            color: canSelect
+                ? colors.draculaCyan
+                : colors.draculaComment.withOpacity(0.6),
             fontSize: 12,
           ),
         ),
         value: isSelected,
-        onChanged: canSelect ? (bool? selected) => _handleSelection(habit.id, selected) : null,
+        onChanged: canSelect
+            ? (bool? selected) => _handleSelection(habit.id, selected)
+            : null,
         dense: true,
         secondary: _getHabitTypeIcon(habit),
       );
@@ -128,13 +134,18 @@ class _HabitSelectorState extends ConsumerState<HabitSelector> {
         subtitle: Text(
           habit.description,
           style: TextStyle(
-            color: canSelect ? colors.draculaCyan : colors.draculaComment.withOpacity(0.6),
+            color: canSelect
+                ? colors.draculaCyan
+                : colors.draculaComment.withOpacity(0.6),
             fontSize: 12,
           ),
         ),
         value: habit.id,
-        groupValue: widget.selectedHabitIds.isNotEmpty ? widget.selectedHabitIds.first : null,
-        onChanged: canSelect ? (String? value) => _handleSingleSelection(value) : null,
+        groupValue: widget.selectedHabitIds.isNotEmpty
+            ? widget.selectedHabitIds.first
+            : null,
+        onChanged:
+            canSelect ? (String? value) => _handleSingleSelection(value) : null,
         dense: true,
         secondary: _getHabitTypeIcon(habit),
       );
@@ -146,10 +157,12 @@ class _HabitSelectorState extends ConsumerState<HabitSelector> {
     String message;
     switch (widget.groupType) {
       case HabitType.bundle:
-        message = 'No available habits to bundle.\nCreate some individual habits first.';
+        message =
+            'No available habits to bundle.\nCreate some individual habits first.';
         break;
       case HabitType.stack:
-        message = 'No available habits to stack on.\nCreate some basic habits first.';
+        message =
+            'No available habits to stack on.\nCreate some basic habits first.';
         break;
       default:
         message = 'No available habits found.';
@@ -198,7 +211,9 @@ class _HabitSelectorState extends ConsumerState<HabitSelector> {
     final count = widget.selectedHabitIds.length;
     final isValid = validationResult.isValid;
     final color = isValid ? colors.draculaGreen : colors.draculaOrange;
-    final backgroundColor = isValid ? colors.draculaGreen.withOpacity(0.1) : colors.draculaOrange.withOpacity(0.1);
+    final backgroundColor = isValid
+        ? colors.draculaGreen.withOpacity(0.1)
+        : colors.draculaOrange.withOpacity(0.1);
 
     String message = '$count habit${count == 1 ? '' : 's'} selected';
     if (!isValid && validationResult.errorMessage != null) {
@@ -239,7 +254,7 @@ class _HabitSelectorState extends ConsumerState<HabitSelector> {
 
   bool _canSelectHabit(Habit habit) {
     // Check max selections
-    if (widget.maxSelections != null && 
+    if (widget.maxSelections != null &&
         widget.selectedHabitIds.length >= widget.maxSelections! &&
         !widget.selectedHabitIds.contains(habit.id)) {
       return false;
@@ -258,7 +273,7 @@ class _HabitSelectorState extends ConsumerState<HabitSelector> {
 
   void _handleSelection(String habitId, bool? selected) {
     final newSelection = List<String>.from(widget.selectedHabitIds);
-    
+
     if (selected == true) {
       if (!newSelection.contains(habitId)) {
         newSelection.add(habitId);
@@ -266,7 +281,7 @@ class _HabitSelectorState extends ConsumerState<HabitSelector> {
     } else {
       newSelection.remove(habitId);
     }
-    
+
     widget.onSelectionChanged(newSelection);
   }
 
@@ -282,7 +297,8 @@ class _HabitSelectorState extends ConsumerState<HabitSelector> {
     // Use AppColors for consistent habit type colors across the app
     switch (habit.type) {
       case HabitType.basic:
-        return Icon(Icons.check_circle_outline, color: AppColors.basicHabit, size: 20);
+        return Icon(Icons.check_circle_outline,
+            color: AppColors.basicHabit, size: 20);
       case HabitType.avoidance:
         return Icon(Icons.block, color: AppColors.avoidanceHabit, size: 20);
       // TODO(bridger): Disabled time-based habit types
@@ -323,7 +339,8 @@ class HabitSelectionValidation {
     );
   }
 
-  factory HabitSelectionValidation.invalid(String message, List<String> habitIds) {
+  factory HabitSelectionValidation.invalid(
+      String message, List<String> habitIds) {
     return HabitSelectionValidation(
       isValid: false,
       message: message,

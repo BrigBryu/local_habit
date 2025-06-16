@@ -1,82 +1,85 @@
-import 'package:flutter/foundation.dart';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:path_provider/path_provider.dart';
-import 'dart:io';
-import 'widgets/home_tab_scaffold.dart';
 import 'core/theme/flexible_theme_system.dart';
 import 'core/network/supabase_client.dart';
-import 'core/auth/test_sign_in.dart';
+import 'core/auth/username_auth_service.dart';
+import 'core/auth/auth_wrapper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Load environment variables - check for dev environment first
   const isDev = bool.fromEnvironment('DEV', defaultValue: false);
   final envFile = isDev ? '.env.dev' : '.env';
   await dotenv.load(fileName: envFile);
-  
-  // Development-only: Reset local Isar database to avoid corrupt state
-  if (kDebugMode) {
+
+  // Initialize Supabase
+  try {
+    await SupabaseClientService.instance
+        .initialize()
+        .timeout(const Duration(seconds: 15));
+    debugPrint('Supabase initialization completed');
+  } catch (e) {
+    debugPrint(
+        'Supabase initialization failed or timed out: $e - continuing in offline mode');
+  }
+
+  // Initialize username authentication service
+  try {
+    await UsernameAuthService.instance.initialize();
+    debugPrint('Username authentication service initialized');
+  } catch (e) {
+    debugPrint('Username auth initialization failed: $e');
+  }
+
+  // Handle TEST_USER_OVERRIDE for automated testing
+  final testUserOverride = Platform.environment['TEST_USER_OVERRIDE'];
+  if (testUserOverride != null && testUserOverride.isNotEmpty) {
+    debugPrint('TEST_USER_OVERRIDE detected: $testUserOverride');
+    
+    // Extract username from email format if needed
+    String testUsername;
+    if (testUserOverride.contains('@')) {
+      testUsername = testUserOverride.split('@')[0];
+    } else {
+      testUsername = testUserOverride;
+    }
+    
     try {
-      final appDir = await getApplicationDocumentsDirectory();
-      final isarFiles = [
-        File('${appDir.path}/default.isar'),
-        File('${appDir.path}/default.isar.lock'),
-        File('${appDir.path}/sync.isar'),
-        File('${appDir.path}/sync.isar.lock'),
-      ];
-      
-      for (final file in isarFiles) {
-        if (await file.exists()) {
-          await file.delete();
-          debugPrint('Deleted Isar file: ${file.path}');
+      // Try to sign in with test user
+      final result = await UsernameAuthService.instance.signIn(testUsername, 'testpass123');
+      if (result.isSuccess) {
+        debugPrint('Test user auto-signed in successfully: $testUsername');
+      } else {
+        debugPrint('Test user sign-in failed, trying to create account: ${result.error}');
+        // If sign-in fails, try to create the test account
+        final createResult = await UsernameAuthService.instance.signUp(testUsername, 'testpass123');
+        if (createResult.isSuccess) {
+          debugPrint('Test user account created and signed in: $testUsername');
+        } else {
+          debugPrint('Test user account creation failed: ${createResult.error}');
         }
       }
     } catch (e) {
-      debugPrint('Failed to reset Isar database: $e');
+      debugPrint('Test user override failed: $e');
     }
   }
-  
-  // Initialize Supabase
-  try {
-    await SupabaseClientService.instance.initialize().timeout(const Duration(seconds: 15));
-    debugPrint('Supabase initialization completed');
-  } catch (e) {
-    debugPrint('Supabase initialization failed or timed out: $e - continuing in offline mode');
-  }
-  
-  // Initialize test authentication for development/testing
-  if (isDev || const bool.fromEnvironment('TESTING', defaultValue: false)) {
-    debugPrint('Development/Testing mode - ensuring test users exist');
-    try {
-      await TestSignIn.ensureTestUsersExist().timeout(const Duration(seconds: 10));
-      
-      final signedIn = await TestSignIn.signInTestUser().timeout(const Duration(seconds: 10));
-      if (signedIn) {
-        debugPrint('Test authentication successful');
-      } else {
-        debugPrint('Test authentication failed - continuing in local mode');
-      }
-    } catch (e) {
-      debugPrint('Test authentication timed out or failed: $e - continuing in local mode');
-    }
-  }
-  
+
   // Initialize Isar for web if needed
   // Note: In Isar 3.1.0+ this is handled automatically
-  
+
   debugPrint('Running with Supabase integration enabled');
-  
+
   // Run sync queue simulation if debug flag is set
   if (const bool.fromEnvironment('SYNC_QUEUE_SELFTEST')) {
     debugPrint('SYNC_QUEUE_SELFTEST flag detected - simulation would run here');
     // TODO: Implement sync queue simulation
   }
-  
+
   debugPrint('App Startup Completed - launching UI');
-  
+
   runApp(const ProviderScope(child: HabitLevelUpApp()));
 }
 
@@ -87,7 +90,7 @@ class HabitLevelUpApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Get theme-aware colors (optional - components can still use AppColors directly)
     final colors = ref.watchColors;
-    
+
     return MaterialApp(
       title: 'Habit Level Up',
       theme: ThemeData(
@@ -119,9 +122,8 @@ class HabitLevelUpApp extends ConsumerWidget {
         useMaterial3: true,
         fontFamily: 'SF Pro Display',
       ),
-      home: const HomeTabScaffold(),
+      home: const AuthWrapper(),
       debugShowCheckedModeBanner: false,
     );
   }
 }
-

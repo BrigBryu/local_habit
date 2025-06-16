@@ -6,7 +6,7 @@ import 'package:domain/use_cases/complete_bundle_use_case.dart';
 /// Provider for bundle-related state management
 class BundleProvider extends ChangeNotifier {
   final HabitService _habitService;
-  
+
   List<BundleHabitWithChildren> _bundles = [];
   bool _isLoading = false;
   String? _error;
@@ -55,7 +55,7 @@ class BundleProvider extends ChangeNotifier {
         description: description,
         childHabitIds: childHabitIds,
       );
-      
+
       // Refresh the bundles list
       await _loadBundles();
       return true;
@@ -73,7 +73,7 @@ class BundleProvider extends ChangeNotifier {
 
     try {
       await _habitService.completeBundle(bundleId);
-      
+
       // Refresh the bundles list
       await _loadBundles();
       return true;
@@ -111,7 +111,7 @@ class BundleProvider extends ChangeNotifier {
 /// Provider for habits available for bundling
 class AvailableHabitsProvider extends ChangeNotifier {
   final HabitService _habitService;
-  
+
   List<Habit> _availableHabits = [];
   bool _isLoading = false;
 

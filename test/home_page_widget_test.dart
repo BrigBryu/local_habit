@@ -15,20 +15,20 @@ void main() {
       container = ProviderContainer(
         overrides: [
           homeHabitsProvider.overrideWith((ref) => [
-            _createTestHabit('1', 'Test Habit 1', HabitType.basic),
-            _createTestHabit('2', 'Test Habit 2', HabitType.avoidance),
-          ]),
+                _createTestHabit('1', 'Test Habit 1', HabitType.basic),
+                _createTestHabit('2', 'Test Habit 2', HabitType.avoidance),
+              ]),
           levelStateProvider.overrideWith((ref) => {
-            'currentLevel': 1,
-            'currentXP': 50,
-            'nextLevelXP': 100,
-            'progress': 0.5,
-          }),
+                'currentLevel': 1,
+                'currentXP': 50,
+                'nextLevelXP': 100,
+                'progress': 0.5,
+              }),
           routeAvailabilityProvider.overrideWith((ref) => {
-            'addHabit': true,
-            'levels': true,
-            'viewHabit': false,
-          }),
+                'addHabit': true,
+                'levels': true,
+                'viewHabit': false,
+              }),
         ],
       );
     });
@@ -70,7 +70,8 @@ void main() {
       expect(find.text('Level 1'), findsOneWidget);
     });
 
-    testWidgets('should display habit tiles when habits exist', (WidgetTester tester) async {
+    testWidgets('should display habit tiles when habits exist',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         UncontrolledProviderScope(
           container: container,
@@ -86,21 +87,22 @@ void main() {
       expect(find.text('2 total'), findsOneWidget);
     });
 
-    testWidgets('should display empty state when no habits exist', (WidgetTester tester) async {
+    testWidgets('should display empty state when no habits exist',
+        (WidgetTester tester) async {
       final emptyContainer = ProviderContainer(
         overrides: [
           homeHabitsProvider.overrideWith((ref) => <Habit>[]),
           levelStateProvider.overrideWith((ref) => {
-            'currentLevel': 1,
-            'currentXP': 0,
-            'nextLevelXP': 100,
-            'progress': 0.0,
-          }),
+                'currentLevel': 1,
+                'currentXP': 0,
+                'nextLevelXP': 100,
+                'progress': 0.0,
+              }),
           routeAvailabilityProvider.overrideWith((ref) => {
-            'addHabit': true,
-            'levels': true,
-            'viewHabit': false,
-          }),
+                'addHabit': true,
+                'levels': true,
+                'viewHabit': false,
+              }),
         ],
       );
 
@@ -114,7 +116,8 @@ void main() {
       );
 
       expect(find.text('No habits yet'), findsOneWidget);
-      expect(find.text('Tap the button below to create your first habit'), findsOneWidget);
+      expect(find.text('Tap the button below to create your first habit'),
+          findsOneWidget);
       expect(find.text('0 total'), findsOneWidget);
 
       emptyContainer.dispose();
@@ -142,7 +145,8 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('should handle portrait and landscape orientations', (WidgetTester tester) async {
+    testWidgets('should handle portrait and landscape orientations',
+        (WidgetTester tester) async {
       // Test portrait
       await tester.binding.setSurfaceSize(const Size(400, 800));
       await tester.pumpWidget(

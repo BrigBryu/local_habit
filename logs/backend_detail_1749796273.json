@@ -1,0 +1,23 @@
+{
+    "timestamp": "2025-06-13T06:31:12.3NZ",
+    "user_a": {
+        "id": "user-a-uuid-placeholder",
+        "relationships": {"code":"22P02","details":null,"hint":null,"message":"invalid input syntax for type uuid: \"user-a-uuid-placeholder\""},
+        "habits": {"code":"42P01","details":null,"hint":null,"message":"relation \"public.habits\" does not exist"},
+        "completions": {"code":"42P01","details":null,"hint":null,"message":"relation \"public.completions\" does not exist"}
+    },
+    "user_b": {
+        "id": "user-b-uuid-placeholder",
+        "relationships": {"code":"22P02","details":null,"hint":null,"message":"invalid input syntax for type uuid: \"user-b-uuid-placeholder\""},
+        "habits": {"code":"42P01","details":null,"hint":null,"message":"relation \"public.habits\" does not exist"},
+        "completions": {"code":"42P01","details":null,"hint":null,"message":"relation \"public.completions\" does not exist"}
+    },
+    "counts": {
+        "user_a": {"relationships": 4, "habits": 4, "completions": 4},
+        "user_b": {"relationships": 4, "habits": 4, "completions": 4}
+    },
+    "hashes": {
+        "user_a": {"relationships": "", "habits": "", "completions": ""},
+        "user_b": {"relationships": "", "habits": "", "completions": ""}
+    }
+}

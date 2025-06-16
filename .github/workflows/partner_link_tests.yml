@@ -1,0 +1,78 @@
+name: Partner Link Tests
+
+on:
+  pull_request:
+    paths:
+      - 'lib/core/network/relationship_dto.dart'
+      - 'lib/core/auth/auth_service.dart'
+      - 'lib/screens/partner_settings_screen.dart'
+      - 'supabase/migrations/**'
+      - 'database/supabase_migrations/**'
+  push:
+    branches: [main, master]
+
+jobs:
+  static_audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Static Audit - Check for accepted status
+        run: |
+          echo "🔍 Checking for 'accepted' status usage..."
+          
+          # Check Dart files
+          if grep -r "\.eq('status', 'accepted')" lib/; then
+            echo "❌ FAIL: Found .eq('status', 'accepted') in Dart code"
+            exit 1
+          fi
+          
+          # Check SQL files for accepted status (should use 'active')
+          if find . -name "*.sql" -path "./supabase/*" -exec grep -Hn "status = 'accepted'" {} \; | grep -v "migrations/old/"; then
+            echo "❌ FAIL: Found 'accepted' status in active SQL migrations"
+            exit 1
+          fi
+          
+          # Check OR syntax
+          if grep -r "or('user_id\.eq\." lib/ | grep -v "or('user_id\.eq\.\$.*,partner_id\.eq\.\$.*')"; then
+            echo "❌ FAIL: Incorrect OR syntax found"
+            exit 1
+          fi
+          
+          echo "✅ PASS: Static audit completed"
+
+  unit_tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.5'
+          
+      - name: Install dependencies
+        run: flutter pub get
+        
+      - name: Generate mocks
+        run: flutter packages pub run build_runner build
+        
+      - name: Run relationship repository tests
+        run: flutter test test/relationship_repository_test.dart
+
+  integration_test:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+        
+      - name: Run E2E integration test
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          chmod +x scripts/e2e_partner_link.sh
+          ./scripts/e2e_partner_link.sh

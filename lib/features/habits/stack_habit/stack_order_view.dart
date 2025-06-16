@@ -34,7 +34,7 @@ class _StackOrderViewState extends ConsumerState<StackOrderView> {
   @override
   Widget build(BuildContext context) {
     final colors = ref.watchColors;
-    
+
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
@@ -136,7 +136,8 @@ class _StackOrderViewState extends ConsumerState<StackOrderView> {
     );
   }
 
-  Widget _buildPositionLabel(String position, String order, FlexibleColors colors) {
+  Widget _buildPositionLabel(
+      String position, String order, FlexibleColors colors) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
@@ -151,7 +152,9 @@ class _StackOrderViewState extends ConsumerState<StackOrderView> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            position == 'Top' ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+            position == 'Top'
+                ? Icons.keyboard_arrow_up
+                : Icons.keyboard_arrow_down,
             color: colors.draculaComment,
             size: 16,
           ),
@@ -195,15 +198,16 @@ class _StackOrderViewState extends ConsumerState<StackOrderView> {
         final step = _steps[index];
         final isFirst = index == 0;
         final isLast = index == _steps.length - 1;
-        
+
         return _buildStepTile(step, index, isFirst, isLast, colors);
       },
     );
   }
 
-  Widget _buildStepTile(Habit step, int index, bool isFirst, bool isLast, FlexibleColors colors) {
+  Widget _buildStepTile(
+      Habit step, int index, bool isFirst, bool isLast, FlexibleColors colors) {
     final isCompleted = _isHabitCompletedToday(step);
-    
+
     return Container(
       key: ValueKey(step.id),
       margin: const EdgeInsets.only(bottom: 8),
@@ -249,7 +253,10 @@ class _StackOrderViewState extends ConsumerState<StackOrderView> {
                       ? [colors.success, colors.success.withOpacity(0.7)]
                       : isLast
                           ? [colors.error, colors.error.withOpacity(0.7)]
-                          : [colors.stackHabit, colors.stackHabit.withOpacity(0.7)],
+                          : [
+                              colors.stackHabit,
+                              colors.stackHabit.withOpacity(0.7)
+                            ],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 ),
@@ -300,11 +307,11 @@ class _StackOrderViewState extends ConsumerState<StackOrderView> {
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: isCompleted 
-                                  ? colors.draculaGreen 
+                              color: isCompleted
+                                  ? colors.draculaGreen
                                   : colors.draculaPurple,
-                              decoration: isCompleted 
-                                  ? TextDecoration.lineThrough 
+                              decoration: isCompleted
+                                  ? TextDecoration.lineThrough
                                   : null,
                             ),
                           ),
@@ -342,7 +349,8 @@ class _StackOrderViewState extends ConsumerState<StackOrderView> {
                         const SizedBox(height: 8),
                         if (isFirst)
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
                               color: colors.success.withOpacity(0.2),
                               borderRadius: BorderRadius.circular(8),
@@ -358,7 +366,8 @@ class _StackOrderViewState extends ConsumerState<StackOrderView> {
                           )
                         else if (isLast)
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
                               color: colors.error.withOpacity(0.2),
                               borderRadius: BorderRadius.circular(8),
@@ -457,29 +466,28 @@ class _StackOrderViewState extends ConsumerState<StackOrderView> {
   void _saveOrder() {
     final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
     final colors = ref.watchColors;
-    
+
     try {
       // Use the stack service to reorder steps
       final reorderedSteps = _stackService.reorderStackSteps(_steps, 0, 0);
-      
+
       // Update habits through the provider
       for (final step in reorderedSteps) {
         habitsNotifier.updateHabit(step);
       }
-      
+
       setState(() {
         _hasChanges = false;
       });
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Stack order saved successfully!'),
           backgroundColor: colors.success,
         ),
       );
-      
+
       Navigator.of(context).pop();
-      
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -495,7 +503,7 @@ class _StackOrderViewState extends ConsumerState<StackOrderView> {
     final now = DateTime.now();
     final lastCompleted = habit.lastCompleted!;
     return now.year == lastCompleted.year &&
-           now.month == lastCompleted.month &&
-           now.day == lastCompleted.day;
+        now.month == lastCompleted.month &&
+        now.day == lastCompleted.day;
   }
 }

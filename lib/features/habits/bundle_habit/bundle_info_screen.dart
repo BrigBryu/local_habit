@@ -27,11 +27,17 @@ class _BundleInfoScreenState extends ConsumerState<BundleInfoScreen> {
   Widget build(BuildContext context) {
     final bundleService = bundle_service.BundleService();
     final habitsAsync = ref.watch(habitsProvider);
-    final currentBundle = habitsAsync.value?.firstWhere((h) => h.id == widget.bundle.id) ?? widget.bundle;
-    final progress = bundleService.getBundleProgress(currentBundle, widget.allHabits);
-    final isCompleted = bundleService.isBundleCompleted(currentBundle, widget.allHabits);
-    final children = bundleService.getChildHabits(currentBundle, widget.allHabits);
-    final progressPercentage = bundleService.getBundleProgressPercentage(currentBundle, widget.allHabits);
+    final currentBundle =
+        habitsAsync.value?.firstWhere((h) => h.id == widget.bundle.id) ??
+            widget.bundle;
+    final progress =
+        bundleService.getBundleProgress(currentBundle, widget.allHabits);
+    final isCompleted =
+        bundleService.isBundleCompleted(currentBundle, widget.allHabits);
+    final children =
+        bundleService.getChildHabits(currentBundle, widget.allHabits);
+    final progressPercentage = bundleService.getBundleProgressPercentage(
+        currentBundle, widget.allHabits);
     final colors = ref.watchColors;
 
     return Scaffold(
@@ -52,7 +58,8 @@ class _BundleInfoScreenState extends ConsumerState<BundleInfoScreen> {
             label: Text(
               _isReorderMode ? 'Done reordering' : 'Reorder',
               style: TextStyle(
-                color: _isReorderMode ? colors.draculaGreen : colors.draculaPink,
+                color:
+                    _isReorderMode ? colors.draculaGreen : colors.draculaPink,
               ),
             ),
           ),
@@ -60,7 +67,8 @@ class _BundleInfoScreenState extends ConsumerState<BundleInfoScreen> {
             TextButton.icon(
               onPressed: () => _completeBundle(context, ref),
               icon: Icon(Icons.done_all, color: colors.draculaGreen),
-              label: Text('Complete All', style: TextStyle(color: colors.draculaGreen)),
+              label: Text('Complete All',
+                  style: TextStyle(color: colors.draculaGreen)),
             ),
         ],
       ),
@@ -126,11 +134,12 @@ class _BundleInfoScreenState extends ConsumerState<BundleInfoScreen> {
                             children: [
                               CircularProgressIndicator(
                                 value: progressPercentage,
-                                backgroundColor: colors.draculaComment.withOpacity(0.3),
+                                backgroundColor:
+                                    colors.draculaComment.withOpacity(0.3),
                                 valueColor: AlwaysStoppedAnimation(
-                                  isCompleted 
-                                    ? colors.draculaGreen 
-                                    : colors.draculaCyan,
+                                  isCompleted
+                                      ? colors.draculaGreen
+                                      : colors.draculaCyan,
                                 ),
                                 strokeWidth: 6,
                               ),
@@ -139,9 +148,9 @@ class _BundleInfoScreenState extends ConsumerState<BundleInfoScreen> {
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
-                                  color: isCompleted 
-                                    ? colors.draculaGreen 
-                                    : colors.draculaCyan,
+                                  color: isCompleted
+                                      ? colors.draculaGreen
+                                      : colors.draculaCyan,
                                 ),
                               ),
                             ],
@@ -153,14 +162,15 @@ class _BundleInfoScreenState extends ConsumerState<BundleInfoScreen> {
                       const SizedBox(height: 16),
                       Text(
                         widget.bundle.description,
-                        style: TextStyle(fontSize: 16, color: colors.draculaCyan),
+                        style:
+                            TextStyle(fontSize: 16, color: colors.draculaCyan),
                       ),
                     ],
                   ],
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 24),
 
             // Habits List
@@ -213,7 +223,8 @@ class _BundleInfoScreenState extends ConsumerState<BundleInfoScreen> {
                 ),
               )
             else if (_isReorderMode)
-              _buildReorderableHabitsList(context, ref, _getOrderedChildren(currentBundle, widget.allHabits))
+              _buildReorderableHabitsList(context, ref,
+                  _getOrderedChildren(currentBundle, widget.allHabits))
             else
               ...children.map((habit) => _buildHabitCard(context, ref, habit)),
           ],
@@ -225,7 +236,7 @@ class _BundleInfoScreenState extends ConsumerState<BundleInfoScreen> {
   List<Habit> _getOrderedChildren(Habit bundle, List<Habit> allHabits) {
     final childIds = bundle.bundleChildIds ?? [];
     final childHabits = <Habit>[];
-    
+
     // Get habits in the order specified by bundleChildIds
     for (final id in childIds) {
       try {
@@ -235,11 +246,12 @@ class _BundleInfoScreenState extends ConsumerState<BundleInfoScreen> {
         // Skip if habit not found
       }
     }
-    
+
     return childHabits;
   }
 
-  Widget _buildReorderableHabitsList(BuildContext context, WidgetRef ref, List<Habit> children) {
+  Widget _buildReorderableHabitsList(
+      BuildContext context, WidgetRef ref, List<Habit> children) {
     final colors = ref.watchColors;
     return Container(
       decoration: BoxDecoration(
@@ -280,7 +292,8 @@ class _BundleInfoScreenState extends ConsumerState<BundleInfoScreen> {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: children.length,
-            onReorder: (oldIndex, newIndex) => _onReorderHabits(oldIndex, newIndex, ref),
+            onReorder: (oldIndex, newIndex) =>
+                _onReorderHabits(oldIndex, newIndex, ref),
             itemBuilder: (context, index) {
               final habit = children[index];
               return Container(
@@ -320,16 +333,19 @@ class _BundleInfoScreenState extends ConsumerState<BundleInfoScreen> {
 
   void _onReorderHabits(int oldIndex, int newIndex, WidgetRef ref) {
     if (newIndex > oldIndex) newIndex -= 1;
-    
+
     // Get current bundle from provider to ensure we have latest state
     final habitsAsync = ref.read(habitsProvider);
-    final currentBundle = habitsAsync.value?.firstWhere((h) => h.id == widget.bundle.id) ?? widget.bundle;
-    final currentChildIds = List<String>.from(currentBundle.bundleChildIds ?? []);
-    
+    final currentBundle =
+        habitsAsync.value?.firstWhere((h) => h.id == widget.bundle.id) ??
+            widget.bundle;
+    final currentChildIds =
+        List<String>.from(currentBundle.bundleChildIds ?? []);
+
     // Reorder the IDs
     final movedId = currentChildIds.removeAt(oldIndex);
     currentChildIds.insert(newIndex, movedId);
-    
+
     // Update the bundle with new order
     final updatedBundle = Habit(
       id: currentBundle.id,
@@ -354,34 +370,34 @@ class _BundleInfoScreenState extends ConsumerState<BundleInfoScreen> {
       avoidanceSuccessToday: currentBundle.avoidanceSuccessToday,
       currentStreak: currentBundle.currentStreak,
     );
-    
+
     ref.read(habitsNotifierProvider.notifier).updateHabit(updatedBundle);
   }
 
   Widget _buildHabitCard(BuildContext context, WidgetRef ref, Habit habit) {
     final isCompleted = _isHabitCompletedToday(habit);
     final colors = ref.watchColors;
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         gradient: LinearGradient(
           colors: [
-            isCompleted 
-              ? colors.completedBackground.withOpacity(0.8)
-              : colors.draculaCurrentLine.withOpacity(0.6),
-            isCompleted 
-              ? colors.completedBackground.withOpacity(0.4)
-              : colors.draculaCurrentLine.withOpacity(0.3),
+            isCompleted
+                ? colors.completedBackground.withOpacity(0.8)
+                : colors.draculaCurrentLine.withOpacity(0.6),
+            isCompleted
+                ? colors.completedBackground.withOpacity(0.4)
+                : colors.draculaCurrentLine.withOpacity(0.3),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         border: Border.all(
-          color: isCompleted 
-            ? colors.completedBorder.withOpacity(0.8)
-            : colors.draculaCyan.withOpacity(0.4),
+          color: isCompleted
+              ? colors.completedBorder.withOpacity(0.8)
+              : colors.draculaCyan.withOpacity(0.4),
           width: 2,
         ),
         boxShadow: [
@@ -396,9 +412,9 @@ class _BundleInfoScreenState extends ConsumerState<BundleInfoScreen> {
         borderRadius: BorderRadius.circular(10),
         child: InkWell(
           borderRadius: BorderRadius.circular(10),
-          onTap: habit.type != HabitType.avoidance && !isCompleted 
-            ? () => _completeHabit(context, ref, habit)
-            : null,
+          onTap: habit.type != HabitType.avoidance && !isCompleted
+              ? () => _completeHabit(context, ref, habit)
+              : null,
           child: Container(
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -432,8 +448,11 @@ class _BundleInfoScreenState extends ConsumerState<BundleInfoScreen> {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          decoration: isCompleted ? TextDecoration.lineThrough : null,
-                          color: isCompleted ? colors.draculaGreen : colors.draculaPurple,
+                          decoration:
+                              isCompleted ? TextDecoration.lineThrough : null,
+                          color: isCompleted
+                              ? colors.draculaGreen
+                              : colors.draculaPurple,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -443,7 +462,9 @@ class _BundleInfoScreenState extends ConsumerState<BundleInfoScreen> {
                         Text(
                           habit.description,
                           style: TextStyle(
-                            color: isCompleted ? colors.draculaGreen.withOpacity(0.8) : colors.draculaCyan,
+                            color: isCompleted
+                                ? colors.draculaGreen.withOpacity(0.8)
+                                : colors.draculaCyan,
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
                           ),
@@ -453,9 +474,11 @@ class _BundleInfoScreenState extends ConsumerState<BundleInfoScreen> {
                       ],
                       const SizedBox(height: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: _getThemeAwareHabitTypeColor(habit.type).withOpacity(0.1),
+                          color: _getThemeAwareHabitTypeColor(habit.type)
+                              .withOpacity(0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
@@ -570,16 +593,17 @@ class _BundleInfoScreenState extends ConsumerState<BundleInfoScreen> {
     final now = DateTime.now();
     final lastCompleted = habit.lastCompleted!;
     return now.year == lastCompleted.year &&
-           now.month == lastCompleted.month &&
-           now.day == lastCompleted.day;
+        now.month == lastCompleted.month &&
+        now.day == lastCompleted.day;
   }
 
-  Future<void> _completeHabit(BuildContext context, WidgetRef ref, Habit habit) async {
+  Future<void> _completeHabit(
+      BuildContext context, WidgetRef ref, Habit habit) async {
     if (_isHabitCompletedToday(habit)) return;
-    
+
     final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
     final result = await habitsNotifier.completeHabit(habit.id);
-    
+
     if (result != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(result)),
@@ -595,7 +619,7 @@ class _BundleInfoScreenState extends ConsumerState<BundleInfoScreen> {
     final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
     final result = await habitsNotifier.completeBundle(widget.bundle.id);
     final colors = ref.watchColors;
-    
+
     if (result != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -610,11 +634,12 @@ class _BundleInfoScreenState extends ConsumerState<BundleInfoScreen> {
   void _showAddHabitDialog(BuildContext context, WidgetRef ref) {
     final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
     final availableHabits = habitsNotifier.getAvailableHabitsForBundle();
-    
+
     if (availableHabits.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('No available habits to add. Create some individual habits first!'),
+          content: Text(
+              'No available habits to add. Create some individual habits first!'),
           backgroundColor: Colors.orange,
         ),
       );
@@ -663,11 +688,13 @@ class _BundleInfoScreenState extends ConsumerState<BundleInfoScreen> {
     );
   }
 
-  Future<void> _addHabitToBundle(BuildContext context, WidgetRef ref, String habitId) async {
+  Future<void> _addHabitToBundle(
+      BuildContext context, WidgetRef ref, String habitId) async {
     final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
-    final result = await habitsNotifier.addHabitToBundle(widget.bundle.id, habitId);
+    final result =
+        await habitsNotifier.addHabitToBundle(widget.bundle.id, habitId);
     final colors = ref.watchColors;
-    
+
     if (result != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

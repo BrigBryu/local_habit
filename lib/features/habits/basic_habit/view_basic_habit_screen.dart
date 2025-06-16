@@ -12,7 +12,10 @@ class ViewBasicHabitScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final habitsAsync = ref.watch(habitsProvider);
-    final habit = habitsAsync.value?.firstWhere((h) => h.id == habitId, orElse: () => Habit.create(name: 'Unknown', description: '', type: HabitType.basic)) ?? Habit.create(name: 'Unknown', description: '', type: HabitType.basic);
+    final habit = habitsAsync.value?.firstWhere((h) => h.id == habitId,
+            orElse: () => Habit.create(
+                name: 'Unknown', description: '', type: HabitType.basic)) ??
+        Habit.create(name: 'Unknown', description: '', type: HabitType.basic);
 
     return Scaffold(
       appBar: AppBar(
@@ -126,9 +129,9 @@ class ViewBasicHabitScreen extends ConsumerWidget {
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             // Stats Section
             Card(
               child: Padding(
@@ -192,9 +195,9 @@ class ViewBasicHabitScreen extends ConsumerWidget {
                 ),
               ),
             ),
-            
+
             const Spacer(),
-            
+
             // Complete Habit Button
             AnimatedContainer(
               duration: const Duration(milliseconds: 300),
@@ -202,11 +205,13 @@ class ViewBasicHabitScreen extends ConsumerWidget {
               height: 60,
               margin: const EdgeInsets.only(bottom: 20),
               child: ElevatedButton(
-                onPressed: _isCompletedToday(habit) ? null : () => _completeHabit(context, ref, habit),
+                onPressed: _isCompletedToday(habit)
+                    ? null
+                    : () => _completeHabit(context, ref, habit),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: _isCompletedToday(habit) 
-                    ? AppColors.draculaGreen 
-                    : AppColors.draculaPink,
+                  backgroundColor: _isCompletedToday(habit)
+                      ? AppColors.draculaGreen
+                      : AppColors.draculaPink,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -217,63 +222,63 @@ class ViewBasicHabitScreen extends ConsumerWidget {
                 child: AnimatedSwitcher(
                   duration: const Duration(milliseconds: 300),
                   child: _isCompletedToday(habit)
-                    ? Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        key: const ValueKey('completed'),
-                        children: [
-                          Container(
-                            width: 32,
-                            height: 32,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.white.withOpacity(0.2),
-                            ),
-                            child: const Icon(
-                              Icons.check,
-                              color: Colors.white,
-                              size: 20,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          const Text(
-                            'Completed Today!',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      )
-                    : Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        key: const ValueKey('incomplete'),
-                        children: [
-                          Container(
-                            width: 32,
-                            height: 32,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
+                      ? Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          key: const ValueKey('completed'),
+                          children: [
+                            Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.white.withOpacity(0.2),
+                              ),
+                              child: const Icon(
+                                Icons.check,
                                 color: Colors.white,
-                                width: 2,
+                                size: 20,
                               ),
                             ),
-                            child: const Icon(
-                              Icons.circle_outlined,
-                              color: Colors.white,
-                              size: 20,
+                            const SizedBox(width: 12),
+                            const Text(
+                              'Completed Today!',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          const Text(
-                            'Mark as Complete',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
+                          ],
+                        )
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          key: const ValueKey('incomplete'),
+                          children: [
+                            Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 2,
+                                ),
+                              ),
+                              child: const Icon(
+                                Icons.circle_outlined,
+                                color: Colors.white,
+                                size: 20,
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
+                            const SizedBox(width: 12),
+                            const Text(
+                              'Mark as Complete',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
                 ),
               ),
             ),
@@ -283,7 +288,8 @@ class ViewBasicHabitScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
+  Widget _buildStatCard(
+      String title, String value, IconData icon, Color color) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -323,14 +329,14 @@ class ViewBasicHabitScreen extends ConsumerWidget {
     final now = DateTime.now();
     final lastCompleted = habit.lastCompleted!;
     return now.year == lastCompleted.year &&
-           now.month == lastCompleted.month &&
-           now.day == lastCompleted.day;
+        now.month == lastCompleted.month &&
+        now.day == lastCompleted.day;
   }
 
   String _formatDate(DateTime date) {
     final now = DateTime.now();
     final difference = now.difference(date).inDays;
-    
+
     if (difference == 0) return 'Today';
     if (difference == 1) return 'Yesterday';
     if (difference < 7) return '${difference}d ago';
@@ -338,10 +344,11 @@ class ViewBasicHabitScreen extends ConsumerWidget {
     return '${(difference / 30).round()}mo ago';
   }
 
-  Future<void> _completeHabit(BuildContext context, WidgetRef ref, Habit habit) async {
+  Future<void> _completeHabit(
+      BuildContext context, WidgetRef ref, Habit habit) async {
     final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
     final result = await habitsNotifier.completeHabit(habit.id);
-    
+
     if (result != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -353,7 +360,8 @@ class ViewBasicHabitScreen extends ConsumerWidget {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('${habit.name} completed! +${habit.calculateXPReward()} XP'),
+          content:
+              Text('${habit.name} completed! +${habit.calculateXPReward()} XP'),
           backgroundColor: AppColors.draculaGreen,
           behavior: SnackBarBehavior.floating,
         ),

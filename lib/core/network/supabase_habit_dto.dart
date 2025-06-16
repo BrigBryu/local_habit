@@ -51,19 +51,51 @@ class SupabaseHabitDto {
     this.currentStreak = 0,
   });
 
-  /// Create DTO from Supabase JSON response (minimal schema)
+  /// Create DTO from Supabase JSON response (complete schema)
   factory SupabaseHabitDto.fromJson(Map<String, dynamic> json) {
     return SupabaseHabitDto(
       id: json['id'] as String,
       name: json['name'] as String,
       description: json['description'] as String? ?? '',
       ownerId: json['user_id'] as String,
-      type: 'basic', // Default type for simple schema
+      type: json['type'] as String? ?? 'basic',
+      stackedOnHabitId: json['stacked_on_habit_id'] as String?,
+      bundleChildIds: json['bundle_child_ids'] != null 
+          ? List<String>.from(json['bundle_child_ids'] as List)
+          : null,
+      parentBundleId: json['parent_bundle_id'] as String?,
+      timeoutMinutes: json['timeout_minutes'] as int? ?? 30,
+      availableDays: json['available_days'] != null 
+          ? List<int>.from(json['available_days'] as List)
+          : null,
       createdAt: DateTime.parse(json['created_at'] as String),
+      lastCompleted: json['last_completed'] != null 
+          ? DateTime.parse(json['last_completed'] as String) 
+          : null,
+      lastAlarmTriggered: json['last_alarm_triggered'] != null 
+          ? DateTime.parse(json['last_alarm_triggered'] as String) 
+          : null,
+      sessionStartTime: json['session_start_time'] != null 
+          ? DateTime.parse(json['session_start_time'] as String) 
+          : null,
+      lastSessionStarted: json['last_session_started'] != null 
+          ? DateTime.parse(json['last_session_started'] as String) 
+          : null,
+      sessionCompletedToday: json['session_completed_today'] as bool? ?? false,
+      dailyCompletionCount: json['daily_completion_count'] as int? ?? 0,
+      lastCompletionCountReset: json['last_completion_count_reset'] != null 
+          ? DateTime.parse(json['last_completion_count_reset'] as String) 
+          : null,
+      dailyFailureCount: json['daily_failure_count'] as int? ?? 0,
+      lastFailureCountReset: json['last_failure_count_reset'] != null 
+          ? DateTime.parse(json['last_failure_count_reset'] as String) 
+          : null,
+      avoidanceSuccessToday: json['avoidance_success_today'] as bool? ?? false,
+      currentStreak: json['current_streak'] as int? ?? 0,
     );
   }
 
-  /// Convert DTO to JSON for Supabase (minimal schema)
+  /// Convert DTO to JSON for Supabase (complete schema)
   Map<String, dynamic> toJson() {
     return {
       // Generate proper UUID if the id is not already UUID format
@@ -71,18 +103,41 @@ class SupabaseHabitDto {
       'name': name,
       'description': description,
       'user_id': ownerId,
-      'frequency_type': 'daily', // Simple default for now
+      'type': type,
+      'frequency_type': 'daily', // Default frequency type
+      'frequency_count': 1, // Default frequency count
+      'category': 'general', // Default category
+      'is_active': true,
+      'current_streak': currentStreak,
+      'daily_completion_count': dailyCompletionCount,
+      'session_completed_today': sessionCompletedToday,
+      'avoidance_success_today': avoidanceSuccessToday,
+      'daily_failure_count': dailyFailureCount,
+      'timeout_minutes': timeoutMinutes,
+      'available_days': availableDays,
+      'stacked_on_habit_id': stackedOnHabitId,
+      'bundle_child_ids': bundleChildIds,
+      'parent_bundle_id': parentBundleId,
       'created_at': createdAt.toIso8601String(),
+      'updated_at': DateTime.now().toIso8601String(),
+      'last_completed': lastCompleted?.toIso8601String(),
+      'last_alarm_triggered': lastAlarmTriggered?.toIso8601String(),
+      'session_start_time': sessionStartTime?.toIso8601String(),
+      'last_session_started': lastSessionStarted?.toIso8601String(),
+      'last_completion_count_reset': lastCompletionCountReset?.toIso8601String(),
+      'last_failure_count_reset': lastFailureCountReset?.toIso8601String(),
     };
   }
 
   /// Ensure ID is in proper UUID format
   String _ensureUuidFormat(String id) {
     // If it's already a valid UUID format, return as-is
-    if (RegExp(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$').hasMatch(id)) {
+    if (RegExp(
+            r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$')
+        .hasMatch(id)) {
       return id;
     }
-    
+
     // Otherwise, generate a new UUID
     return const Uuid().v4();
   }

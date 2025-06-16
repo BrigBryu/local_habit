@@ -5,20 +5,20 @@ import 'app_colors.dart';
 
 /// Theme variations that preserve your design language
 enum ThemeVariant {
-  dracula,      // Your current theme (default)
-  draculaWarm,  // Warmer version of Dracula
-  draculaCool,  // Cooler version of Dracula
+  dracula, // Your current theme (default)
+  draculaWarm, // Warmer version of Dracula
+  draculaCool, // Cooler version of Dracula
   draculaLight, // Light version maintaining Dracula aesthetics
-  gruvboxDark,  // Gruvbox dark theme
+  gruvboxDark, // Gruvbox dark theme
   gruvboxLight, // Gruvbox light theme
 }
 
 /// Theme-aware color provider that preserves your existing colors as default
 class FlexibleColors {
   final ThemeVariant variant;
-  
+
   const FlexibleColors._(this.variant);
-  
+
   /// Factory constructor that returns appropriate colors based on theme
   factory FlexibleColors.of(ThemeVariant variant) {
     return FlexibleColors._(variant);
@@ -49,7 +49,7 @@ class FlexibleColors {
       case ThemeVariant.draculaWarm:
         return const Color(0xFF4A435C); // Warmer purple-gray
       case ThemeVariant.draculaCool:
-        return const Color(0xFF3F475F); // Cooler blue-gray  
+        return const Color(0xFF3F475F); // Cooler blue-gray
       case ThemeVariant.draculaLight:
         return const Color(0xFFE5E7EB); // Light gray
       case ThemeVariant.gruvboxDark:
@@ -103,7 +103,8 @@ class FlexibleColors {
       case ThemeVariant.draculaCool:
         return const Color(0xFF69D9FF); // Cooler bright cyan
       case ThemeVariant.draculaLight:
-        return const Color(0xFF0E7490); // Even darker cyan for better readability
+        return const Color(
+            0xFF0E7490); // Even darker cyan for better readability
       case ThemeVariant.gruvboxDark:
         return const Color(0xFF689D6A); // Gruvbox dark aqua
       case ThemeVariant.gruvboxLight:
@@ -154,7 +155,8 @@ class FlexibleColors {
       case ThemeVariant.draculaCool:
         return const Color(0xFFFF8ADB); // Cooler lavender pink
       case ThemeVariant.draculaLight:
-        return const Color(0xFFBE185D); // Even darker pink for better readability
+        return const Color(
+            0xFFBE185D); // Even darker pink for better readability
       case ThemeVariant.gruvboxDark:
         return const Color(0xFFB16286); // Gruvbox dark purple
       case ThemeVariant.gruvboxLight:
@@ -171,7 +173,8 @@ class FlexibleColors {
       case ThemeVariant.draculaCool:
         return const Color(0xFFA885FF); // Cooler blue-purple
       case ThemeVariant.draculaLight:
-        return const Color(0xFF6D28D9); // Even darker purple for better readability
+        return const Color(
+            0xFF6D28D9); // Even darker purple for better readability
       case ThemeVariant.gruvboxDark:
         return const Color(0xFF458588); // Gruvbox dark blue
       case ThemeVariant.gruvboxLight:
@@ -205,7 +208,8 @@ class FlexibleColors {
       case ThemeVariant.draculaCool:
         return const Color(0xFFE8F5A2); // Cooler lime yellow
       case ThemeVariant.draculaLight:
-        return const Color(0xFFB45309); // Even darker yellow for better readability
+        return const Color(
+            0xFFB45309); // Even darker yellow for better readability
       case ThemeVariant.gruvboxDark:
         return const Color(0xFFD79921); // Gruvbox dark yellow
       case ThemeVariant.gruvboxLight:
@@ -231,7 +235,7 @@ class FlexibleColors {
         return const Color(0xFFBDAE93); // Gruvbox light fg3
     }
   }
-  
+
   Color get darkPurple => AppColors.darkPurple;
   Color get purpleAccent => draculaPink;
 
@@ -258,9 +262,9 @@ class FlexibleColors {
         return AppColors.backgroundLight;
     }
   }
-  
+
   Color get backgroundDark => draculaBackground;
-  
+
   Color get cardBackground {
     switch (variant) {
       case ThemeVariant.draculaLight:
@@ -269,11 +273,11 @@ class FlexibleColors {
         return AppColors.cardBackground;
     }
   }
-  
+
   Color get cardBackgroundDark => draculaCurrentLine;
   Color get surfaceBackground => draculaForeground;
   Color get habitCardBackground => draculaCurrentLine;
-  
+
   Color get textPrimary {
     switch (variant) {
       case ThemeVariant.draculaLight:
@@ -282,7 +286,7 @@ class FlexibleColors {
         return AppColors.textPrimary;
     }
   }
-  
+
   Color get textSecondary => draculaComment;
   Color get textTertiary => AppColors.textTertiary;
   Color get textLight => draculaForeground;
@@ -359,7 +363,8 @@ class FlexibleColors {
   Color get formFieldLabel {
     switch (variant) {
       case ThemeVariant.draculaLight:
-        return const Color(0xFF374151); // Much darker gray for light theme readability
+        return const Color(
+            0xFF374151); // Much darker gray for light theme readability
       case ThemeVariant.gruvboxLight:
         return const Color(0xFF3C3836); // Gruvbox light fg (primary)
       default:
@@ -381,7 +386,8 @@ class FlexibleColors {
   Color get completedTextOnGreen {
     switch (variant) {
       case ThemeVariant.draculaLight:
-        return const Color(0xFF065F46); // Very dark green text on light green background
+        return const Color(
+            0xFF065F46); // Very dark green text on light green background
       case ThemeVariant.gruvboxLight:
         return const Color(0xFF3C3836); // Gruvbox light fg (primary)
       default:
@@ -393,7 +399,8 @@ class FlexibleColors {
   Color get completedBackground {
     switch (variant) {
       case ThemeVariant.draculaLight:
-        return const Color(0xFFD1FAE5); // Light green background for light theme
+        return const Color(
+            0xFFD1FAE5); // Light green background for light theme
       case ThemeVariant.gruvboxLight:
         return const Color(0xFFD5C4A1); // Gruvbox light bg2 with green tint
       default:
@@ -416,7 +423,7 @@ class FlexibleColors {
 /// Theme state management
 class ThemeNotifier extends StateNotifier<ThemeVariant> {
   static const String _key = 'theme_variant';
-  
+
   ThemeNotifier() : super(ThemeVariant.dracula) {
     _loadTheme();
   }
@@ -449,7 +456,8 @@ class ThemeNotifier extends StateNotifier<ThemeVariant> {
 }
 
 /// Providers for theme system
-final themeVariantProvider = StateNotifierProvider<ThemeNotifier, ThemeVariant>((ref) {
+final themeVariantProvider =
+    StateNotifierProvider<ThemeNotifier, ThemeVariant>((ref) {
   return ThemeNotifier();
 });
 
@@ -462,7 +470,7 @@ final flexibleColorsProvider = Provider<FlexibleColors>((ref) {
 extension ThemeAwareColors on WidgetRef {
   /// Get theme-aware colors (preserves your existing color design)
   FlexibleColors get colors => read(flexibleColorsProvider);
-  
+
   /// Watch theme-aware colors for rebuilds
   FlexibleColors get watchColors => watch(flexibleColorsProvider);
 }
@@ -485,7 +493,7 @@ extension ThemeVariantExtension on ThemeVariant {
         return 'Gruvbox Light';
     }
   }
-  
+
   String get description {
     switch (this) {
       case ThemeVariant.dracula:

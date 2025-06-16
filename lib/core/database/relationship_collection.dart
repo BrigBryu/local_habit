@@ -11,7 +11,7 @@ enum RelationshipType {
 
 enum RelationshipStatus {
   pending,
-  accepted,
+  active,
   blocked,
   ended,
 }
@@ -19,17 +19,17 @@ enum RelationshipStatus {
 @Collection()
 class RelationshipCollection {
   Id isarId = Isar.autoIncrement;
-  
+
   late String id;
   late String userId; // The user who owns this relationship record
   late String partnerId; // The other user in the relationship
-  
+
   @Enumerated(EnumType.name)
   late RelationshipType type;
-  
+
   @Enumerated(EnumType.name)
   late RelationshipStatus status;
-  
+
   late DateTime createdAt;
   DateTime? acceptedAt;
   DateTime? endedAt;
@@ -48,7 +48,8 @@ class RelationshipCollection {
     bool canCreateSharedHabits = false,
     bool receiveNotifications = true,
   }) {
-    final id = '${userId}_${partnerId}_${DateTime.now().millisecondsSinceEpoch}';
+    final id =
+        '${userId}_${partnerId}_${DateTime.now().millisecondsSinceEpoch}';
     return RelationshipCollection()
       ..id = id
       ..userId = userId

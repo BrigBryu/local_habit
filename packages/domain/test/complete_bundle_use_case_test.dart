@@ -40,10 +40,16 @@ void main() {
       testHabits = [childHabit1, childHabit2, childHabit3, bundleHabit];
     });
 
-    test('should complete all incomplete child habits when bundle is completed', () {
+    test('should complete all incomplete child habits when bundle is completed',
+        () {
       // Arrange - one child already completed
       final completedChild1 = childHabit1.complete();
-      final allHabits = [completedChild1, childHabit2, childHabit3, bundleHabit];
+      final allHabits = [
+        completedChild1,
+        childHabit2,
+        childHabit3,
+        bundleHabit
+      ];
 
       // Act
       final updatedHabits = CompleteBundleUseCase.execute(
@@ -53,11 +59,14 @@ void main() {
 
       // Assert
       expect(updatedHabits.length, equals(3)); // 2 incomplete children + bundle
-      
+
       // Find the updated habits
-      final updatedBundle = updatedHabits.firstWhere((h) => h.id == bundleHabit.id);
-      final updatedChild2 = updatedHabits.firstWhere((h) => h.id == childHabit2.id);
-      final updatedChild3 = updatedHabits.firstWhere((h) => h.id == childHabit3.id);
+      final updatedBundle =
+          updatedHabits.firstWhere((h) => h.id == bundleHabit.id);
+      final updatedChild2 =
+          updatedHabits.firstWhere((h) => h.id == childHabit2.id);
+      final updatedChild3 =
+          updatedHabits.firstWhere((h) => h.id == childHabit3.id);
 
       // Check that all are now completed
       expect(isHabitCompletedToday(updatedBundle), isTrue);
@@ -70,7 +79,12 @@ void main() {
       final completedChild1 = childHabit1.complete();
       final completedChild2 = childHabit2.complete();
       final completedChild3 = childHabit3.complete();
-      final allHabits = [completedChild1, completedChild2, completedChild3, bundleHabit];
+      final allHabits = [
+        completedChild1,
+        completedChild2,
+        completedChild3,
+        bundleHabit
+      ];
 
       // Act
       final updatedHabits = CompleteBundleUseCase.execute(
@@ -80,7 +94,7 @@ void main() {
 
       // Assert
       expect(updatedHabits.length, equals(1)); // Only bundle updated
-      
+
       final updatedBundle = updatedHabits.first;
       expect(updatedBundle.id, equals(bundleHabit.id));
       expect(isHabitCompletedToday(updatedBundle), isTrue);
@@ -132,7 +146,12 @@ void main() {
     test('getBundleProgress should return correct progress', () {
       // Arrange - one child completed
       final completedChild1 = childHabit1.complete();
-      final allHabits = [completedChild1, childHabit2, childHabit3, bundleHabit];
+      final allHabits = [
+        completedChild1,
+        childHabit2,
+        childHabit3,
+        bundleHabit
+      ];
 
       // Act
       final progress = CompleteBundleUseCase.getBundleProgress(
@@ -152,7 +171,12 @@ void main() {
       final completedChild1 = childHabit1.complete();
       final completedChild2 = childHabit2.complete();
       final completedChild3 = childHabit3.complete();
-      final allHabits = [completedChild1, completedChild2, completedChild3, bundleHabit];
+      final allHabits = [
+        completedChild1,
+        completedChild2,
+        completedChild3,
+        bundleHabit
+      ];
 
       // Act
       final allCompleted = CompleteBundleUseCase.areAllChildrenCompleted(
@@ -164,10 +188,17 @@ void main() {
       expect(allCompleted, isTrue);
     });
 
-    test('areAllChildrenCompleted should return false when some children incomplete', () {
+    test(
+        'areAllChildrenCompleted should return false when some children incomplete',
+        () {
       // Arrange - only one child completed
       final completedChild1 = childHabit1.complete();
-      final allHabits = [completedChild1, childHabit2, childHabit3, bundleHabit];
+      final allHabits = [
+        completedChild1,
+        childHabit2,
+        childHabit3,
+        bundleHabit
+      ];
 
       // Act
       final allCompleted = CompleteBundleUseCase.areAllChildrenCompleted(

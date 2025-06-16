@@ -51,12 +51,12 @@ class TimedHabitService {
   // Helper methods - all disabled
   void resetDailyState() {}
   Map<String, dynamic> getDebugInfo() => {
-    'service': 'disabled',
-    'triggeredAlarms': 0,
-    'timedOutHabits': 0,
-    'activeAlarms': 0,
-    'activeSessions': 0,
-  };
+        'service': 'disabled',
+        'triggeredAlarms': 0,
+        'timedOutHabits': 0,
+        'activeAlarms': 0,
+        'activeSessions': 0,
+      };
 }
 
 // Helper function - disabled

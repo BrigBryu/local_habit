@@ -10,7 +10,7 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       colorScheme: AppColorSchemes.lightColorScheme,
-      
+
       // App bar theme
       appBarTheme: AppBarTheme(
         backgroundColor: AppColorSchemes.lightColorScheme.inversePrimary,
@@ -87,7 +87,7 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       colorScheme: AppColorSchemes.darkColorScheme,
-      
+
       // App bar theme
       appBarTheme: AppBarTheme(
         backgroundColor: AppColorSchemes.darkColorScheme.inversePrimary,

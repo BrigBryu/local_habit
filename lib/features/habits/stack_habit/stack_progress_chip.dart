@@ -30,12 +30,12 @@ class _StackProgressChipState extends ConsumerState<StackProgressChip>
   @override
   void initState() {
     super.initState();
-    
+
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    
+
     _scaleAnimation = Tween<double>(
       begin: 1.0,
       end: 1.1,
@@ -54,11 +54,13 @@ class _StackProgressChipState extends ConsumerState<StackProgressChip>
   @override
   void didUpdateWidget(StackProgressChip oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     // Animate when progress changes
-    final oldProgress = _stackService.getStackProgress(oldWidget.stack, oldWidget.allHabits);
-    final newProgress = _stackService.getStackProgress(widget.stack, widget.allHabits);
-    
+    final oldProgress =
+        _stackService.getStackProgress(oldWidget.stack, oldWidget.allHabits);
+    final newProgress =
+        _stackService.getStackProgress(widget.stack, widget.allHabits);
+
     if (oldProgress.completed != newProgress.completed) {
       _animateProgressChange();
     }
@@ -72,8 +74,10 @@ class _StackProgressChipState extends ConsumerState<StackProgressChip>
 
   @override
   Widget build(BuildContext context) {
-    final progress = _stackService.getStackProgress(widget.stack, widget.allHabits);
-    final isCompleted = _stackService.isStackCompleted(widget.stack, widget.allHabits);
+    final progress =
+        _stackService.getStackProgress(widget.stack, widget.allHabits);
+    final isCompleted =
+        _stackService.isStackCompleted(widget.stack, widget.allHabits);
     final colors = ref.watchColors;
 
     // Update animation based on completion state
@@ -115,7 +119,8 @@ class _StackProgressChipState extends ConsumerState<StackProgressChip>
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: (isCompleted ? colors.success : colors.stackHabit).withOpacity(0.3),
+                    color: (isCompleted ? colors.success : colors.stackHabit)
+                        .withOpacity(0.3),
                     blurRadius: 6,
                     offset: const Offset(0, 2),
                   ),
@@ -224,7 +229,7 @@ class MultiStackProgressChip extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final stackService = StackService();
     final colors = ref.watchColors;
-    
+
     if (stacks.isEmpty) return const SizedBox.shrink();
 
     // Calculate total progress across all stacks
@@ -236,13 +241,14 @@ class MultiStackProgressChip extends ConsumerWidget {
       final progress = stackService.getStackProgress(stack, allHabits);
       totalCompleted += progress.completed;
       totalSteps += progress.total;
-      
+
       if (stackService.isStackCompleted(stack, allHabits)) {
         completedStacks++;
       }
     }
 
-    final allStacksComplete = completedStacks == stacks.length && stacks.isNotEmpty;
+    final allStacksComplete =
+        completedStacks == stacks.length && stacks.isNotEmpty;
     final remainingSteps = totalSteps - totalCompleted;
 
     return GestureDetector(
@@ -273,7 +279,8 @@ class MultiStackProgressChip extends ConsumerWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: (allStacksComplete ? colors.success : colors.stackHabit).withOpacity(0.3),
+              color: (allStacksComplete ? colors.success : colors.stackHabit)
+                  .withOpacity(0.3),
               blurRadius: 6,
               offset: const Offset(0, 2),
             ),
@@ -302,9 +309,9 @@ class MultiStackProgressChip extends ConsumerWidget {
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
               child: Text(
-                allStacksComplete 
-                    ? 'All Done!' 
-                    : remainingSteps == 1 
+                allStacksComplete
+                    ? 'All Done!'
+                    : remainingSteps == 1
                         ? '1 step left'
                         : '$remainingSteps steps left',
                 key: ValueKey(allStacksComplete ? 'all_done' : remainingSteps),

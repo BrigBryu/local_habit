@@ -25,6 +25,22 @@ dependencies:
   # Backend & Environment
   supabase_flutter: ^2.8.0
   flutter_dotenv: ^5.1.0
+  uuid: ^4.4.0
+  
+  # Error handling & monitoring
+  sentry_flutter: ^8.0.0
+  
+  # State management & async
+  rxdart: ^0.27.7
+  
+  # Password hashing
+  crypto: ^3.0.3
+  
+  # Routing
+  go_router: ^14.6.2
+  
+  # Calendar
+  table_calendar: ^3.1.2
   
   # Local packages
   domain:
@@ -35,6 +51,8 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  integration_test:
+    sdk: flutter
   flutter_lints: ^5.0.0
   
   # Code generation
@@ -42,6 +60,9 @@ dev_dependencies:
   freezed: ^2.4.7
   json_serializable: ^6.7.1
   isar_generator: ^3.1.0+1
+  
+  # Testing
+  mockito: ^5.4.4
 
   path: any
 flutter:
@@ -49,3 +70,4 @@ flutter:
   
   assets:
     - .env
+    - .env.dev

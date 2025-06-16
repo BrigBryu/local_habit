@@ -43,7 +43,8 @@ void main() {
 
       // The bundle screen should show 'Bundle' as selected
       final dropdownFinder = find.byType(DropdownButtonFormField<String>);
-      final dropdown = tester.widget<DropdownButtonFormField<String>>(dropdownFinder);
+      final dropdown =
+          tester.widget<DropdownButtonFormField<String>>(dropdownFinder);
       expect(dropdown.initialValue, equals('/add-bundle-habit'));
     });
   });

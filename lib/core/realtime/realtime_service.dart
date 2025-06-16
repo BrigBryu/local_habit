@@ -11,49 +11,59 @@ import '../auth/auth_service.dart';
 class RealtimeService {
   static RealtimeService? _instance;
   static RealtimeService get instance => _instance ??= RealtimeService._();
-  
+
   RealtimeService._();
-  
+
   final Logger _logger = Logger();
   RealtimeChannel? _habitsChannel;
   RealtimeChannel? _completionsChannel;
-  
+
   // Stream controllers for realtime updates
   final _habitsUpdateController = StreamController<List<Habit>>.broadcast();
-  final _completionsUpdateController = StreamController<Map<String, dynamic>>.broadcast();
-  
+  final _completionsUpdateController =
+      StreamController<Map<String, dynamic>>.broadcast();
+
   /// Stream of habit updates from realtime
   Stream<List<Habit>> get habitsUpdates => _habitsUpdateController.stream;
-  
+
   /// Stream of completion updates from realtime
-  Stream<Map<String, dynamic>> get completionsUpdates => _completionsUpdateController.stream;
-  
+  Stream<Map<String, dynamic>> get completionsUpdates =>
+      _completionsUpdateController.stream;
+
   /// Initialize realtime subscriptions
   Future<void> initialize() async {
-    if (!AuthService.instance.isAuthenticated) {
-      _logger.d('Not authenticated, skipping realtime initialization');
-      return;
-    }
-    
     try {
+      // Check if Supabase is available
+      if (!SupabaseClientService.instance.isInitialized) {
+        _logger.d('Supabase not initialized, skipping realtime initialization');
+        return;
+      }
+
+      if (!AuthService.instance.isAuthenticated) {
+        _logger.d('Not authenticated, skipping realtime initialization');
+        return;
+      }
+
       await _subscribeToHabits();
       await _subscribeToCompletions();
       _logger.i('Realtime service initialized');
     } catch (e, stackTrace) {
-      _logger.e('Failed to initialize realtime service', error: e, stackTrace: stackTrace);
+      _logger.e('Failed to initialize realtime service',
+          error: e, stackTrace: stackTrace);
+      // Don't rethrow - allow app to continue without realtime
     }
   }
-  
+
   /// Subscribe to habits table changes
   Future<void> _subscribeToHabits() async {
     final currentUserId = AuthService.instance.getCurrentUserId();
     if (currentUserId == null) return;
-    
+
     try {
       // Get partner IDs for filtering
       final partnerIds = await _getPartnerIds(currentUserId);
       final allowedUserIds = [currentUserId, ...partnerIds];
-      
+
       _habitsChannel = supabase
           .channel('habits_changes')
           .onPostgresChanges(
@@ -62,50 +72,54 @@ class RealtimeService {
             table: 'habits',
             filter: PostgresChangeFilter(
               type: PostgresChangeFilterType.eq,
-              column: 'owner_id',
+              column: 'user_id',
               value: currentUserId,
             ),
             callback: _onHabitsChange,
           )
           .subscribe();
-      
-      _logger.d('Subscribed to habits realtime updates for users: $allowedUserIds');
+
+      _logger.d(
+          'Subscribed to habits realtime updates for users: $allowedUserIds');
     } catch (e, stackTrace) {
-      _logger.e('Failed to subscribe to habits updates', error: e, stackTrace: stackTrace);
+      _logger.e('Failed to subscribe to habits updates',
+          error: e, stackTrace: stackTrace);
     }
   }
-  
+
   /// Subscribe to completions table changes
   Future<void> _subscribeToCompletions() async {
     final currentUserId = AuthService.instance.getCurrentUserId();
     if (currentUserId == null) return;
-    
+
     try {
       // Get partner IDs for filtering
       final partnerIds = await _getPartnerIds(currentUserId);
       final allowedUserIds = [currentUserId, ...partnerIds];
-      
+
       _completionsChannel = supabase
           .channel('completions_changes')
           .onPostgresChanges(
             event: PostgresChangeEvent.all,
             schema: 'public',
-            table: 'completions',
+            table: 'habit_completions',
             filter: PostgresChangeFilter(
               type: PostgresChangeFilterType.eq,
-              column: 'owner_id',
+              column: 'user_id',
               value: currentUserId,
             ),
             callback: _onCompletionsChange,
           )
           .subscribe();
-      
-      _logger.d('Subscribed to completions realtime updates for users: $allowedUserIds');
+
+      _logger.d(
+          'Subscribed to completions realtime updates for users: $allowedUserIds');
     } catch (e, stackTrace) {
-      _logger.e('Failed to subscribe to completions updates', error: e, stackTrace: stackTrace);
+      _logger.e('Failed to subscribe to completions updates',
+          error: e, stackTrace: stackTrace);
     }
   }
-  
+
   /// Get partner IDs for current user
   Future<List<String>> _getPartnerIds(String userId) async {
     try {
@@ -113,30 +127,32 @@ class RealtimeService {
           .from('relationships')
           .select('user_id, partner_id')
           .or('user_id.eq.$userId,partner_id.eq.$userId')
-          .eq('status', 'accepted');
-      
+          .eq('status', 'active');
+
       final partnerIds = <String>[];
       for (final relationship in response) {
-        final partnerId = relationship['user_id'] == userId 
+        final partnerId = relationship['user_id'] == userId
             ? relationship['partner_id'] as String?
             : relationship['user_id'] as String?;
         if (partnerId != null && partnerId != userId) {
           partnerIds.add(partnerId);
         }
       }
-      
+
       return partnerIds;
     } catch (e, stackTrace) {
       _logger.e('Failed to get partner IDs', error: e, stackTrace: stackTrace);
       return [];
     }
   }
-  
+
   /// Handle habits table changes
   void _onHabitsChange(PostgresChangePayload payload) {
     try {
-      _logger.d('Habits realtime change: ${payload.eventType} ${payload.table}');
-      
+      _logger.i('REALTIME HABITS: ${payload.eventType} on ${payload.table}');
+      _logger.i('PAYLOAD NEW: ${payload.newRecord}');
+      _logger.i('PAYLOAD OLD: ${payload.oldRecord}');
+
       switch (payload.eventType) {
         case PostgresChangeEvent.insert:
           _handleHabitInsert(payload.newRecord);
@@ -151,25 +167,30 @@ class RealtimeService {
           break;
       }
     } catch (e, stackTrace) {
-      _logger.e('Error handling habits change', error: e, stackTrace: stackTrace);
+      _logger.e('Error handling habits change',
+          error: e, stackTrace: stackTrace);
     }
   }
-  
+
   /// Handle completions table changes
   void _onCompletionsChange(PostgresChangePayload payload) {
     try {
-      _logger.d('Completions realtime change: ${payload.eventType} ${payload.table}');
-      
+      _logger
+          .i('REALTIME COMPLETIONS: ${payload.eventType} on ${payload.table}');
+      _logger.i('PAYLOAD NEW: ${payload.newRecord}');
+      _logger.i('PAYLOAD OLD: ${payload.oldRecord}');
+
       // Forward completion events to stream
       _completionsUpdateController.add({
         'event': payload.eventType.name,
         'data': payload.newRecord,
       });
     } catch (e, stackTrace) {
-      _logger.e('Error handling completions change', error: e, stackTrace: stackTrace);
+      _logger.e('Error handling completions change',
+          error: e, stackTrace: stackTrace);
     }
   }
-  
+
   /// Handle habit insert event
   void _handleHabitInsert(Map<String, dynamic> record) {
     try {
@@ -178,10 +199,11 @@ class RealtimeService {
       // Trigger refresh of habits list
       _triggerHabitsRefresh();
     } catch (e, stackTrace) {
-      _logger.e('Error handling habit insert', error: e, stackTrace: stackTrace);
+      _logger.e('Error handling habit insert',
+          error: e, stackTrace: stackTrace);
     }
   }
-  
+
   /// Handle habit update event
   void _handleHabitUpdate(Map<String, dynamic> record) {
     try {
@@ -190,10 +212,11 @@ class RealtimeService {
       // Trigger refresh of habits list
       _triggerHabitsRefresh();
     } catch (e, stackTrace) {
-      _logger.e('Error handling habit update', error: e, stackTrace: stackTrace);
+      _logger.e('Error handling habit update',
+          error: e, stackTrace: stackTrace);
     }
   }
-  
+
   /// Handle habit delete event
   void _handleHabitDelete(Map<String, dynamic> record) {
     try {
@@ -202,16 +225,17 @@ class RealtimeService {
       // Trigger refresh of habits list
       _triggerHabitsRefresh();
     } catch (e, stackTrace) {
-      _logger.e('Error handling habit delete', error: e, stackTrace: stackTrace);
+      _logger.e('Error handling habit delete',
+          error: e, stackTrace: stackTrace);
     }
   }
-  
+
   /// Trigger habits list refresh (providers will listen to this)
   void _triggerHabitsRefresh() {
     // Send empty list to signal refresh needed
     _habitsUpdateController.add([]);
   }
-  
+
   /// Dispose realtime service
   void dispose() {
     _habitsChannel?.unsubscribe();

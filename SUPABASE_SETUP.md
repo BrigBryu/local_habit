@@ -84,6 +84,48 @@ $$;
 
 -- Allow callers to execute the function
 grant execute on function public.create_invite_code() to anon, authenticated;
+
+-- Create the link_partner function for connecting partners
+create or replace function public.link_partner(invite_code_param text)
+returns jsonb
+language plpgsql
+security definer
+as $$
+declare
+  v_invite_record record;
+  v_current_user_id uuid;
+begin
+  -- Get current user
+  v_current_user_id := auth.uid();
+  if v_current_user_id is null then
+    return jsonb_build_object('success', false, 'error', 'Not authenticated');
+  end if;
+
+  -- Find the invite code
+  select * into v_invite_record
+  from public.invite_codes
+  where code = invite_code_param
+  and expires_at > now();
+  
+  if not found then
+    return jsonb_build_object('success', false, 'error', 'Invalid or expired invite code');
+  end if;
+  
+  -- Don't allow self-linking
+  if v_invite_record.user_id = v_current_user_id then
+    return jsonb_build_object('success', false, 'error', 'Cannot link to yourself');
+  end if;
+  
+  -- Delete the used invite code
+  delete from public.invite_codes where code = invite_code_param;
+  
+  -- Success - return partner info
+  return jsonb_build_object('success', true, 'partner_id', v_invite_record.user_id::text);
+end;
+$$;
+
+-- Grant permissions for link_partner
+grant execute on function public.link_partner(text) to anon, authenticated;
 ```
 
 **THEN - Run the full partner system (optional):**

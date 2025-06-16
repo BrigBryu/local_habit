@@ -20,7 +20,7 @@ class AnimatedLevelBar extends ConsumerWidget {
     final currentXP = levelService.currentXP;
     final nextLevelXP = levelService.xpForNextLevel;
     final progress = (currentXP / nextLevelXP).clamp(0.0, 1.0);
-    
+
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 600;
 
@@ -29,11 +29,11 @@ class AnimatedLevelBar extends ConsumerWidget {
       child: Container(
         height: isMobile ? 32 : 60,
         margin: EdgeInsets.symmetric(
-          horizontal: isMobile ? 8 : 16, 
+          horizontal: isMobile ? 8 : 16,
           vertical: isMobile ? 1 : 8,
         ),
         padding: EdgeInsets.symmetric(
-          horizontal: isMobile ? 12 : 16, 
+          horizontal: isMobile ? 12 : 16,
           vertical: isMobile ? 0 : 12,
         ),
         decoration: BoxDecoration(
@@ -74,80 +74,84 @@ class AnimatedLevelBar extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                  Text(
-                    'Level $level',
-                    style: TextStyle(
-                      fontSize: isMobile ? 10 : 16,
-                      fontWeight: FontWeight.bold,
-                      color: colors.draculaForeground,
+                    Text(
+                      'Level $level',
+                      style: TextStyle(
+                        fontSize: isMobile ? 10 : 16,
+                        fontWeight: FontWeight.bold,
+                        color: colors.draculaForeground,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  SizedBox(height: isMobile ? 0 : 4),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Expanded(
-                        child: Container(
-                          height: isMobile ? 4 : 6,
-                          child: Stack(
-                            children: [
-                              Container(
-                                height: isMobile ? 4 : 6,
-                                decoration: BoxDecoration(
-                                  color: colors.draculaComment.withOpacity(0.3),
-                                  borderRadius: BorderRadius.circular(isMobile ? 2 : 3),
+                    SizedBox(height: isMobile ? 0 : 4),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Expanded(
+                          child: Container(
+                            height: isMobile ? 4 : 6,
+                            child: Stack(
+                              children: [
+                                Container(
+                                  height: isMobile ? 4 : 6,
+                                  decoration: BoxDecoration(
+                                    color:
+                                        colors.draculaComment.withOpacity(0.3),
+                                    borderRadius:
+                                        BorderRadius.circular(isMobile ? 2 : 3),
+                                  ),
                                 ),
-                              ),
-                              TweenAnimationBuilder<double>(
-                                duration: const Duration(milliseconds: 800),
-                                curve: Curves.easeInOut,
-                                tween: Tween(begin: 0.0, end: progress),
-                                builder: (context, animatedProgress, child) {
-                                  return FractionallySizedBox(
-                                    widthFactor: animatedProgress,
-                                    child: Container(
-                                      height: isMobile ? 4 : 6,
-                                      decoration: BoxDecoration(
-                                        gradient: LinearGradient(
-                                          colors: [
-                                            colors.primaryPurple,
-                                            colors.completedBackground,
+                                TweenAnimationBuilder<double>(
+                                  duration: const Duration(milliseconds: 800),
+                                  curve: Curves.easeInOut,
+                                  tween: Tween(begin: 0.0, end: progress),
+                                  builder: (context, animatedProgress, child) {
+                                    return FractionallySizedBox(
+                                      widthFactor: animatedProgress,
+                                      child: Container(
+                                        height: isMobile ? 4 : 6,
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                            colors: [
+                                              colors.primaryPurple,
+                                              colors.completedBackground,
+                                            ],
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                              isMobile ? 2 : 3),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: colors.primaryPurple
+                                                  .withOpacity(0.3),
+                                              blurRadius: 4,
+                                              offset: const Offset(0, 1),
+                                            ),
                                           ],
                                         ),
-                                        borderRadius: BorderRadius.circular(isMobile ? 2 : 3),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: colors.primaryPurple.withOpacity(0.3),
-                                            blurRadius: 4,
-                                            offset: const Offset(0, 1),
-                                          ),
-                                        ],
                                       ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ],
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                      SizedBox(width: isMobile ? 4 : 8),
-                      Flexible(
-                        child: Text(
-                          '$currentXP / $nextLevelXP XP',
-                          style: TextStyle(
-                            fontSize: isMobile ? 7 : 12,
-                            color: colors.draculaComment,
+                        SizedBox(width: isMobile ? 4 : 8),
+                        Flexible(
+                          child: Text(
+                            '$currentXP / $nextLevelXP XP',
+                            style: TextStyle(
+                              fontSize: isMobile ? 7 : 12,
+                              color: colors.draculaComment,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ),

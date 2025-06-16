@@ -15,7 +15,8 @@ class StackHabitTile extends ConsumerWidget {
   final Habit habit;
   final List<Habit> allHabits;
 
-  const StackHabitTile({super.key, required this.habit, required this.allHabits});
+  const StackHabitTile(
+      {super.key, required this.habit, required this.allHabits});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -38,7 +39,8 @@ class _ExpandableStackTile extends ConsumerWidget {
     final progress = _stackService.getStackProgress(habit, allHabits);
     final isCompleted = _stackService.isStackCompleted(habit, allHabits);
     final steps = _stackService.getStackSteps(habit, allHabits);
-    final progressPercentage = _stackService.getStackProgressPercentage(habit, allHabits);
+    final progressPercentage =
+        _stackService.getStackProgressPercentage(habit, allHabits);
     final isExpanded = ref.watch(stackExpandedProvider(habit.id));
     final colors = ref.watchColors;
 
@@ -48,20 +50,20 @@ class _ExpandableStackTile extends ConsumerWidget {
         borderRadius: BorderRadius.circular(12),
         gradient: LinearGradient(
           colors: [
-            isCompleted 
-              ? colors.completedBackground.withOpacity(0.8)
-              : colors.stackHabit.withOpacity(0.15),
-            isCompleted 
-              ? colors.completedBackground.withOpacity(0.4)
-              : colors.stackHabit.withOpacity(0.08),
+            isCompleted
+                ? colors.completedBackground.withOpacity(0.8)
+                : colors.stackHabit.withOpacity(0.15),
+            isCompleted
+                ? colors.completedBackground.withOpacity(0.4)
+                : colors.stackHabit.withOpacity(0.08),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         border: Border.all(
-          color: isCompleted 
-            ? colors.completedBorder.withOpacity(0.8)
-            : colors.stackHabit.withOpacity(0.4),
+          color: isCompleted
+              ? colors.completedBorder.withOpacity(0.8)
+              : colors.stackHabit.withOpacity(0.4),
           width: 2,
         ),
         boxShadow: [
@@ -79,10 +81,13 @@ class _ExpandableStackTile extends ConsumerWidget {
           onTap: () => _navigateToStackInfo(context),
           child: Column(
             children: [
-              _buildStackHeader(context, ref, progress, isCompleted, progressPercentage, steps),
+              _buildStackHeader(context, ref, progress, isCompleted,
+                  progressPercentage, steps),
               AnimatedCrossFade(
                 duration: kExpandDuration,
-                crossFadeState: isExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+                crossFadeState: isExpanded
+                    ? CrossFadeState.showSecond
+                    : CrossFadeState.showFirst,
                 firstChild: const SizedBox.shrink(),
                 secondChild: _buildStepsSection(context, ref, steps),
               ),
@@ -94,27 +99,27 @@ class _ExpandableStackTile extends ConsumerWidget {
   }
 
   Widget _buildStackHeader(
-    BuildContext context, 
+    BuildContext context,
     WidgetRef ref,
-    StackProgress progress, 
-    bool isCompleted, 
+    StackProgress progress,
+    bool isCompleted,
     double progressPercentage,
     List<Habit> steps,
   ) {
     final isExpanded = ref.watch(stackExpandedProvider(habit.id));
     final colors = ref.watchColors;
-    
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            isCompleted 
-              ? colors.draculaGreen.withOpacity(0.15)
-              : colors.stackHabit.withOpacity(0.1),
-            isCompleted 
-              ? colors.draculaGreen.withOpacity(0.08)
-              : colors.stackHabit.withOpacity(0.05),
+            isCompleted
+                ? colors.draculaGreen.withOpacity(0.15)
+                : colors.stackHabit.withOpacity(0.1),
+            isCompleted
+                ? colors.draculaGreen.withOpacity(0.08)
+                : colors.stackHabit.withOpacity(0.05),
           ],
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
@@ -123,7 +128,8 @@ class _ExpandableStackTile extends ConsumerWidget {
       child: Row(
         children: [
           // Progress Ring
-          _buildProgressRing(progress, isCompleted, progressPercentage, context, ref),
+          _buildProgressRing(
+              progress, isCompleted, progressPercentage, context, ref),
           const SizedBox(width: 16),
           // Stack Info
           Expanded(
@@ -136,10 +142,11 @@ class _ExpandableStackTile extends ConsumerWidget {
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     decoration: isCompleted ? TextDecoration.lineThrough : null,
-                    color: isCompleted ? colors.draculaGreen : colors.stackHabit,
+                    color:
+                        isCompleted ? colors.draculaGreen : colors.stackHabit,
                   ),
                 ),
-                if (habit.description.isNotEmpty) ...[ 
+                if (habit.description.isNotEmpty) ...[
                   const SizedBox(height: 2),
                   Text(
                     habit.description,
@@ -171,10 +178,11 @@ class _ExpandableStackTile extends ConsumerWidget {
     );
   }
 
-  Widget _buildProgressRing(StackProgress progress, bool isCompleted, double progressPercentage, BuildContext context, WidgetRef ref) {
+  Widget _buildProgressRing(StackProgress progress, bool isCompleted,
+      double progressPercentage, BuildContext context, WidgetRef ref) {
     final steps = _stackService.getStackSteps(habit, allHabits);
     final colors = ref.watchColors;
-    
+
     // Build tooltip text with step names and completion status
     String tooltipText = 'Steps in this stack:\n';
     for (int i = 0; i < steps.length; i++) {
@@ -213,7 +221,10 @@ class _ExpandableStackTile extends ConsumerWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.15),
+                color: Theme.of(context)
+                    .colorScheme
+                    .surfaceContainerHighest
+                    .withOpacity(0.15),
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
@@ -229,7 +240,8 @@ class _ExpandableStackTile extends ConsumerWidget {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
-                    color: isCompleted ? colors.draculaGreen : colors.stackHabit,
+                    color:
+                        isCompleted ? colors.draculaGreen : colors.stackHabit,
                   ),
                 ),
               ),
@@ -240,10 +252,11 @@ class _ExpandableStackTile extends ConsumerWidget {
     );
   }
 
-  Widget _buildActionButtons(BuildContext context, WidgetRef ref, bool isCompleted, List<Habit> steps) {
+  Widget _buildActionButtons(BuildContext context, WidgetRef ref,
+      bool isCompleted, List<Habit> steps) {
     final colors = ref.watchColors;
     final nextStep = _stackService.getNextIncompleteStep(habit, allHabits);
-    
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -280,7 +293,8 @@ class _ExpandableStackTile extends ConsumerWidget {
                 backgroundColor: Colors.transparent,
                 foregroundColor: Colors.white,
                 shadowColor: Colors.transparent,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),
@@ -293,7 +307,8 @@ class _ExpandableStackTile extends ConsumerWidget {
     );
   }
 
-  Widget _buildStepsSection(BuildContext context, WidgetRef ref, List<Habit> steps) {
+  Widget _buildStepsSection(
+      BuildContext context, WidgetRef ref, List<Habit> steps) {
     final colors = ref.watchColors;
     if (steps.isEmpty) {
       return Container(
@@ -312,7 +327,10 @@ class _ExpandableStackTile extends ConsumerWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.08),
+        color: Theme.of(context)
+            .colorScheme
+            .surfaceContainerHighest
+            .withOpacity(0.08),
         border: Border(
           top: BorderSide(
             color: colors.draculaComment.withOpacity(0.3),
@@ -329,7 +347,10 @@ class _ExpandableStackTile extends ConsumerWidget {
             return Container(
               margin: const EdgeInsets.only(bottom: 1),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.05),
+                color: Theme.of(context)
+                    .colorScheme
+                    .surfaceContainerHighest
+                    .withOpacity(0.05),
                 border: Border(
                   bottom: BorderSide(
                     color: colors.draculaComment.withOpacity(0.3),
@@ -345,18 +366,19 @@ class _ExpandableStackTile extends ConsumerWidget {
     );
   }
 
-  Widget _buildNestedStepTile(BuildContext context, WidgetRef ref, Habit step, int index) {
+  Widget _buildNestedStepTile(
+      BuildContext context, WidgetRef ref, Habit step, int index) {
     final isCompleted = _isHabitCompletedToday(step);
     final colors = ref.watchColors;
     final nextStep = _stackService.getNextIncompleteStep(habit, allHabits);
     final isNext = nextStep?.id == step.id;
-    
+
     return Container(
       padding: const EdgeInsets.only(left: 16),
       decoration: BoxDecoration(
         border: Border(
           left: BorderSide(
-            color: isNext 
+            color: isNext
                 ? colors.stackHabit.withOpacity(0.7)
                 : colors.stackHabit.withOpacity(0.3),
             width: isNext ? 4 : 3,
@@ -371,12 +393,18 @@ class _ExpandableStackTile extends ConsumerWidget {
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: isNext
-                  ? [colors.stackHabit.withOpacity(0.3), colors.stackHabit.withOpacity(0.2)]
-                  : [colors.draculaComment.withOpacity(0.2), colors.draculaComment.withOpacity(0.1)],
+                  ? [
+                      colors.stackHabit.withOpacity(0.3),
+                      colors.stackHabit.withOpacity(0.2)
+                    ]
+                  : [
+                      colors.draculaComment.withOpacity(0.2),
+                      colors.draculaComment.withOpacity(0.1)
+                    ],
             ),
             shape: BoxShape.circle,
             border: Border.all(
-              color: isNext 
+              color: isNext
                   ? colors.stackHabit.withOpacity(0.5)
                   : colors.draculaComment.withOpacity(0.3),
               width: 1,
@@ -401,9 +429,9 @@ class _ExpandableStackTile extends ConsumerWidget {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
-                    color: isNext 
-                        ? colors.stackHabit 
-                        : isCompleted 
+                    color: isNext
+                        ? colors.stackHabit
+                        : isCompleted
                             ? colors.draculaGreen
                             : colors.draculaPurple,
                     decoration: isCompleted ? TextDecoration.lineThrough : null,
@@ -445,23 +473,26 @@ class _ExpandableStackTile extends ConsumerWidget {
               ),
           ],
         ),
-        trailing: isCompleted 
-          ? Icon(Icons.check_circle, color: colors.draculaGreen, size: 20)
-          : isNext
-              ? Icon(Icons.play_circle_outline, color: colors.stackHabit, size: 20)
-              : Icon(Icons.radio_button_unchecked, color: colors.draculaComment, size: 20),
+        trailing: isCompleted
+            ? Icon(Icons.check_circle, color: colors.draculaGreen, size: 20)
+            : isNext
+                ? Icon(Icons.play_circle_outline,
+                    color: colors.stackHabit, size: 20)
+                : Icon(Icons.radio_button_unchecked,
+                    color: colors.draculaComment, size: 20),
         onTap: isNext ? () => _handleNestedStepTap(context, ref, step) : null,
       ),
     );
   }
 
-  Future<void> _handleNestedStepTap(BuildContext context, WidgetRef ref, Habit step) async {
+  Future<void> _handleNestedStepTap(
+      BuildContext context, WidgetRef ref, Habit step) async {
     if (_isHabitCompletedToday(step)) return; // Already completed
-    
+
     final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
     final result = await habitsNotifier.completeHabit(step.id);
     final colors = ref.watchColors;
-    
+
     if (result != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -472,7 +503,8 @@ class _ExpandableStackTile extends ConsumerWidget {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('✅ ${step.name} completed! +${step.calculateXPReward()} XP'),
+          content:
+              Text('✅ ${step.name} completed! +${step.calculateXPReward()} XP'),
           backgroundColor: colors.success,
         ),
       );
@@ -492,13 +524,15 @@ class _ExpandableStackTile extends ConsumerWidget {
   }
 
   void _showAddStepDialog(BuildContext context, WidgetRef ref) {
-    final allAvailableHabits = _stackService.getAvailableHabitsForStack(allHabits);
+    final allAvailableHabits =
+        _stackService.getAvailableHabitsForStack(allHabits);
     final colors = ref.watchColors;
-    
+
     if (allAvailableHabits.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('No available habits to add. Create some individual habits first!'),
+          content: const Text(
+              'No available habits to add. Create some individual habits first!'),
           backgroundColor: colors.warning,
         ),
       );
@@ -513,7 +547,9 @@ class _ExpandableStackTile extends ConsumerWidget {
           children: [
             Icon(Icons.add_circle, color: colors.stackHabit),
             const SizedBox(width: 8),
-            Expanded(child: Text('Add to ${habit.name}', style: TextStyle(color: colors.stackHabit))),
+            Expanded(
+                child: Text('Add to ${habit.name}',
+                    style: TextStyle(color: colors.stackHabit))),
           ],
         ),
         content: SizedBox(
@@ -542,14 +578,16 @@ class _ExpandableStackTile extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: Text('Cancel', style: TextStyle(color: colors.draculaComment)),
+            child:
+                Text('Cancel', style: TextStyle(color: colors.draculaComment)),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildAddHabitTile(BuildContext context, WidgetRef ref, Habit habitToAdd, FlexibleColors colors) {
+  Widget _buildAddHabitTile(BuildContext context, WidgetRef ref,
+      Habit habitToAdd, FlexibleColors colors) {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
@@ -584,10 +622,12 @@ class _ExpandableStackTile extends ConsumerWidget {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: _getHabitTypeColor(habitToAdd.type).withOpacity(0.15),
+                    color:
+                        _getHabitTypeColor(habitToAdd.type).withOpacity(0.15),
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: _getHabitTypeColor(habitToAdd.type).withOpacity(0.3),
+                      color:
+                          _getHabitTypeColor(habitToAdd.type).withOpacity(0.3),
                       width: 2,
                     ),
                   ),
@@ -655,7 +695,7 @@ class _ExpandableStackTile extends ConsumerWidget {
         return Icons.layers;
     }
   }
-  
+
   Color _getHabitTypeColor(HabitType type) {
     switch (type) {
       case HabitType.basic:
@@ -671,7 +711,7 @@ class _ExpandableStackTile extends ConsumerWidget {
 
   void _addHabitToStack(BuildContext context, WidgetRef ref, String habitId) {
     final colors = ref.watchColors;
-    
+
     // Add logic to add habit to stack
     try {
       // This would need to be implemented in the habits provider
@@ -707,7 +747,7 @@ class _ExpandableStackTile extends ConsumerWidget {
     final now = DateTime.now();
     final lastCompleted = habit.lastCompleted!;
     return now.year == lastCompleted.year &&
-           now.month == lastCompleted.month &&
-           now.day == lastCompleted.day;
+        now.month == lastCompleted.month &&
+        now.day == lastCompleted.day;
   }
 }

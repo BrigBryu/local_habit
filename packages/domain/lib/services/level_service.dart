@@ -34,14 +34,15 @@ class LevelService {
     final oldLevel = _currentLevel;
     _currentXP += amount;
     _updateLevel();
-    
-    print('🎯 +$amount XP${source != null ? ' from $source' : ''} (Total: $_currentXP)');
-    
+
+    print(
+        '🎯 +$amount XP${source != null ? ' from $source' : ''} (Total: $_currentXP)');
+
     final leveledUp = _currentLevel > oldLevel;
     if (leveledUp) {
       print('🎉 LEVEL UP! Level $_currentLevel unlocked!');
     }
-    
+
     return leveledUp;
   }
 

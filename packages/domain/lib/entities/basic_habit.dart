@@ -9,14 +9,17 @@ class BasicHabit extends BaseHabit {
     required super.name,
     required super.description,
     required super.createdAt,
+    super.updatedAt,
     super.lastCompleted,
     super.currentStreak = 0,
     super.dailyCompletionCount = 0,
     super.lastCompletionCountReset,
+    super.habitIcon = HabitIcon.basic,
+    super.timeOfDay = TimeOfDay.anytime,
   });
 
   @override
-  HabitIcon get icon => HabitIcon.basic;
+  HabitIcon get icon => habitIcon;
 
   @override
   String get typeName => 'Basic Habit';
@@ -38,7 +41,7 @@ class BasicHabit extends BaseHabit {
   BasicHabit complete() {
     final timeService = TimeService();
     final now = timeService.now();
-    
+
     // Calculate new streak
     int newStreak = currentStreak;
     if (lastCompleted != null) {
@@ -71,20 +74,27 @@ class BasicHabit extends BaseHabit {
     String? name,
     String? description,
     DateTime? createdAt,
+    DateTime? updatedAt,
     DateTime? lastCompleted,
     int? currentStreak,
     int? dailyCompletionCount,
     DateTime? lastCompletionCountReset,
+    HabitIcon? habitIcon,
+    TimeOfDay? timeOfDay,
   }) {
     return BasicHabit(
       id: id ?? this.id,
       name: name ?? this.name,
       description: description ?? this.description,
       createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
       lastCompleted: lastCompleted ?? this.lastCompleted,
       currentStreak: currentStreak ?? this.currentStreak,
       dailyCompletionCount: dailyCompletionCount ?? this.dailyCompletionCount,
-      lastCompletionCountReset: lastCompletionCountReset ?? this.lastCompletionCountReset,
+      lastCompletionCountReset:
+          lastCompletionCountReset ?? this.lastCompletionCountReset,
+      habitIcon: habitIcon ?? this.habitIcon,
+      timeOfDay: timeOfDay ?? this.timeOfDay,
     );
   }
 
@@ -92,12 +102,18 @@ class BasicHabit extends BaseHabit {
   factory BasicHabit.create({
     required String name,
     required String description,
+    HabitIcon? habitIcon,
+    TimeOfDay? timeOfDay,
   }) {
+    final now = DateTime.now();
     return BasicHabit(
       id: BaseHabit.generateId(),
       name: name,
       description: description,
-      createdAt: DateTime.now(),
+      createdAt: now,
+      updatedAt: now,
+      habitIcon: habitIcon ?? HabitIcon.basic,
+      timeOfDay: timeOfDay ?? TimeOfDay.anytime,
     );
   }
 }

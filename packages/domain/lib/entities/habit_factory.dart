@@ -1,4 +1,3 @@
-
 import 'base_habit.dart';
 import 'basic_habit.dart';
 import 'habit_stack.dart';
@@ -97,7 +96,7 @@ class HabitFactory {
     switch (type) {
       case HabitType.basic:
         return createBasic(name: name, description: description);
-      
+
       case HabitType.stack:
         if (stackedOnHabitId == null) {
           throw ArgumentError('Habit stack requires stackedOnHabitId');
@@ -107,7 +106,7 @@ class HabitFactory {
           description: description,
           stackedOnHabitId: stackedOnHabitId,
         );
-      
+
       // TODO(bridger): Disabled time-based habit types
       // case HabitType.alarmHabit:
       //   if (stackedOnHabitId == null || alarmTime == null || windowMinutes == null) {
@@ -120,7 +119,7 @@ class HabitFactory {
       //     alarmTime: alarmTime,
       //     windowMinutes: windowMinutes,
       //   );
-      // 
+      //
       // case HabitType.timedSession:
       //   if (sessionMinutes == null) {
       //     throw ArgumentError('Timed session requires sessionMinutes');
@@ -131,7 +130,7 @@ class HabitFactory {
       //     sessionMinutes: sessionMinutes,
       //     graceMinutes: graceMinutes ?? 15,
       //   );
-      // 
+      //
       // case HabitType.timeWindow:
       //   if (windowStartTime == null || windowEndTime == null || availableDays == null) {
       //     throw ArgumentError('Time window requires windowStartTime, windowEndTime, and availableDays');

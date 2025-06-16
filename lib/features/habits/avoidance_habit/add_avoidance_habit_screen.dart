@@ -12,10 +12,12 @@ class AddAvoidanceHabitScreen extends BaseAddHabitScreen {
   const AddAvoidanceHabitScreen({super.key});
 
   @override
-  ConsumerState<AddAvoidanceHabitScreen> createState() => _AddAvoidanceHabitScreenState();
+  ConsumerState<AddAvoidanceHabitScreen> createState() =>
+      _AddAvoidanceHabitScreenState();
 }
 
-class _AddAvoidanceHabitScreenState extends BaseAddHabitScreenState<AddAvoidanceHabitScreen> {
+class _AddAvoidanceHabitScreenState
+    extends BaseAddHabitScreenState<AddAvoidanceHabitScreen> {
   @override
   String get screenTitle => 'Add Avoidance Habit';
 
@@ -29,7 +31,8 @@ class _AddAvoidanceHabitScreenState extends BaseAddHabitScreenState<AddAvoidance
   String get currentRoute => '/add-avoidance-habit';
 
   @override
-  bool get showHabitTypeSelector => true; // Enable dropdown to select habit types
+  bool get showHabitTypeSelector =>
+      true; // Enable dropdown to select habit types
 
   @override
   Widget buildCustomContent(BuildContext context) {

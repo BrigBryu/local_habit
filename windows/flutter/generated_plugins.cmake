@@ -5,6 +5,7 @@
 list(APPEND FLUTTER_PLUGIN_LIST
   app_links
   isar_flutter_libs
+  sentry_flutter
   url_launcher_windows
 )
 

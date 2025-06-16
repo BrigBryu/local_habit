@@ -18,7 +18,8 @@ class HomePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final habits = ref.watch(homeHabitsProvider);
-    final allHabits = ref.watch(habitsProvider); // Get ALL habits for bundle children
+    final allHabits =
+        ref.watch(habitsProvider); // Get ALL habits for bundle children
     final routeAvailability = ref.watch(routeAvailabilityProvider);
 
     return Scaffold(
@@ -57,57 +58,58 @@ class HomePage extends ConsumerWidget {
           child: Column(
             children: [
               const SizedBox(height: 16),
-              
+
               // Level bar at top
               LevelBar(
                 onTap: () => _navigateToLevels(context, routeAvailability),
               ),
-              
+
               const SizedBox(height: 24),
-              
+
               // Habits section header
               Row(
                 children: [
                   Text(
                     'Today\'s Habits',
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
                   const Spacer(),
                   Text(
                     '${habits.length} total',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
+                          color: AppColors.textSecondary,
+                        ),
                   ),
                 ],
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               // Habits list
               Expanded(
-                child: habits.isEmpty 
-                  ? _buildEmptyState(context)
-                  : ListView.builder(
-                      itemCount: habits.length,
-                      itemBuilder: (context, index) {
-                        final habit = habits[index];
-                        // Use different tiles for different habit types
-                        if (habit.type == HabitType.bundle) {
-                          return BundleHabitTile(
-                            habit: habit,
-                            allHabits: allHabits.value ?? [], // Extract value from AsyncValue
-                          );
-                        } else {
-                          return HabitTile(
-                            habit: habit,
-                            onTap: () => _navigateToViewHabit(context, habit),
-                          );
-                        }
-                      },
-                    ),
+                child: habits.isEmpty
+                    ? _buildEmptyState(context)
+                    : ListView.builder(
+                        itemCount: habits.length,
+                        itemBuilder: (context, index) {
+                          final habit = habits[index];
+                          // Use different tiles for different habit types
+                          if (habit.type == HabitType.bundle) {
+                            return BundleHabitTile(
+                              habit: habit,
+                              allHabits: allHabits.value ??
+                                  [], // Extract value from AsyncValue
+                            );
+                          } else {
+                            return HabitTile(
+                              habit: habit,
+                              onTap: () => _navigateToViewHabit(context, habit),
+                            );
+                          }
+                        },
+                      ),
               ),
             ],
           ),
@@ -116,12 +118,15 @@ class HomePage extends ConsumerWidget {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _navigateToAddHabit(context, routeAvailability),
         icon: Icon(Icons.add, color: AppColors.primaryPurple),
-        label: Text('Add Habit', style: TextStyle(color: AppColors.primaryPurple, fontWeight: FontWeight.w600)),
+        label: Text('Add Habit',
+            style: TextStyle(
+                color: AppColors.primaryPurple, fontWeight: FontWeight.w600)),
         backgroundColor: AppColors.completedBackground,
         elevation: 2,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: AppColors.primaryPurple.withOpacity(0.3), width: 1),
+          side: BorderSide(
+              color: AppColors.primaryPurple.withOpacity(0.3), width: 1),
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
@@ -142,16 +147,16 @@ class HomePage extends ConsumerWidget {
           Text(
             'No habits yet',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: AppColors.textSecondary,
-              fontWeight: FontWeight.w500,
-            ),
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w500,
+                ),
           ),
           const SizedBox(height: 8),
           Text(
             'Tap the button below to create your first habit',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.textTertiary,
-            ),
+                  color: AppColors.textTertiary,
+                ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 120), // Space for FAB
@@ -160,7 +165,8 @@ class HomePage extends ConsumerWidget {
     );
   }
 
-  void _navigateToAddHabit(BuildContext context, Map<String, bool> routeAvailability) {
+  void _navigateToAddHabit(
+      BuildContext context, Map<String, bool> routeAvailability) {
     if (routeAvailability['addHabit'] == true) {
       try {
         Navigator.of(context).push(
@@ -176,7 +182,8 @@ class HomePage extends ConsumerWidget {
     }
   }
 
-  void _navigateToLevels(BuildContext context, Map<String, bool> routeAvailability) {
+  void _navigateToLevels(
+      BuildContext context, Map<String, bool> routeAvailability) {
     if (routeAvailability['levels'] == true) {
       try {
         Navigator.of(context).push(

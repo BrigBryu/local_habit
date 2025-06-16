@@ -15,7 +15,8 @@ class BasicHabitInfoScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final habitsAsync = ref.watch(habitsProvider);
-    final currentHabit = habitsAsync.value?.firstWhere((h) => h.id == habit.id) ?? habit;
+    final currentHabit =
+        habitsAsync.value?.firstWhere((h) => h.id == habit.id) ?? habit;
     final isCompleted = _isHabitCompletedToday(currentHabit);
     final colors = ref.watchColors;
 
@@ -32,7 +33,8 @@ class BasicHabitInfoScreen extends ConsumerWidget {
             TextButton.icon(
               onPressed: () => _completeHabit(context, ref),
               icon: Icon(Icons.check, color: colors.draculaGreen),
-              label: Text('Complete', style: TextStyle(color: colors.draculaGreen)),
+              label: Text('Complete',
+                  style: TextStyle(color: colors.draculaGreen)),
             ),
         ],
       ),
@@ -95,38 +97,41 @@ class BasicHabitInfoScreen extends ConsumerWidget {
                           height: 80,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: isCompleted 
-                              ? colors.draculaGreen.withOpacity(0.15)
-                              : colors.draculaCurrentLine.withOpacity(0.15),
+                            color: isCompleted
+                                ? colors.draculaGreen.withOpacity(0.15)
+                                : colors.draculaCurrentLine.withOpacity(0.15),
                             border: Border.all(
-                              color: isCompleted 
-                                ? colors.draculaGreen
-                                : colors.draculaCyan,
+                              color: isCompleted
+                                  ? colors.draculaGreen
+                                  : colors.draculaCyan,
                               width: 3,
                             ),
                           ),
                           child: Icon(
-                            isCompleted ? Icons.check_circle : Icons.circle_outlined,
-                            color: isCompleted 
-                              ? colors.draculaGreen
-                              : colors.draculaCyan,
+                            isCompleted
+                                ? Icons.check_circle
+                                : Icons.circle_outlined,
+                            color: isCompleted
+                                ? colors.draculaGreen
+                                : colors.draculaCyan,
                             size: 40,
                           ),
                         ),
                       ],
                     ),
-                    if (habit.description.isNotEmpty) ...[ 
+                    if (habit.description.isNotEmpty) ...[
                       const SizedBox(height: 16),
                       Text(
                         habit.description,
-                        style: TextStyle(fontSize: 16, color: colors.draculaCyan),
+                        style:
+                            TextStyle(fontSize: 16, color: colors.draculaCyan),
                       ),
                     ],
                   ],
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 24),
 
             // Habit Stats
@@ -166,7 +171,9 @@ class BasicHabitInfoScreen extends ConsumerWidget {
                           child: _buildStatItem(
                             'Status',
                             isCompleted ? 'Completed' : 'Not completed',
-                            isCompleted ? colors.draculaGreen : colors.draculaOrange,
+                            isCompleted
+                                ? colors.draculaGreen
+                                : colors.draculaOrange,
                             isCompleted ? Icons.check_circle : Icons.schedule,
                           ),
                         ),
@@ -264,7 +271,8 @@ class BasicHabitInfoScreen extends ConsumerWidget {
                           ),
                         ),
                         icon: const Icon(Icons.check, size: 20),
-                        label: const Text('Complete Habit', style: TextStyle(fontSize: 16)),
+                        label: const Text('Complete Habit',
+                            style: TextStyle(fontSize: 16)),
                       ),
                     ),
                   ),
@@ -285,7 +293,8 @@ class BasicHabitInfoScreen extends ConsumerWidget {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.check_circle, color: colors.draculaGreen, size: 20),
+                            Icon(Icons.check_circle,
+                                color: colors.draculaGreen, size: 20),
                             const SizedBox(width: 8),
                             Text(
                               'Completed!',
@@ -329,7 +338,8 @@ class BasicHabitInfoScreen extends ConsumerWidget {
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.lightbulb_outline, color: colors.draculaYellow),
+                        Icon(Icons.lightbulb_outline,
+                            color: colors.draculaYellow),
                         const SizedBox(width: 8),
                         Text(
                           'Tips for Success',
@@ -362,34 +372,33 @@ class BasicHabitInfoScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildStatItem(String label, String value, Color color, IconData icon) {
-    return Consumer(
-      builder: (context, ref, child) {
-        final colors = ref.watchColors;
-        return Column(
-          children: [
-            Icon(icon, color: color, size: 24),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: color,
-              ),
+  Widget _buildStatItem(
+      String label, String value, Color color, IconData icon) {
+    return Consumer(builder: (context, ref, child) {
+      final colors = ref.watchColors;
+      return Column(
+        children: [
+          Icon(icon, color: color, size: 24),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: color,
             ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                color: colors.draculaComment,
-              ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: colors.draculaComment,
             ),
-          ],
-        );
-      }
-    );
+          ),
+        ],
+      );
+    });
   }
 
   bool _isHabitCompletedToday(Habit habit) {
@@ -397,17 +406,17 @@ class BasicHabitInfoScreen extends ConsumerWidget {
     final now = DateTime.now();
     final lastCompleted = habit.lastCompleted!;
     return now.year == lastCompleted.year &&
-           now.month == lastCompleted.month &&
-           now.day == lastCompleted.day;
+        now.month == lastCompleted.month &&
+        now.day == lastCompleted.day;
   }
 
   Future<void> _completeHabit(BuildContext context, WidgetRef ref) async {
     if (_isHabitCompletedToday(habit)) return;
-    
+
     final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
     final result = await habitsNotifier.completeHabit(habit.id);
     final colors = ref.watchColors;
-    
+
     if (result != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(result)),
@@ -415,7 +424,8 @@ class BasicHabitInfoScreen extends ConsumerWidget {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('${habit.name} completed! +${habit.calculateXPReward()} XP'),
+          content:
+              Text('${habit.name} completed! +${habit.calculateXPReward()} XP'),
           backgroundColor: colors.draculaGreen,
           behavior: SnackBarBehavior.floating,
         ),

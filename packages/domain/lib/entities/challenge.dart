@@ -48,7 +48,7 @@ class Challenge {
   }) {
     final timeService = TimeService();
     final now = timeService.now();
-    
+
     return Challenge(
       id: _generateId(),
       title: title,
@@ -63,7 +63,7 @@ class Challenge {
   /// Complete this challenge
   Challenge complete() {
     if (isCompleted) return this;
-    
+
     final timeService = TimeService();
     return Challenge(
       id: id,
@@ -114,18 +114,19 @@ class Challenge {
       case ChallengeType.streak:
         final streakCount = progress['streakCount'] ?? 0;
         return (streakCount / 3).clamp(0.0, 1.0);
-      
+
       case ChallengeType.volume:
         final completionCount = progress['completionCount'] ?? 0;
         return (completionCount / 5).clamp(0.0, 1.0);
-      
+
       case ChallengeType.variety:
-        final typeCount = (progress['completedTypes'] as List<String>?)?.length ?? 0;
+        final typeCount =
+            (progress['completedTypes'] as List<String>?)?.length ?? 0;
         return (typeCount / 3).clamp(0.0, 1.0);
-      
+
       case ChallengeType.speed:
         return progress['completed'] == true ? 1.0 : 0.0;
-      
+
       case ChallengeType.perfect:
         final totalHabits = progress['totalHabits'] ?? 1;
         final completedHabits = progress['completedHabits'] ?? 0;
@@ -139,18 +140,19 @@ class Challenge {
       case ChallengeType.streak:
         final streakCount = progress['streakCount'] ?? 0;
         return '$streakCount/3 streak';
-      
+
       case ChallengeType.volume:
         final completionCount = progress['completionCount'] ?? 0;
         return '$completionCount/5 habits';
-      
+
       case ChallengeType.variety:
-        final typeCount = (progress['completedTypes'] as List<String>?)?.length ?? 0;
+        final typeCount =
+            (progress['completedTypes'] as List<String>?)?.length ?? 0;
         return '$typeCount/3 types';
-      
+
       case ChallengeType.speed:
         return progress['completed'] == true ? 'Completed!' : 'In progress';
-      
+
       case ChallengeType.perfect:
         final totalHabits = progress['totalHabits'] ?? 1;
         final completedHabits = progress['completedHabits'] ?? 0;
@@ -159,7 +161,8 @@ class Challenge {
   }
 
   @override
-  String toString() => 'Challenge(id: $id, title: $title, progress: ${(progressPercentage * 100).round()}%)';
+  String toString() =>
+      'Challenge(id: $id, title: $title, progress: ${(progressPercentage * 100).round()}%)';
 }
 
 /// Simple ID generator for challenges

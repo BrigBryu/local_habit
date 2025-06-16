@@ -53,7 +53,6 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            
             TextField(
               controller: _descriptionController,
               style: TextStyle(color: AppColors.draculaForeground),
@@ -71,7 +70,6 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            
             DropdownButtonFormField<HabitType>(
               value: _selectedType,
               style: TextStyle(color: AppColors.draculaForeground),
@@ -91,11 +89,13 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
               items: [
                 DropdownMenuItem(
                   value: HabitType.basic,
-                  child: Text('Basic Habit', style: TextStyle(color: AppColors.draculaForeground)),
+                  child: Text('Basic Habit',
+                      style: TextStyle(color: AppColors.draculaForeground)),
                 ),
                 DropdownMenuItem(
                   value: HabitType.avoidance,
-                  child: Text('Avoidance Habit', style: TextStyle(color: AppColors.draculaForeground)),
+                  child: Text('Avoidance Habit',
+                      style: TextStyle(color: AppColors.draculaForeground)),
                 ),
               ],
               onChanged: (value) {
@@ -105,7 +105,6 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
               },
             ),
             const SizedBox(height: 32),
-            
             ElevatedButton(
               onPressed: _saveHabit,
               style: ElevatedButton.styleFrom(

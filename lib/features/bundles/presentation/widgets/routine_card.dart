@@ -62,7 +62,8 @@ class _RoutineCardState extends State<RoutineCard>
     setState(() => _isCompleting = true);
 
     try {
-      await widget.habitService.completeBundle(widget.bundleData.bundleHabit.id);
+      await widget.habitService
+          .completeBundle(widget.bundleData.bundleHabit.id);
       widget.onUpdated?.call();
 
       if (mounted) {
@@ -162,23 +163,25 @@ class _RoutineCardState extends State<RoutineCard>
                       children: [
                         Text(
                           bundle.name,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            decoration: isCompleted
-                                ? TextDecoration.lineThrough
-                                : null,
-                            color: isCompleted
-                                ? Colors.grey[600]
-                                : null,
-                          ),
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleMedium
+                              ?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                decoration: isCompleted
+                                    ? TextDecoration.lineThrough
+                                    : null,
+                                color: isCompleted ? Colors.grey[600] : null,
+                              ),
                         ),
                         if (bundle.description.isNotEmpty) ...[
                           const SizedBox(height: 4),
                           Text(
                             bundle.description,
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Colors.grey[600],
-                            ),
+                            style:
+                                Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: Colors.grey[600],
+                                    ),
                           ),
                         ],
                         const SizedBox(height: 4),
@@ -192,9 +195,12 @@ class _RoutineCardState extends State<RoutineCard>
                             const SizedBox(width: 4),
                             Text(
                               '${progress.completed}/${progress.total} habits',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: Colors.grey[600],
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
+                                    color: Colors.grey[600],
+                                  ),
                             ),
                             const Spacer(),
                             if (bundle.currentStreak > 0) ...[
@@ -206,10 +212,13 @@ class _RoutineCardState extends State<RoutineCard>
                               const SizedBox(width: 2),
                               Text(
                                 '${bundle.currentStreak}',
-                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: Colors.orange,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(
+                                      color: Colors.orange,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                               ),
                             ],
                           ],
@@ -283,17 +292,20 @@ class _RoutineCardState extends State<RoutineCard>
                       children: [
                         Text(
                           'Habit Tasks',
-                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.grey[700],
-                          ),
+                          style:
+                              Theme.of(context).textTheme.titleSmall?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.grey[700],
+                                  ),
                         ),
                         const SizedBox(height: 8),
                         ...List.generate(
                           widget.bundleData.childHabits.length,
                           (index) {
-                            final childHabit = widget.bundleData.childHabits[index];
-                            final isChildCompleted = isHabitCompletedToday(childHabit);
+                            final childHabit =
+                                widget.bundleData.childHabits[index];
+                            final isChildCompleted =
+                                isHabitCompletedToday(childHabit);
 
                             return Padding(
                               padding: const EdgeInsets.only(bottom: 8),

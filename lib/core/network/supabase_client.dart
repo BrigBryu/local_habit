@@ -16,7 +16,8 @@ class SupabaseClientService {
 
   SupabaseClient get supabase {
     if (!_initialized) {
-      throw Exception('SupabaseClientService not initialized. Call initialize() first.');
+      throw Exception(
+          'SupabaseClientService not initialized. Call initialize() first.');
     }
     return Supabase.instance.client;
   }
@@ -30,7 +31,7 @@ class SupabaseClientService {
     try {
       // Load environment variables
       await dotenv.load(fileName: ".env");
-      
+
       final supabaseUrl = dotenv.env['SUPABASE_URL'];
       final supabaseAnonKey = dotenv.env['SUPABASE_ANON_KEY'];
 
@@ -41,19 +42,26 @@ class SupabaseClientService {
       await Supabase.initialize(
         url: supabaseUrl,
         anonKey: supabaseAnonKey,
-        debug: false, // Set to true for debugging
+        authOptions: const FlutterAuthClientOptions(
+          authFlowType: AuthFlowType.pkce,
+        ),
+        realtimeClientOptions: const RealtimeClientOptions(
+          logLevel: RealtimeLogLevel.info,
+        ),
+        debug: true, // Enable verbose debugging
       );
 
       _initialized = true;
       _logger.i('Supabase initialized successfully');
     } catch (e, stackTrace) {
-      _logger.e('Failed to initialize Supabase', error: e, stackTrace: stackTrace);
+      _logger.e('Failed to initialize Supabase',
+          error: e, stackTrace: stackTrace);
       rethrow;
     }
   }
 
   bool get isInitialized => _initialized;
-  
+
   bool get isOnline {
     try {
       // Simple check - in a real app you'd want more sophisticated network detection

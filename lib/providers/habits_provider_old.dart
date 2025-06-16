@@ -22,33 +22,31 @@ class HabitsNotifier extends StateNotifier<List<Habit>> {
   }
 
   void updateHabit(Habit updatedHabit) {
-    state = state.map((habit) => 
-      habit.id == updatedHabit.id ? updatedHabit : habit
-    ).toList();
+    state = state
+        .map((habit) => habit.id == updatedHabit.id ? updatedHabit : habit)
+        .toList();
   }
 
   void removeHabit(String habitId) {
     // Remove the habit itself
     state = state.where((habit) => habit.id != habitId).toList();
-    
+
     // Clean up any bundles that reference this habit
     final updatedBundles = <Habit>[];
     for (final habit in state) {
-      if (habit.type == HabitType.bundle && 
-          habit.bundleChildIds != null && 
+      if (habit.type == HabitType.bundle &&
+          habit.bundleChildIds != null &&
           habit.bundleChildIds!.contains(habitId)) {
-        
         // Remove the deleted habit from bundle's child list
-        final updatedChildIds = habit.bundleChildIds!
-            .where((id) => id != habitId)
-            .toList();
-            
+        final updatedChildIds =
+            habit.bundleChildIds!.where((id) => id != habitId).toList();
+
         // If bundle has less than 2 children after removal, delete the bundle too
         if (updatedChildIds.length < 2) {
           // Bundle becomes invalid, remove it entirely
           continue;
         }
-        
+
         // Update bundle with remaining children
         final updatedBundle = Habit(
           id: habit.id,
@@ -80,17 +78,18 @@ class HabitsNotifier extends StateNotifier<List<Habit>> {
         updatedBundles.add(updatedBundle);
       }
     }
-    
+
     // Apply bundle updates
     for (final updatedBundle in updatedBundles) {
       updateHabit(updatedBundle);
     }
-    
+
     // Remove any bundles that became invalid (less than 2 children)
-    state = state.where((habit) => 
-      habit.type != HabitType.bundle || 
-      (habit.bundleChildIds?.length ?? 0) >= 2
-    ).toList();
+    state = state
+        .where((habit) =>
+            habit.type != HabitType.bundle ||
+            (habit.bundleChildIds?.length ?? 0) >= 2)
+        .toList();
 
     // Clean up any stacks that had this habit as a step
     // If a stack loses all its steps, it becomes empty but stays valid
@@ -117,21 +116,21 @@ class HabitsNotifier extends StateNotifier<List<Habit>> {
 
   String? recordFailure(String habitId) {
     final habit = state.firstWhere((h) => h.id == habitId);
-    
+
     if (habit.type != HabitType.avoidance) {
       return 'Only avoidance habits can record failures';
     }
 
     final failedHabit = habit.recordFailure();
     updateHabit(failedHabit);
-    
+
     final count = failedHabit.dailyFailureCount;
     return '${habit.name} failed ${count}x today. Streak broken.';
   }
 
   String? completeHabit(String habitId) {
     final habit = state.firstWhere((h) => h.id == habitId);
-    
+
     // TODO(bridger): Time window validation disabled (timed habits disabled)
     // Validate time window completion if applicable
     // final validationError = _timedHabitService.validateTimeWindowCompletion(habit);
@@ -142,20 +141,22 @@ class HabitsNotifier extends StateNotifier<List<Habit>> {
 
     final completedHabit = habit.complete();
     final xpReward = completedHabit.calculateXPReward();
-    
+
     // Add XP with streak bonus for first completion of the day
     var totalXP = xpReward;
-    if ((habit.type == HabitType.basic && completedHabit.dailyCompletionCount == 1) ||
+    if ((habit.type == HabitType.basic &&
+            completedHabit.dailyCompletionCount == 1) ||
         (habit.type == HabitType.avoidance && !habit.avoidanceSuccessToday)) {
       // Add streak bonus for first completion
       if (completedHabit.currentStreak >= 3) {
         totalXP += (completedHabit.currentStreak / 3).floor();
       }
     }
-    
-    final leveledUp = _levelService.addXP(totalXP, source: '${habit.name} completion');
+
+    final leveledUp =
+        _levelService.addXP(totalXP, source: '${habit.name} completion');
     updateHabit(completedHabit);
-    
+
     // Return success message with completion count for basic habits
     if (habit.type == HabitType.basic) {
       final count = completedHabit.dailyCompletionCount;
@@ -173,19 +174,19 @@ class HabitsNotifier extends StateNotifier<List<Habit>> {
         return '${habit.name} marked as successful despite ${completedHabit.dailyFailureCount} failure(s)$xpText${leveledUp ? ' 🎉 LEVEL UP!' : ''}';
       }
     }
-    
+
     return null; // Success, no specific message
   }
 
   String? completeBundle(String bundleId) {
     final bundle = state.firstWhere((h) => h.id == bundleId);
-    
+
     if (bundle.type != HabitType.bundle) {
       return 'Not a bundle habit';
     }
 
     final result = _bundleService.completeBundle(bundle, state);
-    
+
     if (result.completedHabits.isEmpty) {
       return 'All habits in bundle already completed';
     }
@@ -204,8 +205,9 @@ class HabitsNotifier extends StateNotifier<List<Habit>> {
       } else {
         xpBreakdown = ' (+${result.totalXP} XP)';
       }
-      
-      final leveledUp = _levelService.addXP(result.totalXP, source: '${bundle.name} bundle completion');
+
+      final leveledUp = _levelService.addXP(result.totalXP,
+          source: '${bundle.name} bundle completion');
       return 'Bundle completed! ${result.completedHabits.length} habits done$xpBreakdown${leveledUp ? ' 🎉 LEVEL UP!' : ''}';
     }
 
@@ -220,13 +222,15 @@ class HabitsNotifier extends StateNotifier<List<Habit>> {
         childIds: childIds,
         allHabits: state,
       );
-      
+
       // Add the bundle
-      print('Creating bundle: ${bundle.name}, type: ${bundle.type}, children: ${bundle.bundleChildIds}'); // Debug
+      print(
+          'Creating bundle: ${bundle.name}, type: ${bundle.type}, children: ${bundle.bundleChildIds}'); // Debug
       addHabit(bundle);
-      
+
       // Update child habits to reference the bundle
-      final updatedChildren = _bundleService.assignChildrenToBundle(bundle.id, childIds, state);
+      final updatedChildren =
+          _bundleService.assignChildrenToBundle(bundle.id, childIds, state);
       for (final updatedChild in updatedChildren) {
         updateHabit(updatedChild);
       }
@@ -240,14 +244,13 @@ class HabitsNotifier extends StateNotifier<List<Habit>> {
     try {
       final bundle = state.firstWhere((h) => h.id == bundleId);
       final habit = state.firstWhere((h) => h.id == habitId);
-      
+
       // If habit is already in a bundle, remove it from the old bundle first
       if (habit.parentBundleId != null && habit.parentBundleId != bundleId) {
         final oldBundle = state.firstWhere((h) => h.id == habit.parentBundleId);
-        final updatedOldBundleChildIds = oldBundle.bundleChildIds!
-            .where((id) => id != habitId)
-            .toList();
-        
+        final updatedOldBundleChildIds =
+            oldBundle.bundleChildIds!.where((id) => id != habitId).toList();
+
         if (updatedOldBundleChildIds.length < 2) {
           // Old bundle becomes invalid, remove it entirely
           removeHabit(oldBundle.id);
@@ -279,7 +282,7 @@ class HabitsNotifier extends StateNotifier<List<Habit>> {
           updateHabit(updatedOldBundle);
         }
       }
-      
+
       // Add to new bundle
       final currentChildIds = bundle.bundleChildIds ?? [];
       if (!currentChildIds.contains(habitId)) {
@@ -308,7 +311,7 @@ class HabitsNotifier extends StateNotifier<List<Habit>> {
         );
         updateHabit(updatedBundle);
       }
-      
+
       // Update habit to reference new bundle
       final updatedHabit = Habit(
         id: habit.id,
@@ -334,7 +337,7 @@ class HabitsNotifier extends StateNotifier<List<Habit>> {
         currentStreak: habit.currentStreak,
       );
       updateHabit(updatedHabit);
-      
+
       if (habit.parentBundleId != null && habit.parentBundleId != bundleId) {
         return '${habit.name} moved to ${bundle.name}';
       } else {
@@ -359,16 +362,17 @@ class HabitsNotifier extends StateNotifier<List<Habit>> {
         stepIds: stepIds,
         allHabits: state,
       );
-      
+
       // Add the stack
       addHabit(stack);
-      
+
       // Update step habits to reference the stack
-      final updatedSteps = _stackService.assignStepsToStack(stack.id, stepIds, state);
+      final updatedSteps =
+          _stackService.assignStepsToStack(stack.id, stepIds, state);
       for (final updatedStep in updatedSteps) {
         updateHabit(updatedStep);
       }
-      
+
       return null; // Success
     } catch (e) {
       return 'Failed to create stack: $e';
@@ -379,16 +383,16 @@ class HabitsNotifier extends StateNotifier<List<Habit>> {
     try {
       final stack = state.firstWhere((h) => h.id == stackId);
       final habit = state.firstWhere((h) => h.id == habitId);
-      
+
       // Remove from any existing stack or bundle
       if (habit.stackedOnHabitId != null && habit.stackedOnHabitId != stackId) {
         _removeFromStack(habit.stackedOnHabitId!, habitId);
       }
-      
+
       if (habit.parentBundleId != null) {
         _removeFromBundle(habit.parentBundleId!, habitId);
       }
-      
+
       // Update habit to reference the stack
       final updatedHabit = Habit(
         id: habit.id,
@@ -414,7 +418,7 @@ class HabitsNotifier extends StateNotifier<List<Habit>> {
         currentStreak: habit.currentStreak,
       );
       updateHabit(updatedHabit);
-      
+
       return '${habit.name} added to ${stack.name}';
     } catch (e) {
       return 'Failed to add habit to stack: $e';
@@ -452,10 +456,9 @@ class HabitsNotifier extends StateNotifier<List<Habit>> {
 
   void _removeFromBundle(String bundleId, String habitId) {
     final bundle = state.firstWhere((h) => h.id == bundleId);
-    final updatedChildIds = bundle.bundleChildIds!
-        .where((id) => id != habitId)
-        .toList();
-    
+    final updatedChildIds =
+        bundle.bundleChildIds!.where((id) => id != habitId).toList();
+
     if (updatedChildIds.length < 2) {
       // Bundle becomes invalid, remove it entirely
       removeHabit(bundleId);
@@ -501,9 +504,9 @@ class HabitsNotifier extends StateNotifier<List<Habit>> {
       type: HabitType.basic,
       createdAt: DateTime.now(),
     );
-    
+
     final habit2 = Habit(
-      id: 'test_habit_2', 
+      id: 'test_habit_2',
       name: 'habit2',
       description: '',
       type: HabitType.basic,
@@ -547,7 +550,7 @@ class HabitsNotifier extends StateNotifier<List<Habit>> {
       bundleChildIds: ['test_habit_3', 'test_habit_4', 'test_habit_5'],
       createdAt: DateTime.now(),
     );
-    
+
     state = [habit1, habit2, habit3, habit4, habit5, testBundle];
   }
 
@@ -560,6 +563,7 @@ class HabitsNotifier extends StateNotifier<List<Habit>> {
   // }
 }
 
-final habitsProvider = StateNotifierProvider<HabitsNotifier, List<Habit>>((ref) {
+final habitsProvider =
+    StateNotifierProvider<HabitsNotifier, List<Habit>>((ref) {
   return HabitsNotifier();
 });

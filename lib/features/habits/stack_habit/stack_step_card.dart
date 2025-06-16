@@ -29,7 +29,7 @@ class _StackStepCardState extends ConsumerState<StackStepCard>
   late AnimationController _slideController;
   late AnimationController _flipController;
   late AnimationController _confettiController;
-  
+
   late Animation<Offset> _slideAnimation;
   late Animation<double> _flipAnimation;
   late Animation<double> _scaleAnimation;
@@ -38,17 +38,17 @@ class _StackStepCardState extends ConsumerState<StackStepCard>
   @override
   void initState() {
     super.initState();
-    
+
     _slideController = AnimationController(
       duration: kSlideAnimationDuration,
       vsync: this,
     );
-    
+
     _flipController = AnimationController(
       duration: kCompletionAnimationDuration,
       vsync: this,
     );
-    
+
     _confettiController = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
@@ -100,9 +100,12 @@ class _StackStepCardState extends ConsumerState<StackStepCard>
 
   @override
   Widget build(BuildContext context) {
-    final nextStep = _stackService.getNextIncompleteStep(widget.stack, widget.allHabits);
-    final progress = _stackService.getStackProgress(widget.stack, widget.allHabits);
-    final isCompleted = _stackService.isStackCompleted(widget.stack, widget.allHabits);
+    final nextStep =
+        _stackService.getNextIncompleteStep(widget.stack, widget.allHabits);
+    final progress =
+        _stackService.getStackProgress(widget.stack, widget.allHabits);
+    final isCompleted =
+        _stackService.isStackCompleted(widget.stack, widget.allHabits);
 
     if (nextStep == null && isCompleted) {
       return _buildCompletionCard(progress);
@@ -212,7 +215,8 @@ class _StackStepCardState extends ConsumerState<StackStepCard>
     );
   }
 
-  Widget _buildStackBadge(StackProgress progress, int remaining, FlexibleColors colors) {
+  Widget _buildStackBadge(
+      StackProgress progress, int remaining, FlexibleColors colors) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -334,7 +338,7 @@ class _StackStepCardState extends ConsumerState<StackStepCard>
 
   Widget _buildCheckmarkCard() {
     final colors = ref.watchColors;
-    
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       height: 200,
@@ -365,7 +369,7 @@ class _StackStepCardState extends ConsumerState<StackStepCard>
 
   Widget _buildCompletionCard(StackProgress progress) {
     final colors = ref.watchColors;
-    
+
     return AnimatedBuilder(
       animation: _confettiAnimation,
       builder: (context, child) {
@@ -398,8 +402,7 @@ class _StackStepCardState extends ConsumerState<StackStepCard>
             child: Stack(
               children: [
                 // Confetti effect
-                if (_confettiAnimation.value > 0)
-                  _buildConfettiEffect(colors),
+                if (_confettiAnimation.value > 0) _buildConfettiEffect(colors),
                 // Content
                 Padding(
                   padding: const EdgeInsets.all(32),
@@ -432,7 +435,8 @@ class _StackStepCardState extends ConsumerState<StackStepCard>
                       ),
                       const SizedBox(height: 16),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
                         decoration: BoxDecoration(
                           color: colors.success.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(20),
@@ -459,7 +463,7 @@ class _StackStepCardState extends ConsumerState<StackStepCard>
 
   Widget _buildEmptyStackCard() {
     final colors = ref.watchColors;
-    
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
@@ -531,13 +535,13 @@ class _StackStepCardState extends ConsumerState<StackStepCard>
   void _completeStep(Habit step) async {
     final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
     final colors = ref.watchColors;
-    
+
     // Start flip animation
     await _flipController.forward();
-    
+
     // Complete the habit
     final result = await habitsNotifier.completeHabit(step.id);
-    
+
     if (result != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -550,16 +554,18 @@ class _StackStepCardState extends ConsumerState<StackStepCard>
     }
 
     // Check if this was the last step
-    final progress = _stackService.getStackProgress(widget.stack, widget.allHabits);
+    final progress =
+        _stackService.getStackProgress(widget.stack, widget.allHabits);
     final isLastStep = progress.completed >= progress.total;
 
     if (isLastStep) {
       // Start confetti animation for stack completion
       _confettiController.forward();
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('🎉 Stack completed! +${widget.stack.calculateXPReward() + 2} XP'),
+          content: Text(
+              '🎉 Stack completed! +${widget.stack.calculateXPReward() + 2} XP'),
           backgroundColor: colors.success,
           duration: const Duration(seconds: 3),
         ),
@@ -568,11 +574,12 @@ class _StackStepCardState extends ConsumerState<StackStepCard>
       // Show step completion message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('✅ ${step.name} completed! +${step.calculateXPReward()} XP'),
+          content:
+              Text('✅ ${step.name} completed! +${step.calculateXPReward()} XP'),
           backgroundColor: colors.success,
         ),
       );
-      
+
       // Slide to next step after a delay
       await Future.delayed(const Duration(milliseconds: 1000));
       _flipController.reset();
@@ -592,15 +599,16 @@ class ConfettiPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()..style = PaintingStyle.fill;
-    
+
     for (int i = 0; i < 20; i++) {
       final progress = (animation.value + i * 0.1) % 1.0;
-      final x = (i * 0.1 * size.width + progress * size.width * 0.3) % size.width;
+      final x =
+          (i * 0.1 * size.width + progress * size.width * 0.3) % size.width;
       final y = progress * size.height;
       final colorIndex = i % colors.length;
-      
+
       paint.color = colors[colorIndex].withOpacity(1.0 - progress);
-      
+
       canvas.drawCircle(
         Offset(x, y),
         4.0 * (1.0 - progress),

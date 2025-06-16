@@ -30,12 +30,12 @@ class HabitUseCases {
     required String description,
   }) async {
     _validateCommonFields(name, description);
-    
+
     final habit = HabitFactory.createBasic(
       name: name.trim(),
       description: description.trim(),
     );
-    
+
     _habits.add(habit);
     return habit.id;
   }
@@ -47,19 +47,19 @@ class HabitUseCases {
     required String stackedOnHabitId,
   }) async {
     _validateCommonFields(name, description);
-    
+
     // Validate base habit exists
     final baseHabit = getHabitById(stackedOnHabitId);
     if (baseHabit == null) {
       throw ArgumentError('Base habit not found');
     }
-    
+
     final habit = HabitFactory.createStack(
       name: name.trim(),
       description: description.trim(),
       stackedOnHabitId: stackedOnHabitId,
     );
-    
+
     _habits.add(habit);
     return habit.id;
   }
@@ -73,17 +73,17 @@ class HabitUseCases {
   //   required int windowMinutes,
   // }) async {
   //   _validateCommonFields(name, description);
-  //   
+  //
   //   if (windowMinutes <= 0) {
   //     throw ArgumentError('Window minutes must be positive');
   //   }
-  //   
+  //
   //   // Validate base habit exists
   //   final baseHabit = getHabitById(stackedOnHabitId);
   //   if (baseHabit == null) {
   //     throw ArgumentError('Base habit not found');
   //   }
-  //   
+  //
   //   final habit = HabitFactory.createAlarm(
   //     name: name.trim(),
   //     description: description.trim(),
@@ -91,7 +91,7 @@ class HabitUseCases {
   //     alarmTime: alarmTime,
   //     windowMinutes: windowMinutes,
   //   );
-  //   
+  //
   //   _habits.add(habit);
   //   return habit.id;
   // }
@@ -104,22 +104,22 @@ class HabitUseCases {
   //   int graceMinutes = 15,
   // }) async {
   //   _validateCommonFields(name, description);
-  //   
+  //
   //   if (sessionMinutes <= 0) {
   //     throw ArgumentError('Session minutes must be positive');
   //   }
-  //   
+  //
   //   if (graceMinutes < 0) {
   //     throw ArgumentError('Grace minutes cannot be negative');
   //   }
-  //   
+  //
   //   final habit = HabitFactory.createTimedSession(
   //     name: name.trim(),
   //     description: description.trim(),
   //     sessionMinutes: sessionMinutes,
   //     graceMinutes: graceMinutes,
   //   );
-  //   
+  //
   //   _habits.add(habit);
   //   return habit.id;
   // }
@@ -133,15 +133,15 @@ class HabitUseCases {
   //   required List<int> availableDays,
   // }) async {
   //   _validateCommonFields(name, description);
-  //   
+  //
   //   if (availableDays.isEmpty) {
   //     throw ArgumentError('Must have at least one available day');
   //   }
-  //   
+  //
   //   if (availableDays.any((day) => day < 1 || day > 7)) {
   //     throw ArgumentError('Available days must be between 1 (Monday) and 7 (Sunday)');
   //   }
-  //   
+  //
   //   final habit = HabitFactory.createTimeWindow(
   //     name: name.trim(),
   //     description: description.trim(),
@@ -149,7 +149,7 @@ class HabitUseCases {
   //     windowEndTime: windowEndTime,
   //     availableDays: List.from(availableDays),
   //   );
-  //   
+  //
   //   _habits.add(habit);
   //   return habit.id;
   // }
@@ -202,12 +202,12 @@ class HabitUseCases {
     }
 
     final habit = _habits[index];
-    
+
     // Check if habit can be completed
     if (!habit.canComplete(_timeService)) {
       throw StateError('Habit cannot be completed at this time');
     }
-    
+
     _habits[index] = habit.complete();
   }
 
@@ -217,11 +217,11 @@ class HabitUseCases {
   //   if (habit == null) {
   //     throw ArgumentError('Habit not found');
   //   }
-  //   
+  //
   //   if (habit is! TimedSessionHabit) {
   //     throw ArgumentError('Not a timed session habit');
   //   }
-  //   
+  //
   //   final index = _habits.indexWhere((h) => h.id == habitId);
   //   _habits[index] = habit.startSession(_timeService);
   // }
@@ -236,7 +236,7 @@ class HabitUseCases {
   /// Get visible habits (handles habit stack visibility)
   List<BaseHabit> getVisibleHabits() {
     final visibleHabits = <BaseHabit>[];
-    
+
     for (final habit in _habits) {
       if (habit is HabitStack) {
         // Only show stacks if their base habit is completed today
@@ -256,7 +256,7 @@ class HabitUseCases {
         visibleHabits.add(habit);
       }
     }
-    
+
     return visibleHabits;
   }
 
@@ -264,17 +264,18 @@ class HabitUseCases {
   String getHabitDisplayName(String habitId) {
     final habit = getHabitById(habitId);
     if (habit == null) return 'Unknown';
-    
+
     if (habit is HabitStack) {
       // If both base and stack are completed, show combined name
-      if (isCompletedToday(habitId) && isCompletedToday(habit.stackedOnHabitId)) {
+      if (isCompletedToday(habitId) &&
+          isCompletedToday(habit.stackedOnHabitId)) {
         final baseHabit = getHabitById(habit.stackedOnHabitId);
         final baseHabitName = baseHabit?.name ?? 'Unknown';
         final chainDepth = getHabitChainDepth(habitId);
         return habit.getCombinedDisplayName(baseHabitName, chainDepth);
       }
     }
-    
+
     return habit.displayName;
   }
 
@@ -282,7 +283,7 @@ class HabitUseCases {
   int getHabitChainDepth(String habitId) {
     final habit = getHabitById(habitId);
     if (habit == null) return 1;
-    
+
     if (habit is HabitStack) {
       return 1 + getHabitChainDepth(habit.stackedOnHabitId);
     }
@@ -290,7 +291,7 @@ class HabitUseCases {
     // else if (habit is AlarmHabit) {
     //   return 1 + getHabitChainDepth(habit.stackedOnHabitId);
     // }
-    
+
     return 1;
   }
 
@@ -316,8 +317,9 @@ class HabitUseCases {
     final habit = getHabitById(habitId);
     if (habit == null) return {};
 
-    final daysSinceCreated = _timeService.daysBetween(habit.createdAt, _timeService.now());
-    
+    final daysSinceCreated =
+        _timeService.daysBetween(habit.createdAt, _timeService.now());
+
     final daysSinceLastCompleted = habit.lastCompleted != null
         ? _timeService.daysBetween(habit.lastCompleted!, _timeService.now())
         : null;

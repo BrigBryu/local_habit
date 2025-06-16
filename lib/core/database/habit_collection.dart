@@ -6,41 +6,41 @@ part 'habit_collection.g.dart';
 @Collection()
 class HabitCollection {
   Id isarId = Isar.autoIncrement;
-  
+
   late String id;
   late String name;
   late String description;
   late String userId; // Owner of this habit
-  
+
   @Enumerated(EnumType.name)
   late HabitType type;
-  
+
   // Stack/Bundle relationships
   String? stackedOnHabitId;
   List<String>? bundleChildIds;
   String? parentBundleId;
-  
+
   // Timing
   int? timeoutMinutes;
   List<int>? availableDays;
-  
+
   // Timestamps
   late DateTime createdAt;
   DateTime? lastCompleted;
   DateTime? lastAlarmTriggered;
   DateTime? sessionStartTime;
   DateTime? lastSessionStarted;
-  
+
   // Daily counters
   bool sessionCompletedToday = false;
   int dailyCompletionCount = 0;
   DateTime? lastCompletionCountReset;
   int dailyFailureCount = 0;
   DateTime? lastFailureCountReset;
-  
+
   // Avoidance specific
   bool avoidanceSuccessToday = false;
-  
+
   // Streaks
   int currentStreak = 0;
 

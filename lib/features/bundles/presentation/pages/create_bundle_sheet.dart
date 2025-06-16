@@ -56,7 +56,7 @@ class _CreateBundleSheetState extends ConsumerState<CreateBundleSheet> {
 
   Future<void> _createBundle() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     if (_selectedHabitIds.length < 2) {
       _showError('Please select at least 2 habits for the bundle');
       return;
@@ -124,8 +124,8 @@ class _CreateBundleSheetState extends ConsumerState<CreateBundleSheet> {
               Text(
                 'Create Routine Bundle',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                      fontWeight: FontWeight.bold,
+                    ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
@@ -143,17 +143,22 @@ class _CreateBundleSheetState extends ConsumerState<CreateBundleSheet> {
                         style: TextStyle(color: ref.watchColors.draculaPurple),
                         decoration: InputDecoration(
                           labelText: 'Bundle Name',
-                          labelStyle: TextStyle(color: ref.watchColors.bundleHabit),
+                          labelStyle:
+                              TextStyle(color: ref.watchColors.bundleHabit),
                           hintText: 'e.g., Morning Routine',
-                          hintStyle: TextStyle(color: ref.watchColors.draculaComment),
+                          hintStyle:
+                              TextStyle(color: ref.watchColors.draculaComment),
                           border: OutlineInputBorder(
-                            borderSide: BorderSide(color: ref.watchColors.bundleHabit, width: 1.5),
+                            borderSide: BorderSide(
+                                color: ref.watchColors.bundleHabit, width: 1.5),
                           ),
                           enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: ref.watchColors.bundleHabit, width: 1.5),
+                            borderSide: BorderSide(
+                                color: ref.watchColors.bundleHabit, width: 1.5),
                           ),
                           focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: ref.watchColors.draculaPink, width: 2),
+                            borderSide: BorderSide(
+                                color: ref.watchColors.draculaPink, width: 2),
                           ),
                         ),
                         validator: (value) {
@@ -177,17 +182,22 @@ class _CreateBundleSheetState extends ConsumerState<CreateBundleSheet> {
                         style: TextStyle(color: ref.watchColors.draculaPurple),
                         decoration: InputDecoration(
                           labelText: 'Description (Optional)',
-                          labelStyle: TextStyle(color: ref.watchColors.bundleHabit),
+                          labelStyle:
+                              TextStyle(color: ref.watchColors.bundleHabit),
                           hintText: 'Describe your routine bundle',
-                          hintStyle: TextStyle(color: ref.watchColors.draculaComment),
+                          hintStyle:
+                              TextStyle(color: ref.watchColors.draculaComment),
                           border: OutlineInputBorder(
-                            borderSide: BorderSide(color: ref.watchColors.bundleHabit, width: 1.5),
+                            borderSide: BorderSide(
+                                color: ref.watchColors.bundleHabit, width: 1.5),
                           ),
                           enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: ref.watchColors.bundleHabit, width: 1.5),
+                            borderSide: BorderSide(
+                                color: ref.watchColors.bundleHabit, width: 1.5),
                           ),
                           focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: ref.watchColors.draculaPink, width: 2),
+                            borderSide: BorderSide(
+                                color: ref.watchColors.draculaPink, width: 2),
                           ),
                         ),
                         maxLines: 2,
@@ -203,9 +213,10 @@ class _CreateBundleSheetState extends ConsumerState<CreateBundleSheet> {
                       // Available habits section
                       Text(
                         'Select Habits (${_selectedHabitIds.length} selected)',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
                       ),
                       const SizedBox(height: 8),
 
@@ -213,7 +224,8 @@ class _CreateBundleSheetState extends ConsumerState<CreateBundleSheet> {
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: ref.watchColors.draculaCurrentLine.withOpacity(0.3),
+                            color: ref.watchColors.draculaCurrentLine
+                                .withOpacity(0.3),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Column(
@@ -226,7 +238,8 @@ class _CreateBundleSheetState extends ConsumerState<CreateBundleSheet> {
                               const SizedBox(height: 8),
                               Text(
                                 'No habits available for bundling',
-                                style: TextStyle(color: ref.watchColors.draculaComment),
+                                style: TextStyle(
+                                    color: ref.watchColors.draculaComment),
                               ),
                               const SizedBox(height: 4),
                               Text(
@@ -243,7 +256,8 @@ class _CreateBundleSheetState extends ConsumerState<CreateBundleSheet> {
                         // Habits list
                         ...List.generate(_availableHabits.length, (index) {
                           final habit = _availableHabits[index];
-                          final isSelected = _selectedHabitIds.contains(habit.id);
+                          final isSelected =
+                              _selectedHabitIds.contains(habit.id);
 
                           return Card(
                             margin: const EdgeInsets.only(bottom: 8),
@@ -298,7 +312,8 @@ class _CreateBundleSheetState extends ConsumerState<CreateBundleSheet> {
                             ? const SizedBox(
                                 height: 16,
                                 width: 16,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2),
                               )
                             : const Text('Create Bundle'),
                       ),

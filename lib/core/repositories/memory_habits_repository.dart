@@ -8,24 +8,24 @@ import 'habits_repository.dart';
 /// In-memory repository for web development - bypasses Isar database issues
 class MemoryHabitsRepository implements HabitsRepository {
   final Logger _logger = Logger();
-  
+
   String _currentUserId = 'dev_user';
-  
+
   // In-memory storage
   final List<Habit> _habits = [];
   final List<CompletionRecord> _completions = [];
-  
+
   // Stream controllers for reactive updates
   final _ownHabitsController = StreamController<List<Habit>>.broadcast();
   final _partnerHabitsController = StreamController<List<Habit>>.broadcast();
-  
+
   @override
   String getCurrentUserId() => _currentUserId;
-  
+
   @override
   Future<void> setCurrentUserId(String userId) async {
     _currentUserId = userId;
-    
+
     // Try to save user ID, but don't block if it fails
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -33,12 +33,12 @@ class MemoryHabitsRepository implements HabitsRepository {
     } catch (e) {
       _logger.w('Failed to save user ID: $e');
     }
-    
+
     // Refresh streams with new user context
     await _refreshOwnHabits();
     await _refreshPartnerHabits();
   }
-  
+
   @override
   Future<void> initialize() async {
     try {
@@ -53,31 +53,31 @@ class MemoryHabitsRepository implements HabitsRepository {
         _logger.w('Failed to load saved user ID, using default: $e');
         // Continue with default user ID
       }
-      
+
       // Create some test habits for development
       await _createTestHabits();
-      
+
       // Start streaming data
       await _refreshOwnHabits();
       await _refreshPartnerHabits();
-      
+
       _logger.i('MemoryHabitsRepository initialized for user: $_currentUserId');
     } catch (e) {
       _logger.e('Failed to initialize MemoryHabitsRepository: $e');
       rethrow;
     }
   }
-  
+
   @override
   Stream<List<Habit>> ownHabits() {
     return _ownHabitsController.stream;
   }
-  
+
   @override
   Stream<List<Habit>> partnerHabits(String partnerId) {
     return _partnerHabitsController.stream;
   }
-  
+
   @override
   Future<String?> addHabit(Habit habit) async {
     try {
@@ -90,7 +90,7 @@ class MemoryHabitsRepository implements HabitsRepository {
       return 'Failed to add habit: $e';
     }
   }
-  
+
   @override
   Future<String?> updateHabit(Habit habit) async {
     try {
@@ -107,13 +107,13 @@ class MemoryHabitsRepository implements HabitsRepository {
       return 'Failed to update habit: $e';
     }
   }
-  
+
   @override
   Future<String?> removeHabit(String habitId) async {
     try {
       _habits.removeWhere((h) => h.id == habitId);
       _completions.removeWhere((c) => c.habitId == habitId);
-      
+
       await _refreshOwnHabits();
       _logger.d('Removed habit: $habitId');
       return null; // Success
@@ -122,7 +122,7 @@ class MemoryHabitsRepository implements HabitsRepository {
       return 'Failed to remove habit: $e';
     }
   }
-  
+
   @override
   Future<String?> completeHabit(String habitId, {int xpAwarded = 0}) async {
     try {
@@ -132,9 +132,9 @@ class MemoryHabitsRepository implements HabitsRepository {
         completedAt: DateTime.now(),
         xpAwarded: xpAwarded,
       );
-      
+
       _completions.add(completion);
-      
+
       _logger.d('Completed habit: $habitId (XP: $xpAwarded)');
       return null; // Success
     } catch (e) {
@@ -142,7 +142,7 @@ class MemoryHabitsRepository implements HabitsRepository {
       return 'Failed to complete habit: $e';
     }
   }
-  
+
   @override
   Future<String?> recordFailure(String habitId) async {
     try {
@@ -152,9 +152,9 @@ class MemoryHabitsRepository implements HabitsRepository {
         completedAt: DateTime.now(),
         xpAwarded: -5, // Penalty for avoidance failure
       );
-      
+
       _completions.add(completion);
-      
+
       _logger.d('Recorded failure for habit: $habitId');
       return null; // Success
     } catch (e) {
@@ -162,24 +162,25 @@ class MemoryHabitsRepository implements HabitsRepository {
       return 'Failed to record failure: $e';
     }
   }
-  
+
   @override
   Future<void> dispose() async {
     await _ownHabitsController.close();
     await _partnerHabitsController.close();
     _logger.i('MemoryHabitsRepository disposed');
   }
-  
+
   Future<void> _refreshOwnHabits() async {
     try {
       // Since this is in-memory, just return all habits
       _ownHabitsController.add(List.from(_habits));
     } catch (e) {
       _logger.e('Failed to refresh own habits', error: e);
-      _ownHabitsController.addError(RepositoryException('Failed to load habits', e));
+      _ownHabitsController
+          .addError(RepositoryException('Failed to load habits', e));
     }
   }
-  
+
   Future<void> _refreshPartnerHabits() async {
     try {
       // Create some dummy partner data for development
@@ -187,10 +188,11 @@ class MemoryHabitsRepository implements HabitsRepository {
       _partnerHabitsController.add(dummyPartnerHabits);
     } catch (e) {
       _logger.e('Failed to refresh partner habits', error: e);
-      _partnerHabitsController.addError(RepositoryException('Failed to load partner habits', e));
+      _partnerHabitsController
+          .addError(RepositoryException('Failed to load partner habits', e));
     }
   }
-  
+
   Future<List<Habit>> _createDummyPartnerHabits() async {
     return [
       Habit(
@@ -203,7 +205,7 @@ class MemoryHabitsRepository implements HabitsRepository {
         dailyCompletionCount: 1,
       ),
       Habit(
-        id: 'partner_habit_2', 
+        id: 'partner_habit_2',
         name: 'Partner\'s Reading',
         description: 'Read for 20 minutes',
         type: HabitType.basic,
@@ -213,15 +215,15 @@ class MemoryHabitsRepository implements HabitsRepository {
       ),
     ];
   }
-  
+
   Future<void> _createTestHabits() async {
     if (_habits.isNotEmpty) {
       _logger.d('Memory already has habits, skipping test data creation');
       return;
     }
-    
+
     _logger.i('Creating test habits in memory...');
-    
+
     // Create some initial test habits
     final testHabits = [
       Habit(
@@ -249,9 +251,9 @@ class MemoryHabitsRepository implements HabitsRepository {
         avoidanceSuccessToday: true,
       ),
     ];
-    
+
     _habits.addAll(testHabits);
-    
+
     _logger.i('Test habits created in memory');
   }
 }
@@ -262,7 +264,7 @@ class CompletionRecord {
   final String userId;
   final DateTime completedAt;
   final int xpAwarded;
-  
+
   CompletionRecord({
     required this.habitId,
     required this.userId,

@@ -16,7 +16,7 @@ class DailyHabitsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final allHabitsAsync = ref.watch(ownHabitsProvider);
-    
+
     return allHabitsAsync.when(
       loading: () => const Scaffold(
         body: Center(child: CircularProgressIndicator()),
@@ -35,18 +35,20 @@ class DailyHabitsPage extends ConsumerWidget {
       ),
       data: (allHabits) {
         // Filter to show only top-level habits (not children of bundles or stacks)
-        final topLevelHabits = allHabits.where((habit) => 
-          habit.parentBundleId == null && habit.stackedOnHabitId == null
-        ).toList();
+        final topLevelHabits = allHabits
+            .where((habit) =>
+                habit.parentBundleId == null && habit.stackedOnHabitId == null)
+            .toList();
 
         return _buildHabitsScaffold(context, ref, topLevelHabits, allHabits);
       },
     );
   }
 
-  Widget _buildHabitsScaffold(BuildContext context, WidgetRef ref, List<Habit> topLevelHabits, List<Habit> allHabits) {
+  Widget _buildHabitsScaffold(BuildContext context, WidgetRef ref,
+      List<Habit> topLevelHabits, List<Habit> allHabits) {
     final colors = ref.watchColors;
-    
+
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: topLevelHabits.isEmpty
@@ -56,7 +58,7 @@ class DailyHabitsPage extends ConsumerWidget {
               itemCount: topLevelHabits.length,
               itemBuilder: (context, index) {
                 final habit = topLevelHabits[index];
-                
+
                 switch (habit.type) {
                   case HabitType.bundle:
                     return BundleHabitTile(habit: habit, allHabits: allHabits);
@@ -66,7 +68,8 @@ class DailyHabitsPage extends ConsumerWidget {
                     return AvoidanceHabitTile(habit: habit);
                   case HabitType.basic:
                   default:
-                    return HabitTile(habit: habit); // Use the proper HabitTile from features
+                    return HabitTile(
+                        habit: habit); // Use the proper HabitTile from features
                 }
               },
             ),
@@ -75,7 +78,8 @@ class DailyHabitsPage extends ConsumerWidget {
           // Navigate to the proper add screen with type selection
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (context) => const AddBasicHabitScreen(), // Has type selection dropdown
+              builder: (context) =>
+                  const AddBasicHabitScreen(), // Has type selection dropdown
             ),
           );
         },
@@ -88,7 +92,7 @@ class DailyHabitsPage extends ConsumerWidget {
 
   Widget _buildEmptyState(BuildContext context, WidgetRef ref) {
     final colors = ref.watchColors;
-    
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32.0),

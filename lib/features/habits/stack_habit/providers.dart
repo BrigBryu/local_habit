@@ -7,13 +7,16 @@ final stackHabitFormKeyProvider = Provider.autoDispose<GlobalKey<FormState>>(
 );
 
 final stackHabitNameProvider = StateProvider.autoDispose<String>((ref) => '');
-final stackHabitDescriptionProvider = StateProvider.autoDispose<String>((ref) => '');
+final stackHabitDescriptionProvider =
+    StateProvider.autoDispose<String>((ref) => '');
 
 // Stack expansion state
-final stackExpandedProvider = StateProvider.family<bool, String>((ref, stackId) => false);
+final stackExpandedProvider =
+    StateProvider.family<bool, String>((ref, stackId) => false);
 
 // Selected steps for stack creation
-final selectedStackStepsProvider = StateProvider.autoDispose<List<String>>((ref) => []);
+final selectedStackStepsProvider =
+    StateProvider.autoDispose<List<String>>((ref) => []);
 
 // Stack reordering state
 final stackReorderingProvider = StateProvider.autoDispose<bool>((ref) => false);
@@ -25,4 +28,5 @@ final stackFocusModeProvider = StateProvider.autoDispose<bool>((ref) => true);
 final focusedStackProvider = StateProvider.autoDispose<String?>((ref) => null);
 
 // Animation states for stack completion
-final stackCompletionAnimationProvider = StateProvider.family<bool, String>((ref, stackId) => false);
+final stackCompletionAnimationProvider =
+    StateProvider.family<bool, String>((ref, stackId) => false);

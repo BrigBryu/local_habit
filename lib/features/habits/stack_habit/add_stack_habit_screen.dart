@@ -14,19 +14,21 @@ class AddStackHabitScreen extends BaseAddHabitScreen {
   const AddStackHabitScreen({super.key});
 
   @override
-  ConsumerState<AddStackHabitScreen> createState() => _AddStackHabitScreenState();
+  ConsumerState<AddStackHabitScreen> createState() =>
+      _AddStackHabitScreenState();
 }
 
-class _AddStackHabitScreenState extends BaseAddHabitScreenState<AddStackHabitScreen> {
+class _AddStackHabitScreenState
+    extends BaseAddHabitScreenState<AddStackHabitScreen> {
   final List<String> _selectedHabitIds = [];
   final _stackService = StackService();
-  
+
   // Get available habits in a stable order
   List<Habit> get _availableHabits {
     final habitsAsync = ref.watch(habitsProvider);
     return _stackService.getAvailableHabitsForStack(habitsAsync.value ?? []);
   }
-  
+
   // Get selected habits in the order they were selected
   List<Habit> get _selectedHabits {
     final availableHabits = _availableHabits;
@@ -42,7 +44,7 @@ class _AddStackHabitScreenState extends BaseAddHabitScreenState<AddStackHabitScr
         .cast<Habit>()
         .toList();
   }
-  
+
   // Get unselected habits
   List<Habit> get _unselectedHabits {
     final availableHabits = _availableHabits;
@@ -64,7 +66,8 @@ class _AddStackHabitScreenState extends BaseAddHabitScreenState<AddStackHabitScr
   String get nameFieldHint => 'Enter stack name (e.g., "Morning Routine")';
 
   @override
-  String get descriptionFieldHint => 'Describe your step-by-step habit stack (e.g., "Complete my morning routine in order")';
+  String get descriptionFieldHint =>
+      'Describe your step-by-step habit stack (e.g., "Complete my morning routine in order")';
 
   @override
   String get saveButtonText => 'Create Stack';
@@ -106,16 +109,17 @@ class _AddStackHabitScreenState extends BaseAddHabitScreenState<AddStackHabitScr
   @override
   Widget buildCustomContent(BuildContext context) {
     final colors = ref.watchColors;
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 24),
-        
+
         // Section header
         Row(
           children: [
-            Icon(Icons.format_list_numbered, color: colors.stackHabit, size: 20),
+            Icon(Icons.format_list_numbered,
+                color: colors.stackHabit, size: 20),
             const SizedBox(width: 8),
             Text(
               'Stack Steps',
@@ -269,7 +273,7 @@ class _AddStackHabitScreenState extends BaseAddHabitScreenState<AddStackHabitScr
             ),
           ),
         ],
-        
+
         const SizedBox(height: 16),
       ],
     );
@@ -277,7 +281,7 @@ class _AddStackHabitScreenState extends BaseAddHabitScreenState<AddStackHabitScr
 
   Widget _buildSelectedHabitTile(Habit habit, int index) {
     final colors = ref.watchColors;
-    
+
     return Container(
       key: ValueKey(habit.id),
       margin: const EdgeInsets.only(bottom: 8),
@@ -345,7 +349,7 @@ class _AddStackHabitScreenState extends BaseAddHabitScreenState<AddStackHabitScr
             color: colors.draculaPurple,
           ),
         ),
-        subtitle: habit.description.isNotEmpty 
+        subtitle: habit.description.isNotEmpty
             ? Text(
                 habit.description,
                 style: TextStyle(
@@ -363,7 +367,8 @@ class _AddStackHabitScreenState extends BaseAddHabitScreenState<AddStackHabitScr
             const SizedBox(width: 4),
             IconButton(
               onPressed: () => _removeHabit(habit.id),
-              icon: Icon(Icons.remove_circle_outline, color: colors.error, size: 20),
+              icon: Icon(Icons.remove_circle_outline,
+                  color: colors.error, size: 20),
               tooltip: 'Remove from stack',
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(maxWidth: 24, maxHeight: 24),
@@ -376,7 +381,7 @@ class _AddStackHabitScreenState extends BaseAddHabitScreenState<AddStackHabitScr
 
   Widget _buildAvailableHabitTile(Habit habit) {
     final colors = ref.watchColors;
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
@@ -421,7 +426,7 @@ class _AddStackHabitScreenState extends BaseAddHabitScreenState<AddStackHabitScr
             color: colors.draculaPurple,
           ),
         ),
-        subtitle: habit.description.isNotEmpty 
+        subtitle: habit.description.isNotEmpty
             ? Text(
                 habit.description,
                 style: TextStyle(
@@ -434,7 +439,8 @@ class _AddStackHabitScreenState extends BaseAddHabitScreenState<AddStackHabitScr
             : null,
         trailing: IconButton(
           onPressed: () => _addHabit(habit.id),
-          icon: Icon(Icons.add_circle_outline, color: colors.stackHabit, size: 20),
+          icon: Icon(Icons.add_circle_outline,
+              color: colors.stackHabit, size: 20),
           tooltip: 'Add to stack',
         ),
         onTap: () => _addHabit(habit.id),
@@ -442,7 +448,8 @@ class _AddStackHabitScreenState extends BaseAddHabitScreenState<AddStackHabitScr
     );
   }
 
-  Widget _buildCreateHabitButton(String label, IconData icon, Color color, VoidCallback onPressed) {
+  Widget _buildCreateHabitButton(
+      String label, IconData icon, Color color, VoidCallback onPressed) {
     return ElevatedButton.icon(
       onPressed: onPressed,
       icon: Icon(icon, color: color, size: 16),
@@ -475,7 +482,7 @@ class _AddStackHabitScreenState extends BaseAddHabitScreenState<AddStackHabitScr
         return Icons.layers;
     }
   }
-  
+
   Color _getHabitTypeColor(HabitType type) {
     switch (type) {
       case HabitType.basic:
@@ -533,11 +540,11 @@ class _AddStackHabitScreenState extends BaseAddHabitScreenState<AddStackHabitScr
     if (_selectedHabitIds.isEmpty) {
       return 'Please select at least one habit for your stack';
     }
-    
+
     if (_selectedHabitIds.length > 10) {
       return 'A stack can have at most 10 steps';
     }
-    
+
     return null;
   }
 
@@ -549,9 +556,9 @@ class _AddStackHabitScreenState extends BaseAddHabitScreenState<AddStackHabitScr
         descriptionController.text.trim(),
         _selectedHabitIds,
       );
-      
+
       final colors = ref.watchColors;
-      
+
       if (result != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -561,16 +568,16 @@ class _AddStackHabitScreenState extends BaseAddHabitScreenState<AddStackHabitScr
         );
         return;
       }
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Stack "${nameController.text.trim()}" created successfully!'),
+          content: Text(
+              'Stack "${nameController.text.trim()}" created successfully!'),
           backgroundColor: colors.success,
         ),
       );
-      
+
       Navigator.of(context).pop();
-      
     } catch (e) {
       final colors = ref.watchColors;
       ScaffoldMessenger.of(context).showSnackBar(

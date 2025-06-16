@@ -7,23 +7,24 @@ final homeHabitsProvider = Provider<List<Habit>>((ref) {
   final habits = ref.watch(habitsProvider);
   final timeService = TimeService();
   final today = timeService.today();
-  
+
   // Return only top-level habits (not children of bundles) that are visible for today
   return habits.value?.where((habit) {
-    // Filter out habits that belong to bundles
-    if (habit.parentBundleId != null) {
-      return false;
-    }
-    
-    // Filter out habits that shouldn't be shown today
-    if (habit.availableDays != null && habit.availableDays!.isNotEmpty) {
-      final dayOfWeek = today.weekday; // 1 = Monday, 7 = Sunday
-      if (!habit.availableDays!.contains(dayOfWeek)) {
-        return false;
-      }
-    }
-    return true;
-  }).toList() ?? [];
+        // Filter out habits that belong to bundles
+        if (habit.parentBundleId != null) {
+          return false;
+        }
+
+        // Filter out habits that shouldn't be shown today
+        if (habit.availableDays != null && habit.availableDays!.isNotEmpty) {
+          final dayOfWeek = today.weekday; // 1 = Monday, 7 = Sunday
+          if (!habit.availableDays!.contains(dayOfWeek)) {
+            return false;
+          }
+        }
+        return true;
+      }).toList() ??
+      [];
 });
 
 /// Provider for level state
@@ -41,7 +42,7 @@ final levelStateProvider = Provider<Map<String, dynamic>>((ref) {
 final routeAvailabilityProvider = Provider<Map<String, bool>>((ref) {
   return {
     'addHabit': true, // AddHabitScreen exists
-    'levels': true,   // LevelPage exists
+    'levels': true, // LevelPage exists
     'viewHabit': false, // Will be placeholder
   };
 });

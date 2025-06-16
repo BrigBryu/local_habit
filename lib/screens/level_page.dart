@@ -43,7 +43,7 @@ class LevelPage extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    
+
                     // Progress bar
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -53,7 +53,8 @@ class LevelPage extends StatelessWidget {
                           children: [
                             Text(
                               'Progress to Level ${stats['currentLevel'] + 1}',
-                              style: const TextStyle(fontWeight: FontWeight.w500),
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.w500),
                             ),
                             Text(
                               '${stats['xpUntilNextLevel']} XP to go',
@@ -68,7 +69,8 @@ class LevelPage extends StatelessWidget {
                         LinearProgressIndicator(
                           value: stats['progressToNextLevel'].toDouble(),
                           backgroundColor: Colors.grey.shade300,
-                          valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
+                          valueColor:
+                              const AlwaysStoppedAnimation<Color>(Colors.blue),
                           minHeight: 8,
                         ),
                         const SizedBox(height: 8),

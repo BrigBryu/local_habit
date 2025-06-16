@@ -7,7 +7,7 @@ import '../../../core/theme/flexible_theme_system.dart';
 /// Tile for displaying avoidance habits with success/failure buttons
 class AvoidanceHabitTile extends ConsumerWidget {
   final Habit habit;
-  
+
   const AvoidanceHabitTile({super.key, required this.habit});
 
   @override
@@ -20,19 +20,20 @@ class AvoidanceHabitTile extends ConsumerWidget {
           borderRadius: BorderRadius.circular(8),
           gradient: LinearGradient(
             colors: [
-              habit.avoidanceSuccessToday 
-                ? colors.success.withOpacity(0.1)
-                : colors.error.withOpacity(0.05),
-              habit.avoidanceSuccessToday 
-                ? colors.success.withOpacity(0.05)
-                : colors.error.withOpacity(0.02),
+              habit.avoidanceSuccessToday
+                  ? colors.success.withOpacity(0.1)
+                  : colors.error.withOpacity(0.05),
+              habit.avoidanceSuccessToday
+                  ? colors.success.withOpacity(0.05)
+                  : colors.error.withOpacity(0.02),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
         ),
         child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           leading: Container(
             width: 40,
             height: 40,
@@ -50,7 +51,9 @@ class AvoidanceHabitTile extends ConsumerWidget {
             habit.name,
             style: TextStyle(
               fontWeight: FontWeight.w500,
-              decoration: habit.avoidanceSuccessToday ? TextDecoration.lineThrough : null,
+              decoration: habit.avoidanceSuccessToday
+                  ? TextDecoration.lineThrough
+                  : null,
               color: habit.avoidanceSuccessToday ? colors.success : null,
             ),
           ),
@@ -79,7 +82,7 @@ class AvoidanceHabitTile extends ConsumerWidget {
 
   Widget _buildTrailingWidget(BuildContext context, WidgetRef ref) {
     final colors = ref.watchColors;
-    
+
     if (habit.avoidanceSuccessToday) {
       return Icon(Icons.check_circle, color: colors.success, size: 32);
     }
@@ -122,7 +125,7 @@ class AvoidanceHabitTile extends ConsumerWidget {
     final colors = ref.watchColors;
     final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
     final result = await habitsNotifier.recordFailure(habit.id);
-    
+
     if (result != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -144,7 +147,7 @@ class AvoidanceHabitTile extends ConsumerWidget {
     final colors = ref.watchColors;
     final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
     final result = await habitsNotifier.completeHabit(habit.id);
-    
+
     if (result != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

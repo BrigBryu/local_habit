@@ -12,10 +12,12 @@ class AddBasicHabitScreen extends BaseAddHabitScreen {
   const AddBasicHabitScreen({super.key});
 
   @override
-  ConsumerState<AddBasicHabitScreen> createState() => _AddBasicHabitScreenState();
+  ConsumerState<AddBasicHabitScreen> createState() =>
+      _AddBasicHabitScreenState();
 }
 
-class _AddBasicHabitScreenState extends BaseAddHabitScreenState<AddBasicHabitScreen> {
+class _AddBasicHabitScreenState
+    extends BaseAddHabitScreenState<AddBasicHabitScreen> {
   @override
   String get screenTitle => 'Add Basic Habit';
 
@@ -29,7 +31,8 @@ class _AddBasicHabitScreenState extends BaseAddHabitScreenState<AddBasicHabitScr
   String get currentRoute => '/add-basic-habit';
 
   @override
-  bool get showHabitTypeSelector => true; // Enable dropdown to select habit types
+  bool get showHabitTypeSelector =>
+      true; // Enable dropdown to select habit types
 
   @override
   Widget buildCustomContent(BuildContext context) {

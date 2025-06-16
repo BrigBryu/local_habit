@@ -14,26 +14,25 @@ class StackService {
     }
 
     // Get all habits that stack on this habit
-    final stackSteps = allHabits
-        .where((habit) => habit.stackedOnHabitId == stack.id)
-        .toList();
+    final stackSteps =
+        allHabits.where((habit) => habit.stackedOnHabitId == stack.id).toList();
 
     // Sort by creation time to maintain order
     stackSteps.sort((a, b) => a.createdAt.compareTo(b.createdAt));
-    
+
     return stackSteps;
   }
 
   /// Get the next uncompleted step in the stack
   Habit? getNextIncompleteStep(Habit stack, List<Habit> allHabits) {
     final steps = getStackSteps(stack, allHabits);
-    
+
     for (final step in steps) {
       if (!isHabitCompletedToday(step)) {
         return step;
       }
     }
-    
+
     return null; // All steps completed
   }
 
@@ -44,13 +43,14 @@ class StackService {
     }
 
     final steps = getStackSteps(stack, allHabits);
-    final completedCount = steps.where((step) => isHabitCompletedToday(step)).length;
-    
+    final completedCount =
+        steps.where((step) => isHabitCompletedToday(step)).length;
+
     // Position is the next step to complete (1-indexed)
     final position = completedCount + 1;
-    
+
     return StackProgress(
-      completed: completedCount, 
+      completed: completedCount,
       total: steps.length,
       position: position <= steps.length ? position : steps.length,
     );
@@ -72,7 +72,8 @@ class StackService {
   }
 
   /// Complete the next step in the stack
-  StackStepCompletionResult? completeNextStep(Habit stack, List<Habit> allHabits) {
+  StackStepCompletionResult? completeNextStep(
+      Habit stack, List<Habit> allHabits) {
     final nextStep = getNextIncompleteStep(stack, allHabits);
     if (nextStep == null) return null;
 
@@ -97,15 +98,15 @@ class StackService {
   /// Get stack status text for UI
   String getStackStatus(Habit stack, List<Habit> allHabits) {
     final progress = getStackProgress(stack, allHabits);
-    
+
     if (progress.total == 0) {
       return 'Empty stack';
     }
-    
+
     if (progress.completed == progress.total) {
       return 'Stack complete! ✅';
     }
-    
+
     final remaining = progress.total - progress.completed;
     return '$remaining step${remaining == 1 ? '' : 's'} left';
   }
@@ -122,33 +123,33 @@ class StackService {
     if (stepIds.isEmpty) {
       return 'Stack must have at least 1 step';
     }
-    
+
     if (stepIds.length > 10) {
       return 'Stack cannot have more than 10 steps';
     }
 
     final steps = allHabits.where((habit) => stepIds.contains(habit.id));
-    
+
     for (final step in steps) {
       // No bundles or other stacks as steps
       if (step.type == HabitType.bundle) {
         return 'Cannot add bundles to stacks: ${step.name}';
       }
-      
+
       if (step.type == HabitType.stack) {
         return 'Cannot nest stacks: ${step.name}';
       }
-      
+
       // Check if already in another stack or bundle
       if (step.stackedOnHabitId != null) {
         return 'Habit ${step.name} is already part of another stack';
       }
-      
+
       if (step.parentBundleId != null) {
         return 'Habit ${step.name} is already part of a bundle';
       }
     }
-    
+
     return null; // Valid
   }
 
@@ -172,9 +173,10 @@ class StackService {
   }
 
   /// Update step habits to reference their parent stack
-  List<Habit> assignStepsToStack(String stackId, List<String> stepIds, List<Habit> allHabits) {
+  List<Habit> assignStepsToStack(
+      String stackId, List<String> stepIds, List<Habit> allHabits) {
     final updatedHabits = <Habit>[];
-    
+
     for (final habit in allHabits) {
       if (stepIds.contains(habit.id)) {
         updatedHabits.add(Habit(
@@ -202,36 +204,37 @@ class StackService {
         ));
       }
     }
-    
+
     return updatedHabits;
   }
 
   /// Get available habits that can be added to a stack
   List<Habit> getAvailableHabitsForStack(List<Habit> allHabits) {
-    return allHabits.where((habit) => 
-      habit.type != HabitType.bundle && 
-      habit.type != HabitType.stack &&
-      habit.parentBundleId == null &&
-      habit.stackedOnHabitId == null
-    ).toList();
+    return allHabits
+        .where((habit) =>
+            habit.type != HabitType.bundle &&
+            habit.type != HabitType.stack &&
+            habit.parentBundleId == null &&
+            habit.stackedOnHabitId == null)
+        .toList();
   }
 
   /// Reorder stack steps
   List<Habit> reorderStackSteps(
-    List<Habit> steps, 
-    int oldIndex, 
+    List<Habit> steps,
+    int oldIndex,
     int newIndex,
   ) {
     final reorderedSteps = List<Habit>.from(steps);
     final item = reorderedSteps.removeAt(oldIndex);
     reorderedSteps.insert(newIndex, item);
-    
+
     // Update creation times to maintain new order
     final now = TimeService().now();
     for (int i = 0; i < reorderedSteps.length; i++) {
       final step = reorderedSteps[i];
       final newCreatedAt = now.add(Duration(milliseconds: i));
-      
+
       reorderedSteps[i] = Habit(
         id: step.id,
         name: step.name,
@@ -256,7 +259,7 @@ class StackService {
         currentStreak: step.currentStreak,
       );
     }
-    
+
     return reorderedSteps;
   }
 }
@@ -266,13 +269,13 @@ class StackProgress {
   final int completed;
   final int total;
   final int position; // Current position (1-indexed)
-  
+
   const StackProgress({
-    required this.completed, 
+    required this.completed,
     required this.total,
     required this.position,
   });
-  
+
   @override
   String toString() => '$completed/$total (step $position)';
 }
@@ -280,7 +283,7 @@ class StackProgress {
 /// Check if a habit should show as completed today
 bool isHabitCompletedToday(Habit habit) {
   if (habit.lastCompleted == null) return false;
-  
+
   final timeService = TimeService();
   return timeService.isSameDay(habit.lastCompleted!, timeService.now());
 }
@@ -291,18 +294,18 @@ class StackStepCompletionResult {
   final bool isLastStep;
   final int position;
   final int total;
-  
+
   const StackStepCompletionResult({
     required this.completedStep,
     required this.isLastStep,
     required this.position,
     required this.total,
   });
-  
+
   int get xpReward => completedStep.calculateXPReward();
-  
+
   /// Additional bonus for completing the entire stack
   int get stackCompleteBonus => isLastStep ? 2 : 0;
-  
+
   int get totalXP => xpReward + stackCompleteBonus;
 }

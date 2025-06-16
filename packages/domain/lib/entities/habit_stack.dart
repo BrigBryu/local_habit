@@ -1,4 +1,3 @@
-
 import '../services/time_service.dart';
 import 'base_habit.dart';
 import 'habit_icon.dart';
@@ -13,14 +12,17 @@ class HabitStack extends BaseHabit {
     required super.description,
     required super.createdAt,
     required this.stackedOnHabitId,
+    super.updatedAt,
     super.lastCompleted,
     super.currentStreak = 0,
     super.dailyCompletionCount = 0,
     super.lastCompletionCountReset,
+    super.habitIcon = HabitIcon.layers,
+    super.timeOfDay,
   });
 
   @override
-  HabitIcon get icon => HabitIcon.layers;
+  HabitIcon get icon => habitIcon;
 
   @override
   String get typeName => 'Habit Stack';
@@ -52,7 +54,7 @@ class HabitStack extends BaseHabit {
   HabitStack complete() {
     final timeService = TimeService();
     final now = timeService.now();
-    
+
     // Calculate new streak
     int newStreak = currentStreak;
     if (lastCompleted != null) {
@@ -81,10 +83,13 @@ class HabitStack extends BaseHabit {
     String? name,
     String? description,
     DateTime? createdAt,
+    DateTime? updatedAt,
     DateTime? lastCompleted,
     int? currentStreak,
     int? dailyCompletionCount,
     DateTime? lastCompletionCountReset,
+    HabitIcon? habitIcon,
+    TimeOfDay? timeOfDay,
     String? stackedOnHabitId,
   }) {
     return HabitStack(
@@ -92,10 +97,14 @@ class HabitStack extends BaseHabit {
       name: name ?? this.name,
       description: description ?? this.description,
       createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
       lastCompleted: lastCompleted ?? this.lastCompleted,
       currentStreak: currentStreak ?? this.currentStreak,
       dailyCompletionCount: dailyCompletionCount ?? this.dailyCompletionCount,
-      lastCompletionCountReset: lastCompletionCountReset ?? this.lastCompletionCountReset,
+      lastCompletionCountReset:
+          lastCompletionCountReset ?? this.lastCompletionCountReset,
+      habitIcon: habitIcon ?? this.habitIcon,
+      timeOfDay: timeOfDay ?? this.timeOfDay,
       stackedOnHabitId: stackedOnHabitId ?? this.stackedOnHabitId,
     );
   }

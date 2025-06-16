@@ -64,7 +64,7 @@ class HabitService {
       if (stackedOnHabitId == null || stackedOnHabitId.isEmpty) {
         throw ArgumentError('Habit stack must specify a base habit');
       }
-      
+
       final baseHabitExists = _habits.any((h) => h.id == stackedOnHabitId);
       if (!baseHabitExists) {
         throw ArgumentError('Base habit not found');
@@ -77,7 +77,7 @@ class HabitService {
     //   if (alarmTime == null) {
     //     throw ArgumentError('Alarm habit must have an alarm time');
     //   }
-    //   
+    //
     //   if (timeoutMinutes == null || timeoutMinutes <= 0) {
     //     throw ArgumentError('Alarm habit must have a positive completion window duration');
     //   }
@@ -95,7 +95,7 @@ class HabitService {
     //   if (windowStartTime == null || windowEndTime == null) {
     //     throw ArgumentError('Time window must have start and end times');
     //   }
-    //   
+    //
     //   if (availableDays == null || availableDays.isEmpty) {
     //     throw ArgumentError('Time window must have at least one available day');
     //   }
@@ -179,14 +179,14 @@ class HabitService {
       (h) => h.id == habitId,
       orElse: () => throw ArgumentError('Habit not found'),
     );
-    
+
     if (habit.stackedOnHabitId == null) return null;
-    
+
     final baseHabit = _habits.firstWhere(
       (h) => h.id == habit.stackedOnHabitId,
       orElse: () => throw ArgumentError('Base habit not found'),
     );
-    
+
     return baseHabit.name;
   }
 
@@ -196,12 +196,12 @@ class HabitService {
       (h) => h.id == habitId,
       orElse: () => throw ArgumentError('Habit not found'),
     );
-    
+
     // If it's not a stacked habit, it's always visible
     if (habit.type != HabitType.stack || habit.stackedOnHabitId == null) {
       return true;
     }
-    
+
     // Check if base habit is completed today
     return isCompletedToday(habit.stackedOnHabitId!);
   }
@@ -217,7 +217,7 @@ class HabitService {
       (h) => h.id == habitId,
       orElse: () => throw ArgumentError('Habit not found'),
     );
-    
+
     if (habit.stackedOnHabitId == null) return 1;
     return 1 + getHabitChainDepth(habit.stackedOnHabitId!);
   }
@@ -228,19 +228,20 @@ class HabitService {
       (h) => h.id == habitId,
       orElse: () => throw ArgumentError('Habit not found'),
     );
-    
+
     // If not a stack or not completed, return normal display name
     if (habit.type != HabitType.stack || !isCompletedToday(habitId)) {
       return habit.displayName;
     }
-    
+
     // If both base and stack are completed, show combined name
-    if (habit.stackedOnHabitId != null && isCompletedToday(habit.stackedOnHabitId!)) {
+    if (habit.stackedOnHabitId != null &&
+        isCompletedToday(habit.stackedOnHabitId!)) {
       final baseHabitName = getBaseHabitName(habitId) ?? 'Unknown';
       final chainDepth = getHabitChainDepth(habitId);
       return '$baseHabitName → ${habit.name} 📚$chainDepth';
     }
-    
+
     return habit.displayName;
   }
 
@@ -252,8 +253,9 @@ class HabitService {
     );
 
     final timeService = TimeService();
-    final daysSinceCreated = timeService.daysBetween(habit.createdAt, timeService.now());
-    
+    final daysSinceCreated =
+        timeService.daysBetween(habit.createdAt, timeService.now());
+
     final daysSinceLastCompleted = habit.lastCompleted != null
         ? timeService.daysBetween(habit.lastCompleted!, timeService.now())
         : null;
@@ -419,7 +421,7 @@ class HabitService {
   /// Get all bundles with their children for today's view
   List<BundleHabitWithChildren> getBundlesWithChildrenForToday() {
     final bundles = <BundleHabitWithChildren>[];
-    
+
     for (final habit in _habits) {
       if (habit.isBundle) {
         final bundleWithChildren = getBundleWithChildren(habit.id);
@@ -428,16 +430,15 @@ class HabitService {
         }
       }
     }
-    
+
     return bundles;
   }
 
   /// Get habits available for bundling (not already in a bundle, not bundles themselves)
   List<Habit> getAvailableHabitsForBundling() {
-    return _habits.where((habit) => 
-      !habit.isBundle && 
-      !habit.isInBundle
-    ).toList();
+    return _habits
+        .where((habit) => !habit.isBundle && !habit.isInBundle)
+        .toList();
   }
 
   /// Check if all children in a bundle are completed today

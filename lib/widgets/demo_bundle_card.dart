@@ -5,8 +5,9 @@ import 'package:domain/domain.dart';
 class DemoBundleCard extends StatefulWidget {
   final Habit bundleHabit;
   final List<Habit> allHabits;
-  
-  const DemoBundleCard({super.key, required this.bundleHabit, required this.allHabits});
+
+  const DemoBundleCard(
+      {super.key, required this.bundleHabit, required this.allHabits});
 
   @override
   State<DemoBundleCard> createState() => _DemoBundleCardState();
@@ -17,11 +18,15 @@ class _DemoBundleCardState extends State<DemoBundleCard> {
 
   List<Map<String, dynamic>> get _nestedHabits {
     // First try to get real nested habits
-    if (widget.bundleHabit.bundleChildIds != null && widget.bundleHabit.bundleChildIds!.isNotEmpty) {
+    if (widget.bundleHabit.bundleChildIds != null &&
+        widget.bundleHabit.bundleChildIds!.isNotEmpty) {
       return widget.bundleHabit.bundleChildIds!.map((childId) {
         final childHabit = widget.allHabits.firstWhere(
           (h) => h.id == childId,
-          orElse: () => Habit.create(name: 'Missing Habit', description: 'Habit not found', type: HabitType.basic),
+          orElse: () => Habit.create(
+              name: 'Missing Habit',
+              description: 'Habit not found',
+              type: HabitType.basic),
         );
         return {
           'id': childHabit.id,
@@ -31,7 +36,7 @@ class _DemoBundleCardState extends State<DemoBundleCard> {
         };
       }).toList();
     }
-    
+
     // Fallback to demo habits to show the concept
     return [
       {
@@ -41,7 +46,7 @@ class _DemoBundleCardState extends State<DemoBundleCard> {
         'completed': false,
       },
       {
-        'id': 'demo2', 
+        'id': 'demo2',
         'name': 'defaultbundlehabit2',
         'description': 'Second nested habit in bundle (demo)',
         'completed': true,
@@ -54,14 +59,15 @@ class _DemoBundleCardState extends State<DemoBundleCard> {
     final now = DateTime.now();
     final lastCompleted = habit.lastCompleted!;
     return now.year == lastCompleted.year &&
-           now.month == lastCompleted.month &&
-           now.day == lastCompleted.day;
+        now.month == lastCompleted.month &&
+        now.day == lastCompleted.day;
   }
 
   @override
   Widget build(BuildContext context) {
     final nestedHabits = _nestedHabits;
-    final completedCount = nestedHabits.where((h) => h['completed'] as bool).length;
+    final completedCount =
+        nestedHabits.where((h) => h['completed'] as bool).length;
     final totalCount = nestedHabits.length;
     final progress = totalCount > 0 ? completedCount / totalCount : 0.0;
     final isAllCompleted = completedCount == totalCount;
@@ -89,8 +95,10 @@ class _DemoBundleCardState extends State<DemoBundleCard> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: (isAllCompleted ? Colors.green : Colors.blue).withOpacity(0.1),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
+              color: (isAllCompleted ? Colors.green : Colors.blue)
+                  .withOpacity(0.1),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(10)),
             ),
             child: Row(
               children: [
@@ -134,7 +142,7 @@ class _DemoBundleCardState extends State<DemoBundleCard> {
                   ),
                 ),
                 const SizedBox(width: 16),
-                
+
                 // Bundle Info
                 Expanded(
                   child: Column(
@@ -154,8 +162,11 @@ class _DemoBundleCardState extends State<DemoBundleCard> {
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
-                                color: isAllCompleted ? Colors.green : Colors.blue,
-                                decoration: isAllCompleted ? TextDecoration.lineThrough : null,
+                                color:
+                                    isAllCompleted ? Colors.green : Colors.blue,
+                                decoration: isAllCompleted
+                                    ? TextDecoration.lineThrough
+                                    : null,
                               ),
                             ),
                           ),
@@ -163,9 +174,12 @@ class _DemoBundleCardState extends State<DemoBundleCard> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        isAllCompleted ? 'All complete! ✅' : '$completedCount of $totalCount complete',
+                        isAllCompleted
+                            ? 'All complete! ✅'
+                            : '$completedCount of $totalCount complete',
                         style: TextStyle(
-                          color: isAllCompleted ? Colors.green : Colors.grey[600],
+                          color:
+                              isAllCompleted ? Colors.green : Colors.grey[600],
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -182,7 +196,7 @@ class _DemoBundleCardState extends State<DemoBundleCard> {
                     ],
                   ),
                 ),
-                
+
                 // Action Buttons
                 Row(
                   mainAxisSize: MainAxisSize.min,
@@ -193,10 +207,12 @@ class _DemoBundleCardState extends State<DemoBundleCard> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue,
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 6),
                         ),
                         icon: const Icon(Icons.done_all, size: 16),
-                        label: const Text('Complete All', style: TextStyle(fontSize: 12)),
+                        label: const Text('Complete All',
+                            style: TextStyle(fontSize: 12)),
                       ),
                     const SizedBox(width: 8),
                     IconButton(
@@ -216,7 +232,7 @@ class _DemoBundleCardState extends State<DemoBundleCard> {
               ],
             ),
           ),
-          
+
           // Nested Habits Section (animated)
           AnimatedContainer(
             duration: const Duration(milliseconds: 300),
@@ -269,7 +285,7 @@ class _DemoBundleCardState extends State<DemoBundleCard> {
               ],
             ),
           ),
-          
+
           // Nested Habit Items
           ...(_nestedHabits.asMap().entries.map((entry) {
             final index = entry.key;
@@ -283,7 +299,7 @@ class _DemoBundleCardState extends State<DemoBundleCard> {
 
   Widget _buildNestedHabitTile(Map<String, dynamic> habit, int index) {
     final isCompleted = habit['completed'] as bool;
-    
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -293,7 +309,8 @@ class _DemoBundleCardState extends State<DemoBundleCard> {
         ),
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.only(left: 20, right: 16, top: 4, bottom: 4),
+        contentPadding:
+            const EdgeInsets.only(left: 20, right: 16, top: 4, bottom: 4),
         leading: Container(
           width: 8,
           height: 8,
@@ -347,10 +364,11 @@ class _DemoBundleCardState extends State<DemoBundleCard> {
     if (index >= 0 && index < nestedHabits.length) {
       // For demo purposes, just show feedback
       final habitName = nestedHabits[index]['name'] as String;
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('$habitName clicked! (Demo - real completion coming soon)'),
+          content:
+              Text('$habitName clicked! (Demo - real completion coming soon)'),
           duration: const Duration(seconds: 1),
           backgroundColor: Colors.blue,
         ),
@@ -364,7 +382,7 @@ class _DemoBundleCardState extends State<DemoBundleCard> {
         habit['completed'] = true;
       }
     });
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('All nested habits completed! 🎉'),

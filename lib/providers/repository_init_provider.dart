@@ -2,18 +2,36 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
 
 import '../core/repositories/habits_repository.dart';
-import '../core/repositories/simple_memory_repository.dart';
+// import '../core/repositories/simple_memory_repository.dart';
+import '../core/repositories/remote_habits_repository.dart';
+import '../core/auth/username_auth_service.dart';
+import '../screens/partner_settings_screen.dart';
 
 final _logger = Logger();
 
-/// Provider for Supabase testing - uses simple memory repository with Supabase sync
+/// Provider that creates and manages the repository with user context
 final repositoryProvider = FutureProvider<HabitsRepository>((ref) async {
-  _logger.i('Using SimpleMemoryRepository with Supabase integration');
-  final repository = SimpleMemoryRepository();
-  
-  // Initialize immediately - no async dependencies
+  _logger.i('Using RemoteHabitsRepository for real-time sync');
+  final repository = RemoteHabitsRepository();
+
+  // Initialize with async dependencies
   await repository.initialize();
-  _logger.i('SimpleMemoryRepository initialized successfully');
+
+  // Set the current user ID from username auth service
+  try {
+    final currentUserId = UsernameAuthService.instance.getCurrentUserId();
+    if (currentUserId != null) {
+      await repository.setCurrentUserId(currentUserId);
+      _logger.i('Repository initialized for user: $currentUserId');
+    } else {
+      _logger
+          .w('No authenticated user - repository initialized without user ID');
+    }
+  } catch (e) {
+    _logger.w('Could not set user ID in repository: $e');
+  }
+
+  _logger.i('RemoteHabitsRepository initialized successfully');
   return repository;
 });
 
@@ -25,12 +43,23 @@ final activeRepositoryProvider = Provider<AsyncValue<HabitsRepository>>((ref) {
 /// Provider that exposes the repository once it's loaded
 final habitsRepositoryProvider = Provider<HabitsRepository>((ref) {
   final repositoryAsync = ref.watch(repositoryProvider);
-  
+
   return repositoryAsync.when(
     data: (repository) => repository,
     loading: () => throw const RepositoryException('Repository still loading'),
-    error: (error, stackTrace) => throw RepositoryException('Repository failed to load: $error'),
+    error: (error, stackTrace) =>
+        throw RepositoryException('Repository failed to load: $error'),
   );
+});
+
+/// Provider that watches for username changes and updates repository
+final userAwareRepositoryProvider =
+    Provider<AsyncValue<HabitsRepository>>((ref) {
+  // Watch for username changes
+  ref.watch(currentUsernameProvider);
+
+  // Return the repository which will reinitialize when username changes
+  return ref.watch(repositoryProvider);
 });
 
 /// Provider for checking if we're using remote or local repository

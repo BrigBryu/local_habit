@@ -9,7 +9,7 @@ class ThemeSettingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final currentVariant = ref.watch(themeVariantProvider);
     final colors = ref.watchColors;
-    
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -42,18 +42,19 @@ class ThemeSettingsScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 24),
-            
             Expanded(
               child: ListView.builder(
                 itemCount: ThemeVariant.values.length,
                 itemBuilder: (context, index) {
                   final variant = ThemeVariant.values[index];
                   final isSelected = variant == currentVariant;
-                  
+
                   return _ThemeVariantCard(
                     variant: variant,
                     isSelected: isSelected,
-                    onTap: () => ref.read(themeVariantProvider.notifier).setTheme(variant),
+                    onTap: () => ref
+                        .read(themeVariantProvider.notifier)
+                        .setTheme(variant),
                   );
                 },
               ),
@@ -79,7 +80,7 @@ class _ThemeVariantCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = FlexibleColors.of(variant);
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
@@ -137,7 +138,7 @@ class _ThemeVariantCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-                
+
                 // Color preview
                 Row(
                   children: [
@@ -155,7 +156,7 @@ class _ThemeVariantCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 16),
-                
+
                 // Preview habit card
                 Container(
                   padding: const EdgeInsets.all(12),

@@ -1,4 +1,3 @@
-
 // TODO(bridger): Re-enable after rewrite. Currently EXCLUDED.
 // TimedSessionHabit is temporarily disabled to resolve TimeOfDay conflicts and
 // simplify the domain model. Will be re-enabled in a future iteration.
@@ -40,17 +39,18 @@ class TimedSessionHabit extends BaseHabit {
   @override
   String get displayName => '$name ⏱️${sessionMinutes}m';
 
-  bool get isSessionActive => sessionStartTime != null && !sessionCompletedToday;
+  bool get isSessionActive =>
+      sessionStartTime != null && !sessionCompletedToday;
 
   @override
   bool canComplete(TimeService timeService) {
     if (sessionCompletedToday) return false;
     if (sessionStartTime == null) return false; // No session started
-    
+
     final now = timeService.now();
     final sessionDuration = now.difference(sessionStartTime!);
     final totalAllowedMinutes = sessionMinutes + graceMinutes;
-    
+
     // Can complete if we're within the total allowed time
     return sessionDuration.inMinutes <= totalAllowedMinutes;
   }
@@ -59,21 +59,21 @@ class TimedSessionHabit extends BaseHabit {
   bool canStartSession(TimeService timeService) {
     if (sessionCompletedToday) return false;
     if (isSessionActive) return false; // Already has active session
-    
+
     // Check if any previous session expired today
     if (lastSessionStarted != null) {
       final now = timeService.now();
       if (timeService.isSameDay(lastSessionStarted!, now)) {
         final timeSinceLastStart = now.difference(lastSessionStarted!);
         final totalAllowedMinutes = sessionMinutes + graceMinutes;
-        
+
         // If last session expired, can't start another today
         if (timeSinceLastStart.inMinutes > totalAllowedMinutes) {
           return false;
         }
       }
     }
-    
+
     return true;
   }
 
@@ -82,7 +82,7 @@ class TimedSessionHabit extends BaseHabit {
     if (sessionCompletedToday) {
       return 'Session completed! 🎉';
     }
-    
+
     if (sessionStartTime == null) {
       if (canStartSession(timeService)) {
         return '▶️ Click to start ${sessionMinutes}m session (+${graceMinutes}m grace)';
@@ -90,11 +90,11 @@ class TimedSessionHabit extends BaseHabit {
         return '❌ Session expired for today';
       }
     }
-    
+
     final now = timeService.now();
     final sessionDuration = now.difference(sessionStartTime!);
     final remainingSessionMinutes = sessionMinutes - sessionDuration.inMinutes;
-    
+
     if (remainingSessionMinutes > 0) {
       final minutes = remainingSessionMinutes;
       final seconds = 60 - (sessionDuration.inSeconds % 60);
@@ -102,8 +102,9 @@ class TimedSessionHabit extends BaseHabit {
     } else {
       // In grace period
       final totalAllowedMinutes = sessionMinutes + graceMinutes;
-      final remainingGraceMinutes = totalAllowedMinutes - sessionDuration.inMinutes;
-      
+      final remainingGraceMinutes =
+          totalAllowedMinutes - sessionDuration.inMinutes;
+
       if (remainingGraceMinutes > 0) {
         final minutes = remainingGraceMinutes;
         final seconds = 60 - (sessionDuration.inSeconds % 60);
@@ -119,7 +120,7 @@ class TimedSessionHabit extends BaseHabit {
     if (!canStartSession(timeService)) {
       throw StateError('Cannot start session at this time');
     }
-    
+
     final now = timeService.now();
     return copyWith(
       sessionStartTime: now,
@@ -130,12 +131,12 @@ class TimedSessionHabit extends BaseHabit {
   /// Get remaining time in current session (in minutes)
   int? getRemainingMinutes(TimeService timeService) {
     if (sessionStartTime == null) return null;
-    
+
     final now = timeService.now();
     final sessionDuration = now.difference(sessionStartTime!);
     final totalAllowedMinutes = sessionMinutes + graceMinutes;
     final remainingMinutes = totalAllowedMinutes - sessionDuration.inMinutes;
-    
+
     return remainingMinutes > 0 ? remainingMinutes : 0;
   }
 
@@ -143,7 +144,7 @@ class TimedSessionHabit extends BaseHabit {
   TimedSessionHabit complete() {
     final timeService = TimeService();
     final now = timeService.now();
-    
+
     // Calculate new streak
     int newStreak = currentStreak;
     if (lastCompleted != null) {
@@ -192,12 +193,14 @@ class TimedSessionHabit extends BaseHabit {
       lastCompleted: lastCompleted ?? this.lastCompleted,
       currentStreak: currentStreak ?? this.currentStreak,
       dailyCompletionCount: dailyCompletionCount ?? this.dailyCompletionCount,
-      lastCompletionCountReset: lastCompletionCountReset ?? this.lastCompletionCountReset,
+      lastCompletionCountReset:
+          lastCompletionCountReset ?? this.lastCompletionCountReset,
       sessionMinutes: sessionMinutes ?? this.sessionMinutes,
       graceMinutes: graceMinutes ?? this.graceMinutes,
       sessionStartTime: sessionStartTime ?? this.sessionStartTime,
       lastSessionStarted: lastSessionStarted ?? this.lastSessionStarted,
-      sessionCompletedToday: sessionCompletedToday ?? this.sessionCompletedToday,
+      sessionCompletedToday:
+          sessionCompletedToday ?? this.sessionCompletedToday,
     );
   }
 

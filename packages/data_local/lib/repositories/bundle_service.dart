@@ -14,8 +14,9 @@ class BundleService {
     }
 
     final children = getChildHabits(bundle, allHabits);
-    final completedCount = children.where((child) => isHabitCompletedToday(child)).length;
-    
+    final completedCount =
+        children.where((child) => isHabitCompletedToday(child)).length;
+
     return BundleProgress(completed: completedCount, total: children.length);
   }
 
@@ -27,7 +28,7 @@ class BundleService {
 
     // Create a map for O(1) lookup
     final habitMap = {for (final habit in allHabits) habit.id: habit};
-    
+
     // Return children in the order specified by bundleChildIds
     return bundle.bundleChildIds!
         .map((id) => habitMap[id])
@@ -43,8 +44,8 @@ class BundleService {
     }
 
     return allHabits
-        .where((habit) => 
-            bundle.bundleChildIds!.contains(habit.id) && 
+        .where((habit) =>
+            bundle.bundleChildIds!.contains(habit.id) &&
             !isHabitCompletedToday(habit))
         .toList();
   }
@@ -82,26 +83,26 @@ class BundleService {
       case HabitType.basic:
       case HabitType.avoidance:
         return true; // Basic and avoidance habits can always be completed
-      
+
       case HabitType.stack:
         return true; // Habit stacks can be completed
-      
+
       // TODO(bridger): Disabled time-based habit types
       // case HabitType.timedSession:
       //   return child.sessionCompletedToday; // Only if timer finished
-      // 
+      //
       // case HabitType.timeWindow:
       // case HabitType.dailyTimeWindow:
       //   // Would need access to timed habit service for validation
       //   return true; // For now, allow completion
-      // 
+      //
       // case HabitType.alarmHabit:
       //   // Would need access to timed habit service for validation
       //   return true; // For now, allow completion
-      
+
       case HabitType.bundle:
         return false; // Cannot nest bundles
-      
+
       default:
         return true;
     }
@@ -110,7 +111,7 @@ class BundleService {
   /// Validate bundle creation (no nested bundles, single level depth)
   String? validateBundleCreation(List<String> childIds, List<Habit> allHabits) {
     final children = allHabits.where((habit) => childIds.contains(habit.id));
-    
+
     for (final child in children) {
       // Enforce single-level depth: no bundles as children
       if (child.type == HabitType.bundle) {
@@ -120,15 +121,15 @@ class BundleService {
         return 'Habit ${child.name} is already part of another bundle';
       }
     }
-    
+
     if (childIds.length < 2) {
       return 'Bundle must have at least 2 child habits';
     }
-    
+
     if (childIds.length > 8) {
       return 'Bundle cannot have more than 8 child habits';
     }
-    
+
     return null; // Valid
   }
 
@@ -140,7 +141,7 @@ class BundleService {
 
     final newChildIds = <String>[...(bundle.bundleChildIds ?? []), habitId];
     final validationError = validateBundleCreation(newChildIds, allHabits);
-    
+
     if (validationError != null) {
       throw ArgumentError(validationError);
     }
@@ -176,10 +177,10 @@ class BundleService {
 
   /// Get available habits that can be added to a bundle
   List<Habit> getAvailableHabitsForBundle(List<Habit> allHabits) {
-    return allHabits.where((habit) => 
-      habit.type != HabitType.bundle && 
-      habit.parentBundleId == null
-    ).toList();
+    return allHabits
+        .where((habit) =>
+            habit.type != HabitType.bundle && habit.parentBundleId == null)
+        .toList();
   }
 
   /// Create a bundle with child habits
@@ -203,9 +204,10 @@ class BundleService {
   }
 
   /// Update child habits to reference their parent bundle
-  List<Habit> assignChildrenToBundle(String bundleId, List<String> childIds, List<Habit> allHabits) {
+  List<Habit> assignChildrenToBundle(
+      String bundleId, List<String> childIds, List<Habit> allHabits) {
     final updatedHabits = <Habit>[];
-    
+
     for (final habit in allHabits) {
       if (childIds.contains(habit.id)) {
         updatedHabits.add(Habit(
@@ -237,22 +239,22 @@ class BundleService {
         ));
       }
     }
-    
+
     return updatedHabits;
   }
 
   /// Get bundle status text
   String getBundleStatus(Habit bundle, List<Habit> allHabits) {
     final progress = getBundleProgress(bundle, allHabits);
-    
+
     if (progress.total == 0) {
       return 'Empty bundle';
     }
-    
+
     if (progress.completed == progress.total) {
       return 'All complete! ✅';
     }
-    
+
     return '${progress.completed}/${progress.total} complete';
   }
 
@@ -268,9 +270,9 @@ class BundleService {
 class BundleProgress {
   final int completed;
   final int total;
-  
+
   const BundleProgress({required this.completed, required this.total});
-  
+
   @override
   String toString() => '$completed/$total';
 }
@@ -278,7 +280,7 @@ class BundleProgress {
 /// Check if a habit should show as completed today
 bool isHabitCompletedToday(Habit habit) {
   if (habit.lastCompleted == null) return false;
-  
+
   final timeService = TimeService();
   return timeService.isSameDay(habit.lastCompleted!, timeService.now());
 }
@@ -287,11 +289,14 @@ bool isHabitCompletedToday(Habit habit) {
 class BundleCompletionResult {
   final List<Habit> completedHabits;
   final int comboBonus;
-  
+
   const BundleCompletionResult({
     required this.completedHabits,
     required this.comboBonus,
   });
-  
-  int get totalXP => completedHabits.fold<int>(0, (sum, habit) => sum + habit.calculateXPReward()) + comboBonus;
+
+  int get totalXP =>
+      completedHabits.fold<int>(
+          0, (sum, habit) => sum + habit.calculateXPReward()) +
+      comboBonus;
 }

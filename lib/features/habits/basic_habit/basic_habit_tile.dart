@@ -19,27 +19,27 @@ class HabitTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isCompleted = isHabitCompletedToday(habit);
     final colors = ref.watchColors;
-    
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         gradient: LinearGradient(
           colors: [
-            isCompleted 
-              ? colors.completedBackground.withOpacity(0.8)
-              : colors.draculaCurrentLine.withOpacity(0.6),
-            isCompleted 
-              ? colors.completedBackground.withOpacity(0.4)
-              : colors.draculaCurrentLine.withOpacity(0.3),
+            isCompleted
+                ? colors.completedBackground.withOpacity(0.8)
+                : colors.draculaCurrentLine.withOpacity(0.6),
+            isCompleted
+                ? colors.completedBackground.withOpacity(0.4)
+                : colors.draculaCurrentLine.withOpacity(0.3),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         border: Border.all(
-          color: isCompleted 
-            ? colors.completedBorder.withOpacity(0.8)
-            : colors.basicHabit.withOpacity(0.4),
+          color: isCompleted
+              ? colors.completedBorder.withOpacity(0.8)
+              : colors.basicHabit.withOpacity(0.4),
           width: 2,
         ),
         boxShadow: [
@@ -88,8 +88,11 @@ class HabitTile extends ConsumerWidget {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          decoration: isCompleted ? TextDecoration.lineThrough : null,
-                          color: isCompleted ? colors.completedTextOnGreen : colors.draculaPurple,
+                          decoration:
+                              isCompleted ? TextDecoration.lineThrough : null,
+                          color: isCompleted
+                              ? colors.completedTextOnGreen
+                              : colors.draculaPurple,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -98,14 +101,18 @@ class HabitTile extends ConsumerWidget {
                       Text(
                         _buildSubtitleText(),
                         style: TextStyle(
-                          color: isCompleted ? colors.completedTextOnGreen : colors.basicHabit,
+                          color: isCompleted
+                              ? colors.completedTextOnGreen
+                              : colors.basicHabit,
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      if (habit.description.isNotEmpty && !_buildSubtitleText().contains(habit.description)) ...[
+                      if (habit.description.isNotEmpty &&
+                          !_buildSubtitleText()
+                              .contains(habit.description)) ...[
                         const SizedBox(height: 2),
                         Text(
                           habit.description,
@@ -133,15 +140,14 @@ class HabitTile extends ConsumerWidget {
   String _buildSubtitleText() {
     switch (habit.type) {
       case HabitType.basic:
-        final count = isHabitCompletedToday(habit) ? habit.dailyCompletionCount : 0;
+        final count =
+            isHabitCompletedToday(habit) ? habit.dailyCompletionCount : 0;
         if (count > 0) {
           return 'Basic Habit · $count completed today';
         }
         // Show description if available, otherwise show basic habit type
-        return habit.description.isNotEmpty 
-            ? habit.description 
-            : 'Basic Habit';
-        
+        return habit.description.isNotEmpty ? habit.description : 'Basic Habit';
+
       case HabitType.avoidance:
         final failures = habit.dailyFailureCount;
         if (habit.avoidanceSuccessToday) {
@@ -150,36 +156,35 @@ class HabitTile extends ConsumerWidget {
           return 'Avoidance · $failures failure(s) today';
         }
         return 'Avoidance · In progress';
-        
+
       case HabitType.bundle:
         final childCount = habit.bundleChildIds?.length ?? 0;
         return 'Bundle · $childCount habits';
-        
+
       // TODO(bridger): Disabled time-based habit types
       // case HabitType.alarmHabit:
       //   final timeStr = habit.alarmTime?.format24Hour() ?? 'No time set';
       //   return 'Alarm · $timeStr';
-      //   
+      //
       // case HabitType.timeWindow:
       // case HabitType.dailyTimeWindow:
       //   final start = habit.windowStartTime?.format24Hour() ?? '';
       //   final end = habit.windowEndTime?.format24Hour() ?? '';
       //   return 'Time Window · $start - $end';
-      //   
+      //
       // case HabitType.timedSession:
       //   final minutes = habit.timeoutMinutes ?? 0;
       //   return 'Timed Session · ${minutes}min';
-        
+
       case HabitType.stack:
         return 'Habit Stack';
     }
   }
 
-
   Widget? _buildTrailingWidget(BuildContext context) {
     return HomeHabitCheckButton(habit: habit);
   }
-  
+
   Color _getHabitTypeColor(WidgetRef ref) {
     final colors = ref.watchColors;
     switch (habit.type) {
@@ -193,7 +198,7 @@ class HabitTile extends ConsumerWidget {
         return colors.stackHabit;
     }
   }
-  
+
   IconData _getHabitTypeIcon() {
     switch (habit.type) {
       case HabitType.basic:
@@ -225,7 +230,7 @@ class HomeHabitCheckButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isCompleted = isHabitCompletedToday(habit);
-    
+
     if (isCompleted) {
       return Container(
         width: 40,
@@ -248,7 +253,7 @@ class HomeHabitCheckButton extends ConsumerWidget {
         ),
       );
     }
-    
+
     return GestureDetector(
       onTap: () => _completeHabit(context, ref),
       child: Container(
@@ -281,7 +286,7 @@ class HomeHabitCheckButton extends ConsumerWidget {
   Future<void> _completeHabit(BuildContext context, WidgetRef ref) async {
     final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
     final result = await habitsNotifier.completeHabit(habit.id);
-    
+
     if (result != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -294,7 +299,8 @@ class HomeHabitCheckButton extends ConsumerWidget {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('${habit.name} completed! +${habit.calculateXPReward()} XP'),
+          content:
+              Text('${habit.name} completed! +${habit.calculateXPReward()} XP'),
           backgroundColor: ref.read(flexibleColorsProvider).success,
           behavior: SnackBarBehavior.floating,
           duration: const Duration(seconds: 2),

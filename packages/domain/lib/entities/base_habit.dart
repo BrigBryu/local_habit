@@ -7,27 +7,39 @@ abstract class BaseHabit {
   final String name;
   final String description;
   final DateTime createdAt;
+  final DateTime updatedAt;
   final DateTime? lastCompleted;
   final int currentStreak;
   final int dailyCompletionCount;
   final DateTime? lastCompletionCountReset;
+  final HabitIcon habitIcon;
+  final TimeOfDay timeOfDay;
 
   const BaseHabit({
     required this.id,
     required this.name,
     required this.description,
     required this.createdAt,
+    DateTime? updatedAt,
     this.lastCompleted,
     this.currentStreak = 0,
     this.dailyCompletionCount = 0,
     this.lastCompletionCountReset,
-  });
+    this.habitIcon = HabitIcon.basic,
+    this.timeOfDay = TimeOfDay.anytime,
+  }) : updatedAt = updatedAt ?? createdAt;
 
   /// Get the display name for this habit
   String get displayName => name;
 
   /// Get the icon for this habit type
-  HabitIcon get icon;
+  HabitIcon get icon => habitIcon;
+
+  /// Check if habit is completed (based on today's completion)
+  bool get isCompleted => isCompletedToday(TimeService());
+
+  /// Get total completions (same as daily completion count for now)
+  int get totalCompletions => dailyCompletionCount;
 
   /// Get the habit type name
   String get typeName;
@@ -89,16 +101,16 @@ abstract class BaseHabit {
   /// Reset daily completion count if needed
   BaseHabit resetDailyCountIfNeeded(TimeService timeService) {
     final now = timeService.now();
-    
+
     // If we haven't reset today, reset the count
-    if (lastCompletionCountReset == null || 
+    if (lastCompletionCountReset == null ||
         !timeService.isSameDay(lastCompletionCountReset!, now)) {
       return copyWith(
         dailyCompletionCount: 0,
         lastCompletionCountReset: now,
       );
     }
-    
+
     return this;
   }
 
@@ -108,10 +120,13 @@ abstract class BaseHabit {
     String? name,
     String? description,
     DateTime? createdAt,
+    DateTime? updatedAt,
     DateTime? lastCompleted,
     int? currentStreak,
     int? dailyCompletionCount,
     DateTime? lastCompletionCountReset,
+    HabitIcon? habitIcon,
+    TimeOfDay? timeOfDay,
   });
 
   @override

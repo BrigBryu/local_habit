@@ -6,7 +6,7 @@ import 'habits_repository.dart';
 // import 'local_habits_repository.dart';
 import '../network/supabase_client.dart';
 import '../network/supabase_habit_dto.dart';
-import '../auth/auth_service.dart';
+import '../auth/username_auth_service.dart';
 import '../sync/sync_queue.dart';
 import '../realtime/realtime_service.dart';
 
@@ -15,57 +15,62 @@ class RemoteHabitsRepository implements HabitsRepository {
   final Logger _logger = Logger();
   // final LocalHabitsRepository _localFallback = LocalHabitsRepository();
   String _currentUserId = '';
-  
+
   // Stream controllers for manual updates
   final _ownHabitsController = StreamController<List<Habit>>.broadcast();
   final _partnerHabitsController = StreamController<List<Habit>>.broadcast();
-  
+
   @override
   String getCurrentUserId() => _currentUserId;
-  
+
   @override
   Future<void> setCurrentUserId(String userId) async {
     _currentUserId = userId;
     // await _localFallback.setCurrentUserId(userId);
     _logger.d('Remote repository user ID set to: $userId');
   }
-  
+
   @override
   Future<void> initialize() async {
     try {
       // Initialize local fallback first
       // await _localFallback.initialize();
-      
-      // Get current user ID from auth service
-      final authUserId = AuthService.instance.getCurrentUserId();
+
+      // Get current user ID from username auth service
+      final authUserId = UsernameAuthService.instance.getCurrentUserId();
       if (authUserId != null) {
         _currentUserId = authUserId;
       } else {
         _currentUserId = 'default_user'; // Fallback for development
       }
-      
+
       // Initialize sync queue (with timeout)
       try {
-        await SyncQueue.instance.initialize(this).timeout(const Duration(seconds: 10));
+        await SyncQueue.instance
+            .initialize(this)
+            .timeout(const Duration(seconds: 10));
       } catch (e) {
         _logger.w('Sync queue initialization failed or timed out: $e');
       }
-      
+
       // Initialize realtime service for live habit updates (with timeout)
       try {
-        await RealtimeService.instance.initialize().timeout(const Duration(seconds: 10));
+        await RealtimeService.instance
+            .initialize()
+            .timeout(const Duration(seconds: 10));
       } catch (e) {
         _logger.w('Realtime service initialization failed or timed out: $e');
       }
-      
+
       _logger.i('RemoteHabitsRepository initialized for user: $_currentUserId');
     } catch (e, stackTrace) {
-      _logger.e('Failed to initialize remote repository', error: e, stackTrace: stackTrace);
+      _logger.e('Failed to initialize remote repository',
+          error: e, stackTrace: stackTrace);
       // Don't rethrow - allow app to continue in degraded mode
       _logger.w('Continuing in degraded mode without full sync capabilities');
     }
   }
-  
+
   @override
   Stream<List<Habit>> ownHabits() {
     try {
@@ -78,17 +83,18 @@ class RemoteHabitsRepository implements HabitsRepository {
           .eq('user_id', _currentUserId)
           .map((data) => data.toHabitDomainList())
           .handleError((error, stackTrace) {
-            _logger.e('Error streaming own habits from Supabase', 
-                     error: error, stackTrace: stackTrace);
+            _logger.e('Error streaming own habits from Supabase',
+                error: error, stackTrace: stackTrace);
             // Return empty stream on error
             return Stream.value(<Habit>[]);
           });
     } catch (e, stackTrace) {
-      _logger.e('Failed to create own habits stream', error: e, stackTrace: stackTrace);
+      _logger.e('Failed to create own habits stream',
+          error: e, stackTrace: stackTrace);
       return Stream.value(<Habit>[]);
     }
   }
-  
+
   @override
   Stream<List<Habit>> partnerHabits(String partnerId) {
     try {
@@ -101,89 +107,102 @@ class RemoteHabitsRepository implements HabitsRepository {
           .eq('user_id', partnerId)
           .map((data) => data.toHabitDomainList())
           .handleError((error, stackTrace) {
-            _logger.e('Error streaming partner habits from Supabase', 
-                     error: error, stackTrace: stackTrace);
+            _logger.e('Error streaming partner habits from Supabase',
+                error: error, stackTrace: stackTrace);
             // Return empty stream on error
             return Stream.value(<Habit>[]);
           });
     } catch (e, stackTrace) {
-      _logger.e('Failed to create partner habits stream', error: e, stackTrace: stackTrace);
+      _logger.e('Failed to create partner habits stream',
+          error: e, stackTrace: stackTrace);
       return Stream.value(<Habit>[]);
     }
   }
-  
+
   @override
   Future<String?> addHabit(Habit habit) async {
     try {
-      // Skip auth check for dev users
+      if (!UsernameAuthService.instance.isAuthenticated) {
+        _logger.w('Not authenticated, enqueuing habit for later sync');
+        await SyncQueue.instance.enqueue(SyncOp.addHabit(habit));
+        return "Added to queue - will sync when authenticated";
+      }
+
       _logger.d('Adding habit for user: $_currentUserId');
+
+      // Ensure we have a valid user ID
+      if (_currentUserId.isEmpty) {
+        throw Exception('No valid user ID available');
+      }
 
       // Create DTO and insert to Supabase
       final dto = SupabaseHabitDto.fromDomain(habit, _currentUserId);
+      final habitJson = dto.toJson();
       
-      await supabase
-          .from('habits')
-          .insert(dto.toJson());
-      
+      _logger.d('Inserting habit data: $habitJson');
+
+      await supabase.from('habits').insert(habitJson);
+
       _logger.i('Successfully added habit to Supabase: ${habit.name}');
-      
-      // Also add to local for offline support
-      // Local fallback disabled
-      
+
       return null; // Success
-      
     } catch (e, stackTrace) {
-      _logger.e('Failed to add habit remotely, using local fallback and enqueuing for retry', 
-               error: e, stackTrace: stackTrace);
-      
+      _logger.e(
+          'Failed to add habit remotely, enqueuing for retry',
+          error: e,
+          stackTrace: stackTrace);
+
       // Enqueue for later sync
       await SyncQueue.instance.enqueue(SyncOp.addHabit(habit));
-      
-      return "Network error occurred";
+
+      return "Network error - added to sync queue";
     }
   }
-  
+
   @override
   Future<String?> updateHabit(Habit habit) async {
     try {
-      if (!AuthService.instance.isAuthenticated) {
+      if (!UsernameAuthService.instance.isAuthenticated) {
         _logger.d('Not authenticated, using local fallback to update habit');
-        _logger.d('Proceeding with operation for dev user: $_currentUserId'); return null;
+        _logger.d('Proceeding with operation for dev user: $_currentUserId');
+        return null;
       }
 
       // Create DTO and update in Supabase
       final dto = SupabaseHabitDto.fromDomain(habit, _currentUserId);
-      
+
       await supabase
           .from('habits')
           .update(dto.toJson())
           .eq('id', habit.id)
           .eq('user_id', _currentUserId);
-      
+
       _logger.i('Successfully updated habit in Supabase: ${habit.name}');
-      
+
       // Also update local for offline support
       // Local fallback disabled
-      
+
       return null; // Success
-      
     } catch (e, stackTrace) {
-      _logger.e('Failed to update habit remotely, using local fallback and enqueuing for retry', 
-               error: e, stackTrace: stackTrace);
-      
+      _logger.e(
+          'Failed to update habit remotely, using local fallback and enqueuing for retry',
+          error: e,
+          stackTrace: stackTrace);
+
       // Enqueue for later sync
       await SyncQueue.instance.enqueue(SyncOp.updateHabit(habit));
-      
+
       return "Network error occurred";
     }
   }
-  
+
   @override
   Future<String?> removeHabit(String habitId) async {
     try {
-      if (!AuthService.instance.isAuthenticated) {
+      if (!UsernameAuthService.instance.isAuthenticated) {
         _logger.d('Not authenticated, using local fallback to remove habit');
-        _logger.d('Proceeding with operation for dev user: $_currentUserId'); return null;
+        _logger.d('Proceeding with operation for dev user: $_currentUserId');
+        return null;
       }
 
       // Delete from Supabase
@@ -192,35 +211,37 @@ class RemoteHabitsRepository implements HabitsRepository {
           .delete()
           .eq('id', habitId)
           .eq('user_id', _currentUserId);
-      
+
       _logger.i('Successfully removed habit from Supabase: $habitId');
-      
+
       // Also remove from local
       // Local fallback disabled
-      
+
       return null; // Success
-      
     } catch (e, stackTrace) {
-      _logger.e('Failed to remove habit remotely, using local fallback and enqueuing for retry', 
-               error: e, stackTrace: stackTrace);
-      
+      _logger.e(
+          'Failed to remove habit remotely, using local fallback and enqueuing for retry',
+          error: e,
+          stackTrace: stackTrace);
+
       // Enqueue for later sync
       await SyncQueue.instance.enqueue(SyncOp.removeHabit(habitId));
-      
+
       return "Network error occurred";
     }
   }
-  
+
   @override
   Future<String?> completeHabit(String habitId, {int xpAwarded = 0}) async {
     try {
-      if (!AuthService.instance.isAuthenticated) {
+      if (!UsernameAuthService.instance.isAuthenticated) {
         _logger.d('Not authenticated, using local fallback to complete habit');
-        _logger.d('Proceeding with operation for dev user: $_currentUserId'); return null;
+        _logger.d('Proceeding with operation for dev user: $_currentUserId');
+        return null;
       }
 
       final now = DateTime.now();
-      
+
       // Record completion in Supabase
       try {
         await supabase.from('habit_completions').insert({
@@ -231,9 +252,10 @@ class RemoteHabitsRepository implements HabitsRepository {
           'completion_type': 'manual',
         });
       } catch (completionError) {
-        _logger.w('Failed to insert habit completion but continuing: $completionError');
+        _logger.w(
+            'Failed to insert habit completion but continuing: $completionError');
       }
-      
+
       // Record XP event if XP was awarded
       if (xpAwarded > 0) {
         await supabase.from('xp_events').insert({
@@ -244,35 +266,39 @@ class RemoteHabitsRepository implements HabitsRepository {
           'description': 'Habit completion reward',
         });
       }
-      
-      _logger.i('Successfully recorded habit completion in Supabase: $habitId (XP: $xpAwarded)');
-      
+
+      _logger.i(
+          'Successfully recorded habit completion in Supabase: $habitId (XP: $xpAwarded)');
+
       // Also record in local for offline support
       // Local fallback disabled
-      
+
       return null; // Success
-      
     } catch (e, stackTrace) {
-      _logger.e('Failed to complete habit remotely, using local fallback and enqueuing for retry', 
-               error: e, stackTrace: stackTrace);
-      
+      _logger.e(
+          'Failed to complete habit remotely, using local fallback and enqueuing for retry',
+          error: e,
+          stackTrace: stackTrace);
+
       // Enqueue for later sync
-      await SyncQueue.instance.enqueue(SyncOp.completeHabit(habitId, xpAwarded));
-      
+      await SyncQueue.instance
+          .enqueue(SyncOp.completeHabit(habitId, xpAwarded));
+
       return "Network error occurred";
     }
   }
-  
+
   @override
   Future<String?> recordFailure(String habitId) async {
     try {
-      if (!AuthService.instance.isAuthenticated) {
+      if (!UsernameAuthService.instance.isAuthenticated) {
         _logger.d('Not authenticated, using local fallback to record failure');
-        _logger.d('Proceeding with operation for dev user: $_currentUserId'); return null;
+        _logger.d('Proceeding with operation for dev user: $_currentUserId');
+        return null;
       }
 
       final now = DateTime.now();
-      
+
       // Record failure in habit_completions table with negative XP
       try {
         await supabase.from('habit_completions').insert({
@@ -284,9 +310,10 @@ class RemoteHabitsRepository implements HabitsRepository {
           'notes': 'Avoidance habit failure',
         });
       } catch (completionError) {
-        _logger.w('Failed to insert habit failure but continuing: $completionError');
+        _logger.w(
+            'Failed to insert habit failure but continuing: $completionError');
       }
-      
+
       // Record XP penalty event
       await supabase.from('xp_events').insert({
         'user_id': _currentUserId,
@@ -295,25 +322,26 @@ class RemoteHabitsRepository implements HabitsRepository {
         'xp_amount': -5,
         'description': 'Avoidance habit failure penalty',
       });
-      
+
       _logger.i('Successfully recorded habit failure in Supabase: $habitId');
-      
+
       // Also record in local for offline support
       // Local fallback disabled
-      
+
       return null; // Success
-      
     } catch (e, stackTrace) {
-      _logger.e('Failed to record failure remotely, using local fallback and enqueuing for retry', 
-               error: e, stackTrace: stackTrace);
-      
+      _logger.e(
+          'Failed to record failure remotely, using local fallback and enqueuing for retry',
+          error: e,
+          stackTrace: stackTrace);
+
       // Enqueue for later sync
       await SyncQueue.instance.enqueue(SyncOp.recordFailure(habitId));
-      
+
       return "Network error occurred";
     }
   }
-  
+
   @override
   Future<void> dispose() async {
     await _ownHabitsController.close();
@@ -322,9 +350,9 @@ class RemoteHabitsRepository implements HabitsRepository {
     // Local fallback disabled
     _logger.i('RemoteHabitsRepository disposed');
   }
-  
+
   // TODO: Future methods for multiplayer features:
-  
+
   // Future<List<Relationship>> getPartnershipRequests();
   // Future<String?> sendPartnershipRequest(String partnerEmail);
   // Future<String?> acceptPartnershipRequest(String requestId);

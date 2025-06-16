@@ -13,19 +13,21 @@ class AddBundleHabitScreen extends BaseAddHabitScreen {
   const AddBundleHabitScreen({super.key});
 
   @override
-  ConsumerState<AddBundleHabitScreen> createState() => _AddBundleHabitScreenState();
+  ConsumerState<AddBundleHabitScreen> createState() =>
+      _AddBundleHabitScreenState();
 }
 
-class _AddBundleHabitScreenState extends BaseAddHabitScreenState<AddBundleHabitScreen> {
+class _AddBundleHabitScreenState
+    extends BaseAddHabitScreenState<AddBundleHabitScreen> {
   final List<String> _selectedHabitIds = [];
   final _bundleService = BundleService();
-  
+
   // Get available habits in a stable order
   List<Habit> get _availableHabits {
     final habitsAsync = ref.watch(habitsProvider);
     return _bundleService.getAvailableHabitsForBundle(habitsAsync.value ?? []);
   }
-  
+
   // Get selected habits in the order they were selected
   List<Habit> get _selectedHabits {
     final availableHabits = _availableHabits;
@@ -41,7 +43,7 @@ class _AddBundleHabitScreenState extends BaseAddHabitScreenState<AddBundleHabitS
         .cast<Habit>()
         .toList();
   }
-  
+
   // Get unselected habits
   List<Habit> get _unselectedHabits {
     final availableHabits = _availableHabits;
@@ -72,7 +74,8 @@ class _AddBundleHabitScreenState extends BaseAddHabitScreenState<AddBundleHabitS
   String get currentRoute => '/add-bundle-habit';
 
   @override
-  bool get showHabitTypeSelector => true; // Enable dropdown to select habit types
+  bool get showHabitTypeSelector =>
+      true; // Enable dropdown to select habit types
 
   @override
   Widget buildCustomContent(BuildContext context) {
@@ -89,7 +92,7 @@ class _AddBundleHabitScreenState extends BaseAddHabitScreenState<AddBundleHabitS
             Text(
               'Select Habits (minimum 2)',
               style: TextStyle(
-                fontSize: 18, 
+                fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: AppColors.draculaPurple,
               ),
@@ -101,9 +104,9 @@ class _AddBundleHabitScreenState extends BaseAddHabitScreenState<AddBundleHabitS
             ),
           ],
         ),
-        
+
         const SizedBox(height: 16),
-        
+
         Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
@@ -122,194 +125,209 @@ class _AddBundleHabitScreenState extends BaseAddHabitScreenState<AddBundleHabitS
           ),
           padding: const EdgeInsets.all(16),
           child: availableHabits.isEmpty
-            ? SizedBox(
-                height: 200,
-                child: const Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.info_outline, size: 64, color: AppColors.draculaComment),
-                      SizedBox(height: 16),
-                      Text(
-                        'No available habits',
-                        style: TextStyle(fontSize: 18, color: AppColors.draculaComment),
-                      ),
-                      SizedBox(height: 8),
-                      Text(
-                        'Create some individual habits first',
-                        style: TextStyle(color: AppColors.draculaComment),
-                      ),
-                    ],
-                  ),
-                ),
-              )
-            : SizedBox(
-                height: 300,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                // Selected habits section (reorderable)
-                if (selectedHabits.isNotEmpty) ...[
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: AppColors.draculaCurrentLine.withOpacity(0.3),
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(
-                        color: AppColors.draculaComment,
-                        width: 1,
-                      ),
-                    ),
-                    child: Text(
-                      'Selected habits:',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.draculaCyan,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  SizedBox(
-                    height: 120,
-                    child: ReorderableListView.builder(
-                      itemCount: selectedHabits.length,
-                      onReorder: (oldIndex, newIndex) {
-                        setState(() {
-                          if (newIndex > oldIndex) newIndex -= 1;
-                          final item = _selectedHabitIds.removeAt(oldIndex);
-                          _selectedHabitIds.insert(newIndex, item);
-                        });
-                      },
-                      itemBuilder: (context, index) {
-                        final habit = selectedHabits[index];
-                        return Container(
-                          key: ValueKey(habit.id),
-                          margin: const EdgeInsets.symmetric(vertical: 2),
-                          decoration: BoxDecoration(
-                            color: AppColors.draculaCurrentLine.withOpacity(0.3),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: AppColors.draculaPurple.withOpacity(0.3),
-                              width: 1.5,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.draculaPurple.withOpacity(0.1),
-                                blurRadius: 2,
-                                offset: const Offset(0, 1),
-                              ),
-                            ],
-                          ),
-                          child: ListTile(
-                            dense: true,
-                            title: Text(
-                              habit.displayName,
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: AppColors.draculaPurple,
-                              ),
-                            ),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: Icon(Icons.remove_circle, color: AppColors.draculaRed, size: 20),
-                                  onPressed: () {
-                                    setState(() {
-                                      _selectedHabitIds.remove(habit.id);
-                                    });
-                                  },
-                                ),
-                                Icon(Icons.drag_handle, size: 20, color: AppColors.draculaComment),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                ],
-                
-                // Available habits section
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: AppColors.draculaCurrentLine.withOpacity(0.3),
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(
-                      color: AppColors.draculaComment,
-                      width: 1,
-                    ),
-                  ),
-                  child: Text(
-                    'Available habits:',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.draculaCyan,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: unselectedHabits.length,
-                    itemBuilder: (context, index) {
-                      final habit = unselectedHabits[index];
-                      return Container(
-                        margin: const EdgeInsets.symmetric(vertical: 2),
-                        decoration: BoxDecoration(
-                          color: AppColors.draculaCurrentLine.withOpacity(0.5),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: AppColors.draculaComment,
-                            width: 1.5,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.draculaComment.withOpacity(0.2),
-                              blurRadius: 2,
-                              offset: const Offset(0, 1),
-                            ),
-                          ],
+              ? SizedBox(
+                  height: 200,
+                  child: const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.info_outline,
+                            size: 64, color: AppColors.draculaComment),
+                        SizedBox(height: 16),
+                        Text(
+                          'No available habits',
+                          style: TextStyle(
+                              fontSize: 18, color: AppColors.draculaComment),
                         ),
-                        child: CheckboxListTile(
-                          dense: true,
-                          value: false,
-                          onChanged: (selected) {
-                            setState(() {
-                              _selectedHabitIds.add(habit.id);
-                            });
-                          },
-                          title: Text(
-                            habit.displayName,
+                        SizedBox(height: 8),
+                        Text(
+                          'Create some individual habits first',
+                          style: TextStyle(color: AppColors.draculaComment),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              : SizedBox(
+                  height: 300,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Selected habits section (reorderable)
+                      if (selectedHabits.isNotEmpty) ...[
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color:
+                                AppColors.draculaCurrentLine.withOpacity(0.3),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(
+                              color: AppColors.draculaComment,
+                              width: 1,
+                            ),
+                          ),
+                          child: Text(
+                            'Selected habits:',
                             style: TextStyle(
                               fontSize: 14,
-                              color: AppColors.draculaPurple,
-                            ),
-                          ),
-                          subtitle: Text(
-                            habit.description,
-                            style: TextStyle(
-                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
                               color: AppColors.draculaCyan,
                             ),
                           ),
                         ),
-                      );
-                    },
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          height: 120,
+                          child: ReorderableListView.builder(
+                            itemCount: selectedHabits.length,
+                            onReorder: (oldIndex, newIndex) {
+                              setState(() {
+                                if (newIndex > oldIndex) newIndex -= 1;
+                                final item =
+                                    _selectedHabitIds.removeAt(oldIndex);
+                                _selectedHabitIds.insert(newIndex, item);
+                              });
+                            },
+                            itemBuilder: (context, index) {
+                              final habit = selectedHabits[index];
+                              return Container(
+                                key: ValueKey(habit.id),
+                                margin: const EdgeInsets.symmetric(vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: AppColors.draculaCurrentLine
+                                      .withOpacity(0.3),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: AppColors.draculaPurple
+                                        .withOpacity(0.3),
+                                    width: 1.5,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: AppColors.draculaPurple
+                                          .withOpacity(0.1),
+                                      blurRadius: 2,
+                                      offset: const Offset(0, 1),
+                                    ),
+                                  ],
+                                ),
+                                child: ListTile(
+                                  dense: true,
+                                  title: Text(
+                                    habit.displayName,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                      color: AppColors.draculaPurple,
+                                    ),
+                                  ),
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        icon: Icon(Icons.remove_circle,
+                                            color: AppColors.draculaRed,
+                                            size: 20),
+                                        onPressed: () {
+                                          setState(() {
+                                            _selectedHabitIds.remove(habit.id);
+                                          });
+                                        },
+                                      ),
+                                      Icon(Icons.drag_handle,
+                                          size: 20,
+                                          color: AppColors.draculaComment),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+
+                      // Available habits section
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: AppColors.draculaCurrentLine.withOpacity(0.3),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(
+                            color: AppColors.draculaComment,
+                            width: 1,
+                          ),
+                        ),
+                        child: Text(
+                          'Available habits:',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.draculaCyan,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Expanded(
+                        child: ListView.builder(
+                          itemCount: unselectedHabits.length,
+                          itemBuilder: (context, index) {
+                            final habit = unselectedHabits[index];
+                            return Container(
+                              margin: const EdgeInsets.symmetric(vertical: 2),
+                              decoration: BoxDecoration(
+                                color: AppColors.draculaCurrentLine
+                                    .withOpacity(0.5),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: AppColors.draculaComment,
+                                  width: 1.5,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppColors.draculaComment
+                                        .withOpacity(0.2),
+                                    blurRadius: 2,
+                                    offset: const Offset(0, 1),
+                                  ),
+                                ],
+                              ),
+                              child: CheckboxListTile(
+                                dense: true,
+                                value: false,
+                                onChanged: (selected) {
+                                  setState(() {
+                                    _selectedHabitIds.add(habit.id);
+                                  });
+                                },
+                                title: Text(
+                                  habit.displayName,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: AppColors.draculaPurple,
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  habit.description,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: AppColors.draculaCyan,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
-          ),
         ),
-        
+
         const SizedBox(height: 16),
-        
+
         // Selected count
         if (_selectedHabitIds.isNotEmpty)
           Container(
@@ -408,7 +426,8 @@ class _AddBundleHabitScreenState extends BaseAddHabitScreenState<AddBundleHabitS
 
   @override
   bool canSave() {
-    return nameController.text.trim().isNotEmpty && _selectedHabitIds.length >= 2;
+    return nameController.text.trim().isNotEmpty &&
+        _selectedHabitIds.length >= 2;
   }
 
   @override
@@ -416,7 +435,7 @@ class _AddBundleHabitScreenState extends BaseAddHabitScreenState<AddBundleHabitS
     final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
     habitsNotifier.addBundle(
       nameController.text.trim(),
-      descriptionController.text.trim().isEmpty 
+      descriptionController.text.trim().isEmpty
           ? 'Bundle with ${_selectedHabitIds.length} habits'
           : descriptionController.text.trim(),
       _selectedHabitIds,

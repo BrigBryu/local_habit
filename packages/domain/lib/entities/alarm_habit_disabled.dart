@@ -1,4 +1,3 @@
-
 // TODO(bridger): Re-enable after rewrite. Currently EXCLUDED.
 // AlarmHabit is temporarily disabled to resolve TimeOfDay conflicts and
 // simplify the domain model. Will be re-enabled in a future iteration.
@@ -48,18 +47,18 @@ class AlarmHabit extends BaseHabit {
   @override
   bool canComplete(TimeService timeService) {
     if (isCompletedToday(timeService)) return false;
-    
+
     final now = timeService.now();
     final currentTime = TimeOfDay.fromDateTime(now);
-    
+
     // Check if we're after the alarm time
     final alarmMinutes = alarmTime.hour * 60 + alarmTime.minute;
     final currentMinutes = currentTime.hour * 60 + currentTime.minute;
-    
+
     if (currentMinutes < alarmMinutes) {
       return false; // Before alarm time
     }
-    
+
     // Check if we're within the completion window
     final minutesSinceAlarm = currentMinutes - alarmMinutes;
     return minutesSinceAlarm <= windowMinutes;
@@ -70,16 +69,16 @@ class AlarmHabit extends BaseHabit {
     if (isCompletedToday(timeService)) {
       return 'Alarm completed! 🎉';
     }
-    
+
     final now = timeService.now();
     final currentTime = TimeOfDay.fromDateTime(now);
     final alarmMinutes = alarmTime.hour * 60 + alarmTime.minute;
     final currentMinutes = currentTime.hour * 60 + currentTime.minute;
-    
+
     if (currentMinutes < alarmMinutes) {
       return '⏰ Alarm at ${_formatTime(alarmTime)}';
     }
-    
+
     final minutesSinceAlarm = currentMinutes - alarmMinutes;
     if (minutesSinceAlarm <= windowMinutes) {
       final remainingMinutes = windowMinutes - minutesSinceAlarm;
@@ -87,7 +86,7 @@ class AlarmHabit extends BaseHabit {
       final minutes = remainingMinutes % 60;
       return '⏳ ${hours}h ${minutes}m remaining';
     }
-    
+
     return '❌ Window expired';
   }
 
@@ -97,7 +96,7 @@ class AlarmHabit extends BaseHabit {
     final currentTime = TimeOfDay.fromDateTime(now);
     final alarmMinutes = alarmTime.hour * 60 + alarmTime.minute;
     final currentMinutes = currentTime.hour * 60 + currentTime.minute;
-    
+
     if (currentMinutes < alarmMinutes) {
       // Before alarm
       final minutesUntilAlarm = alarmMinutes - currentMinutes;
@@ -122,7 +121,7 @@ class AlarmHabit extends BaseHabit {
   AlarmHabit complete() {
     final timeService = TimeService();
     final now = timeService.now();
-    
+
     // Calculate new streak
     int newStreak = currentStreak;
     if (lastCompleted != null) {
@@ -168,7 +167,8 @@ class AlarmHabit extends BaseHabit {
       lastCompleted: lastCompleted ?? this.lastCompleted,
       currentStreak: currentStreak ?? this.currentStreak,
       dailyCompletionCount: dailyCompletionCount ?? this.dailyCompletionCount,
-      lastCompletionCountReset: lastCompletionCountReset ?? this.lastCompletionCountReset,
+      lastCompletionCountReset:
+          lastCompletionCountReset ?? this.lastCompletionCountReset,
       stackedOnHabitId: stackedOnHabitId ?? this.stackedOnHabitId,
       alarmTime: alarmTime ?? this.alarmTime,
       windowMinutes: windowMinutes ?? this.windowMinutes,

@@ -26,7 +26,7 @@ class _HomeTabScaffoldState extends ConsumerState<HomeTabScaffold>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    
+
     // TODO: Initialize repository when provider is available
   }
 
@@ -42,7 +42,7 @@ class _HomeTabScaffoldState extends ConsumerState<HomeTabScaffold>
     final repositoryInit = ref.watch(repositoryProvider);
     final isUsingRemote = ref.watch(isUsingRemoteRepositoryProvider);
     final colors = ref.watchColors;
-    
+
     return repositoryInit.when(
       loading: () => const Scaffold(
         body: Center(
@@ -106,7 +106,9 @@ class _HomeTabScaffoldState extends ConsumerState<HomeTabScaffold>
                       Icon(
                         isUsingRemote ? Icons.cloud : Icons.cloud_off,
                         size: 16,
-                        color: isUsingRemote ? colors.success : colors.draculaComment,
+                        color: isUsingRemote
+                            ? colors.success
+                            : colors.draculaComment,
                       ),
                     ],
                   ),
@@ -129,7 +131,8 @@ class _HomeTabScaffoldState extends ConsumerState<HomeTabScaffold>
                           ),
                         );
                       },
-                      icon: Icon(Icons.settings, color: colors.draculaForeground),
+                      icon:
+                          Icon(Icons.settings, color: colors.draculaForeground),
                       tooltip: 'Settings',
                     ),
                   ],
@@ -144,9 +147,10 @@ class _HomeTabScaffoldState extends ConsumerState<HomeTabScaffold>
                       padding: EdgeInsets.only(
                         left: 8,
                         right: 8,
-                        top: MediaQuery.of(context).size.width < 600 
-                            ? MediaQuery.of(context).padding.top + 8  // Use status bar height + extra padding
-                            : 2, 
+                        top: MediaQuery.of(context).size.width < 600
+                            ? MediaQuery.of(context).padding.top +
+                                8 // Use status bar height + extra padding
+                            : 2,
                         bottom: 2,
                       ),
                       child: const AnimatedLevelBarWrapper(),
@@ -233,13 +237,15 @@ class _LevelBarHeaderDelegate extends SliverPersistentHeaderDelegate {
   double get maxExtent => 90;
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
     return child;
   }
 
   @override
   bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) {
-    return oldDelegate is _LevelBarHeaderDelegate && oldDelegate.colors != colors;
+    return oldDelegate is _LevelBarHeaderDelegate &&
+        oldDelegate.colors != colors;
   }
 }
 
@@ -249,7 +255,10 @@ class _TabBarHeaderDelegate extends SliverPersistentHeaderDelegate {
   final BuildContext context;
   final FlexibleColors colors;
 
-  _TabBarHeaderDelegate({required this.tabController, required this.context, required this.colors});
+  _TabBarHeaderDelegate(
+      {required this.tabController,
+      required this.context,
+      required this.colors});
 
   @override
   double get minExtent => 48;
@@ -258,18 +267,21 @@ class _TabBarHeaderDelegate extends SliverPersistentHeaderDelegate {
   double get maxExtent => 48;
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
       color: colors.draculaBackground,
       child: TabBar(
         controller: tabController,
         tabs: [
           Tab(
-            icon: Icon(Icons.person, size: MediaQuery.of(context).size.width < 600 ? 20 : 24),
+            icon: Icon(Icons.person,
+                size: MediaQuery.of(context).size.width < 600 ? 20 : 24),
             text: 'My Habits',
           ),
           Tab(
-            icon: Icon(Icons.people, size: MediaQuery.of(context).size.width < 600 ? 20 : 24),
+            icon: Icon(Icons.people,
+                size: MediaQuery.of(context).size.width < 600 ? 20 : 24),
             text: 'Partner Habits',
           ),
         ],

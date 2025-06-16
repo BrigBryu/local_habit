@@ -1,0 +1,312 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logger/logger.dart';
+
+import '../../core/auth/username_auth_service.dart';
+import '../../core/auth/auth_wrapper.dart';
+import '../../core/theme/flexible_theme_system.dart';
+import '../../providers/repository_init_provider.dart';
+import 'username_sign_in_screen.dart';
+
+class UsernameSignUpScreen extends ConsumerStatefulWidget {
+  const UsernameSignUpScreen({super.key});
+
+  @override
+  ConsumerState<UsernameSignUpScreen> createState() => _UsernameSignUpScreenState();
+}
+
+class _UsernameSignUpScreenState extends ConsumerState<UsernameSignUpScreen> {
+  final Logger _logger = Logger();
+  final _formKey = GlobalKey<FormState>();
+  final _usernameController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+  bool _isLoading = false;
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
+
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _signUp() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      final result = await UsernameAuthService.instance.signUp(
+        _usernameController.text.trim(),
+        _passwordController.text,
+      );
+
+      if (result.isSuccess) {
+        _logger.i('Sign up successful - auto signed in');
+        _logger.i('Current user ID: ${UsernameAuthService.instance.getCurrentUserId()}');
+        _logger.i('Is authenticated: ${UsernameAuthService.instance.isAuthenticated}');
+        
+        // Update auth state to trigger navigation
+        ref.read(authStateProvider.notifier).state = true;
+        _logger.i('Auth state provider updated to true');
+        
+        // Invalidate the repository provider to reinitialize with new user
+        ref.invalidate(repositoryProvider);
+        _logger.i('Repository provider invalidated for new user');
+      } else {
+        _showSnackBar(result.error ?? 'Sign up failed', Colors.red);
+      }
+    } catch (e) {
+      _logger.e('Sign up error', error: e);
+      _showSnackBar('An unexpected error occurred', Colors.red);
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  void _showSnackBar(String message, Color color) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: color,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = ref.watchColors;
+
+    return Scaffold(
+      backgroundColor: colors.backgroundDark,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Logo or app name
+                Text(
+                  'Create Account',
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: colors.primaryPurple,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Join the habit tracking community',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: colors.draculaComment,
+                  ),
+                ),
+                const SizedBox(height: 48),
+
+                // Username field
+                TextFormField(
+                  controller: _usernameController,
+                  style: TextStyle(color: colors.draculaForeground),
+                  decoration: InputDecoration(
+                    labelText: 'Username',
+                    labelStyle: TextStyle(color: colors.draculaComment),
+                    hintText: 'Choose a unique username',
+                    hintStyle: TextStyle(
+                        color: colors.draculaComment.withOpacity(0.7)),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: colors.draculaComment),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: colors.primaryPurple),
+                    ),
+                    errorBorder: const OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.red),
+                    ),
+                    focusedErrorBorder: const OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.red),
+                    ),
+                    filled: true,
+                    fillColor: colors.cardBackgroundDark,
+                    prefixIcon: Icon(Icons.person, color: colors.draculaComment),
+                  ),
+                  textInputAction: TextInputAction.next,
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Username is required';
+                    }
+                    if (value.trim().length < 3) {
+                      return 'Username must be at least 3 characters';
+                    }
+                    if (value.trim().length > 20) {
+                      return 'Username must be less than 20 characters';
+                    }
+                    if (!RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(value.trim())) {
+                      return 'Username can only contain letters, numbers, and underscores';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+
+                // Password field
+                TextFormField(
+                  controller: _passwordController,
+                  style: TextStyle(color: colors.draculaForeground),
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                    labelStyle: TextStyle(color: colors.draculaComment),
+                    hintText: 'Enter a secure password',
+                    hintStyle: TextStyle(
+                        color: colors.draculaComment.withOpacity(0.7)),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: colors.draculaComment),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: colors.primaryPurple),
+                    ),
+                    errorBorder: const OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.red),
+                    ),
+                    focusedErrorBorder: const OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.red),
+                    ),
+                    filled: true,
+                    fillColor: colors.cardBackgroundDark,
+                    prefixIcon: Icon(Icons.lock, color: colors.draculaComment),
+                    suffixIcon: IconButton(
+                      onPressed: () =>
+                          setState(() => _obscurePassword = !_obscurePassword),
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                        color: colors.draculaComment,
+                      ),
+                    ),
+                  ),
+                  obscureText: _obscurePassword,
+                  textInputAction: TextInputAction.next,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Password is required';
+                    }
+                    if (value.length < 6) {
+                      return 'Password must be at least 6 characters';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+
+                // Confirm password field
+                TextFormField(
+                  controller: _confirmPasswordController,
+                  style: TextStyle(color: colors.draculaForeground),
+                  decoration: InputDecoration(
+                    labelText: 'Confirm Password',
+                    labelStyle: TextStyle(color: colors.draculaComment),
+                    hintText: 'Confirm your password',
+                    hintStyle: TextStyle(
+                        color: colors.draculaComment.withOpacity(0.7)),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: colors.draculaComment),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: colors.primaryPurple),
+                    ),
+                    errorBorder: const OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.red),
+                    ),
+                    focusedErrorBorder: const OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.red),
+                    ),
+                    filled: true,
+                    fillColor: colors.cardBackgroundDark,
+                    prefixIcon: Icon(Icons.lock_outline, color: colors.draculaComment),
+                    suffixIcon: IconButton(
+                      onPressed: () =>
+                          setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+                      icon: Icon(
+                        _obscureConfirmPassword
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                        color: colors.draculaComment,
+                      ),
+                    ),
+                  ),
+                  obscureText: _obscureConfirmPassword,
+                  textInputAction: TextInputAction.done,
+                  onFieldSubmitted: (_) => _signUp(),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please confirm your password';
+                    }
+                    if (value != _passwordController.text) {
+                      return 'Passwords do not match';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 24),
+
+                // Sign up button
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _signUp,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: colors.primaryPurple,
+                      foregroundColor: Colors.white,
+                    ),
+                    child: _isLoading
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text('Create Account'),
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Sign in link
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Already have an account? ",
+                      style: TextStyle(color: colors.draculaComment),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(
+                              builder: (context) => const UsernameSignInScreen()),
+                        );
+                      },
+                      child: Text(
+                        'Sign In',
+                        style: TextStyle(
+                          color: colors.primaryPurple,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

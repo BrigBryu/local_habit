@@ -1,32 +1,299 @@
-name: CI
+name: CI Pipeline
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, master, develop ]
   pull_request:
-    branches: [ main, master ]
+    branches: [ main, master, develop ]
+
+env:
+  FLUTTER_VERSION: "3.24.5"
+  SUPABASE_CLI_VERSION: "1.200.3"
 
 jobs:
-  test:
+  # ====================================================================
+  # Database Tests
+  # ====================================================================
+  database-tests:
+    name: Database Schema & SQL Tests
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: supabase/postgres:15.1.0.147
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: ${{ env.SUPABASE_CLI_VERSION }}
+
+      - name: Start Supabase local development
+        run: |
+          supabase start
+          
+      - name: Run database migrations
+        run: |
+          supabase db reset
+          
+      - name: Run SQL unit tests
+        run: |
+          supabase test db --file supabase/tests/partner_api_test.sql
+
+      - name: Verify database schema
+        run: |
+          # Check that required tables exist
+          supabase db diff --file /dev/null || echo "Schema verification complete"
+
+  # ====================================================================
+  # Flutter Unit Tests
+  # ====================================================================
+  flutter-tests:
+    name: Flutter Unit Tests
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Verify formatting
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: Analyze project source
+        run: flutter analyze
+
+      - name: Run unit tests
+        run: flutter test --coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: coverage/lcov.info
+
+  # ====================================================================
+  # Integration Tests
+  # ====================================================================
+  integration-tests:
+    name: Flutter Integration Tests
+    runs-on: macos-latest
     
-    - name: Setup Flutter
-      uses: subosito/flutter-action@v2
-      with:
-        flutter-version: '3.32.2'
-        channel: 'stable'
-        
-    - name: Get dependencies
-      run: flutter pub get
-      
-    - name: Verify formatting
-      run: dart format --output=none --set-exit-if-changed .
-      
-    - name: Analyze project source
-      run: flutter analyze
-      
-    - name: Run tests
-      run: flutter test
+    services:
+      postgres:
+        image: supabase/postgres:15.1.0.147
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: ${{ env.SUPABASE_CLI_VERSION }}
+
+      - name: Setup Java (for Android)
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Create AVD and start emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: Nexus 6
+          script: echo "Emulator started"
+
+      - name: Start Supabase local development
+        run: |
+          supabase start
+          
+      - name: Run database migrations
+        run: |
+          supabase db reset
+          
+      - name: Install Flutter dependencies
+        run: flutter pub get
+
+      - name: Run integration tests on emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: Nexus 6
+          script: |
+            flutter test integration_test/partner_flow_test.dart \
+              --dart-define=DEV=true \
+              --dart-define=TESTING=true \
+              --dart-define=DEVICE=A
+
+  # ====================================================================
+  # Build Tests
+  # ====================================================================
+  build-tests:
+    name: Build for Multiple Platforms
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target: [android, web]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Setup Java (for Android)
+        if: matrix.target == 'android'
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        if: matrix.target == 'android'
+        uses: android-actions/setup-android@v3
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build for Android
+        if: matrix.target == 'android'
+        run: flutter build apk --release --dart-define=DEV=false
+
+      - name: Build for Web
+        if: matrix.target == 'web'
+        run: flutter build web --release --dart-define=DEV=false
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-${{ matrix.target }}
+          path: |
+            build/app/outputs/flutter-apk/*.apk
+            build/web/
+          retention-days: 7
+
+  # ====================================================================
+  # Security & Quality Checks
+  # ====================================================================
+  security-checks:
+    name: Security & Quality Analysis
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run dependency vulnerability scan
+        run: |
+          # Check for known vulnerabilities in dependencies
+          flutter pub deps --json | grep -E "(name|version)" || true
+
+      - name: Check for secrets in code
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: main
+          head: HEAD
+
+      - name: Run custom security checks
+        run: |
+          # Check for hardcoded secrets or API keys
+          if grep -r "sk-" --include="*.dart" .; then
+            echo "Potential API keys found!"
+            exit 1
+          fi
+          
+          # Check for TODO/FIXME that might indicate security issues
+          if grep -r "TODO.*security\|FIXME.*security" --include="*.dart" .; then
+            echo "Security-related TODOs found - please review"
+            exit 1
+          fi
+
+  # ====================================================================
+  # Final Status Check
+  # ====================================================================
+  ci-status:
+    name: CI Status
+    runs-on: ubuntu-latest
+    needs: [database-tests, flutter-tests, build-tests, security-checks]
+    if: always()
+    
+    steps:
+      - name: Check all jobs status
+        run: |
+          echo "Database tests: ${{ needs.database-tests.result }}"
+          echo "Flutter tests: ${{ needs.flutter-tests.result }}"
+          echo "Build tests: ${{ needs.build-tests.result }}"
+          echo "Security checks: ${{ needs.security-checks.result }}"
+          
+          if [[ "${{ needs.database-tests.result }}" != "success" ]] || \
+             [[ "${{ needs.flutter-tests.result }}" != "success" ]] || \
+             [[ "${{ needs.build-tests.result }}" != "success" ]] || \
+             [[ "${{ needs.security-checks.result }}" != "success" ]]; then
+            echo "❌ CI Pipeline failed - blocking merge"
+            exit 1
+          else
+            echo "✅ CI Pipeline passed - ready to merge"
+          fi

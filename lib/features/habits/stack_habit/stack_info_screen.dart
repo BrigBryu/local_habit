@@ -57,7 +57,8 @@ class StackInfoScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildStackOverview(FlexibleColors colors, StackProgress progress, bool isCompleted) {
+  Widget _buildStackOverview(
+      FlexibleColors colors, StackProgress progress, bool isCompleted) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -142,11 +143,16 @@ class StackInfoScreen extends ConsumerWidget {
             ),
             child: FractionallySizedBox(
               alignment: Alignment.centerLeft,
-              widthFactor: progress.total > 0 ? progress.completed / progress.total : 0.0,
+              widthFactor: progress.total > 0
+                  ? progress.completed / progress.total
+                  : 0.0,
               child: Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [colors.stackHabit, colors.stackHabit.withOpacity(0.8)],
+                    colors: [
+                      colors.stackHabit,
+                      colors.stackHabit.withOpacity(0.8)
+                    ],
                   ),
                   borderRadius: BorderRadius.circular(4),
                 ),
@@ -155,7 +161,7 @@ class StackInfoScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            isCompleted 
+            isCompleted
                 ? 'Stack Complete! 🎉'
                 : '${((progress.completed / (progress.total > 0 ? progress.total : 1)) * 100).round()}% Complete',
             style: TextStyle(
@@ -169,7 +175,8 @@ class StackInfoScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildStatCard(String label, String value, IconData icon, Color color, FlexibleColors colors) {
+  Widget _buildStatCard(String label, String value, IconData icon, Color color,
+      FlexibleColors colors) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
@@ -205,13 +212,15 @@ class StackInfoScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildStepsSection(BuildContext context, WidgetRef ref, List<Habit> steps, FlexibleColors colors, StackService stackService) {
+  Widget _buildStepsSection(BuildContext context, WidgetRef ref,
+      List<Habit> steps, FlexibleColors colors, StackService stackService) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            Icon(Icons.format_list_numbered, color: colors.stackHabit, size: 20),
+            Icon(Icons.format_list_numbered,
+                color: colors.stackHabit, size: 20),
             const SizedBox(width: 8),
             Text(
               'Steps (${steps.length})',
@@ -287,20 +296,30 @@ class StackInfoScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildStepCard(Habit step, int index, FlexibleColors colors, StackService stackService) {
+  Widget _buildStepCard(
+      Habit step, int index, FlexibleColors colors, StackService stackService) {
     final isCompleted = _isHabitCompletedToday(step);
     final nextStep = stackService.getNextIncompleteStep(stack, allHabits);
     final isNext = nextStep?.id == step.id;
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: isNext
-              ? [colors.stackHabit.withOpacity(0.2), colors.stackHabit.withOpacity(0.1)]
+              ? [
+                  colors.stackHabit.withOpacity(0.2),
+                  colors.stackHabit.withOpacity(0.1)
+                ]
               : isCompleted
-                  ? [colors.success.withOpacity(0.2), colors.success.withOpacity(0.1)]
-                  : [colors.draculaComment.withOpacity(0.1), colors.draculaComment.withOpacity(0.05)],
+                  ? [
+                      colors.success.withOpacity(0.2),
+                      colors.success.withOpacity(0.1)
+                    ]
+                  : [
+                      colors.draculaComment.withOpacity(0.1),
+                      colors.draculaComment.withOpacity(0.05)
+                    ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -325,10 +344,19 @@ class StackInfoScreen extends ConsumerWidget {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: isNext
-                      ? [colors.stackHabit.withOpacity(0.3), colors.stackHabit.withOpacity(0.2)]
+                      ? [
+                          colors.stackHabit.withOpacity(0.3),
+                          colors.stackHabit.withOpacity(0.2)
+                        ]
                       : isCompleted
-                          ? [colors.success.withOpacity(0.3), colors.success.withOpacity(0.2)]
-                          : [colors.draculaComment.withOpacity(0.2), colors.draculaComment.withOpacity(0.1)],
+                          ? [
+                              colors.success.withOpacity(0.3),
+                              colors.success.withOpacity(0.2)
+                            ]
+                          : [
+                              colors.draculaComment.withOpacity(0.2),
+                              colors.draculaComment.withOpacity(0.1)
+                            ],
                 ),
                 shape: BoxShape.circle,
                 border: Border.all(
@@ -374,13 +402,15 @@ class StackInfoScreen extends ConsumerWidget {
                                 : isCompleted
                                     ? colors.success
                                     : colors.draculaPurple,
-                            decoration: isCompleted ? TextDecoration.lineThrough : null,
+                            decoration:
+                                isCompleted ? TextDecoration.lineThrough : null,
                           ),
                         ),
                       ),
                       if (isNext)
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             color: colors.stackHabit.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(12),
@@ -412,14 +442,14 @@ class StackInfoScreen extends ConsumerWidget {
             const SizedBox(width: 16),
             // Status icon
             Icon(
-              isCompleted 
+              isCompleted
                   ? Icons.check_circle
-                  : isNext 
+                  : isNext
                       ? Icons.play_circle_outline
                       : Icons.radio_button_unchecked,
-              color: isCompleted 
+              color: isCompleted
                   ? colors.success
-                  : isNext 
+                  : isNext
                       ? colors.stackHabit
                       : colors.draculaComment,
               size: 24,
@@ -446,7 +476,7 @@ class StackInfoScreen extends ConsumerWidget {
     final now = DateTime.now();
     final lastCompleted = habit.lastCompleted!;
     return now.year == lastCompleted.year &&
-           now.month == lastCompleted.month &&
-           now.day == lastCompleted.day;
+        now.month == lastCompleted.month &&
+        now.day == lastCompleted.day;
   }
 }

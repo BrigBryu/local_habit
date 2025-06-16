@@ -1,4 +1,3 @@
-
 // TODO(bridger): Re-enable after rewrite. Currently EXCLUDED.
 // TimeWindowHabit is temporarily disabled to resolve TimeOfDay conflicts and
 // simplify the domain model. Will be re-enabled in a future iteration.
@@ -54,17 +53,17 @@ class TimeWindowHabit extends BaseHabit {
     final now = timeService.now();
     final currentTime = TimeOfDay.fromDateTime(now);
     final currentDay = now.weekday; // 1=Monday, 7=Sunday
-    
+
     // Check if today is an available day
     if (!availableDays.contains(currentDay)) {
       return false;
     }
-    
+
     // Check if current time is within the window
     final startMinutes = windowStartTime.hour * 60 + windowStartTime.minute;
     final endMinutes = windowEndTime.hour * 60 + windowEndTime.minute;
     final currentMinutes = currentTime.hour * 60 + currentTime.minute;
-    
+
     if (startMinutes <= endMinutes) {
       // Normal case: start and end on same day
       return currentMinutes >= startMinutes && currentMinutes <= endMinutes;
@@ -85,15 +84,15 @@ class TimeWindowHabit extends BaseHabit {
     if (isCompletedToday(timeService)) {
       return 'Window completed! 🎉';
     }
-    
+
     final now = timeService.now();
     final currentDay = now.weekday;
-    
+
     // Check if today is an available day
     if (!availableDays.contains(currentDay)) {
       return '🔒 Not available today';
     }
-    
+
     if (isWithinWindow(timeService)) {
       final timeLeft = _getTimeLeftInWindow(timeService);
       return '🟢 Available ($timeLeft left)';
@@ -109,7 +108,7 @@ class TimeWindowHabit extends BaseHabit {
     final currentTime = TimeOfDay.fromDateTime(now);
     final currentMinutes = currentTime.hour * 60 + currentTime.minute;
     final endMinutes = windowEndTime.hour * 60 + windowEndTime.minute;
-    
+
     int remainingMinutes;
     if (windowStartTime.hour * 60 + windowStartTime.minute <= endMinutes) {
       // Normal case
@@ -123,7 +122,7 @@ class TimeWindowHabit extends BaseHabit {
         remainingMinutes = (24 * 60) - currentMinutes + endMinutes;
       }
     }
-    
+
     final hours = remainingMinutes ~/ 60;
     final minutes = remainingMinutes % 60;
     return '${hours}h ${minutes}m';
@@ -136,7 +135,7 @@ class TimeWindowHabit extends BaseHabit {
     final currentDay = now.weekday;
     final currentMinutes = currentTime.hour * 60 + currentTime.minute;
     final startMinutes = windowStartTime.hour * 60 + windowStartTime.minute;
-    
+
     // If today is available but we're before start time
     if (availableDays.contains(currentDay) && currentMinutes < startMinutes) {
       final minutesUntilStart = startMinutes - currentMinutes;
@@ -144,16 +143,16 @@ class TimeWindowHabit extends BaseHabit {
       final minutes = minutesUntilStart % 60;
       return '${hours}h ${minutes}m';
     }
-    
+
     // Find next available day
     int daysUntilNext = 1;
     int nextDay = (currentDay % 7) + 1;
-    
+
     while (!availableDays.contains(nextDay) && daysUntilNext < 7) {
       daysUntilNext++;
       nextDay = (nextDay % 7) + 1;
     }
-    
+
     if (daysUntilNext == 1) {
       // Tomorrow
       final minutesUntilMidnight = (24 * 60) - currentMinutes;
@@ -171,19 +170,22 @@ class TimeWindowHabit extends BaseHabit {
   String getAvailableDaysString() {
     const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     final dayStrings = availableDays.map((day) => dayNames[day - 1]).toList();
-    
+
     if (dayStrings.length == 7) return 'Every day';
-    if (dayStrings.length == 5 && 
-        availableDays.contains(1) && availableDays.contains(2) && 
-        availableDays.contains(3) && availableDays.contains(4) && 
+    if (dayStrings.length == 5 &&
+        availableDays.contains(1) &&
+        availableDays.contains(2) &&
+        availableDays.contains(3) &&
+        availableDays.contains(4) &&
         availableDays.contains(5)) {
       return 'Weekdays';
     }
-    if (dayStrings.length == 2 && 
-        availableDays.contains(6) && availableDays.contains(7)) {
+    if (dayStrings.length == 2 &&
+        availableDays.contains(6) &&
+        availableDays.contains(7)) {
       return 'Weekends';
     }
-    
+
     return dayStrings.join(', ');
   }
 
@@ -191,7 +193,7 @@ class TimeWindowHabit extends BaseHabit {
   TimeWindowHabit complete() {
     final timeService = TimeService();
     final now = timeService.now();
-    
+
     // Calculate new streak
     int newStreak = currentStreak;
     if (lastCompleted != null) {
@@ -236,7 +238,8 @@ class TimeWindowHabit extends BaseHabit {
       lastCompleted: lastCompleted ?? this.lastCompleted,
       currentStreak: currentStreak ?? this.currentStreak,
       dailyCompletionCount: dailyCompletionCount ?? this.dailyCompletionCount,
-      lastCompletionCountReset: lastCompletionCountReset ?? this.lastCompletionCountReset,
+      lastCompletionCountReset:
+          lastCompletionCountReset ?? this.lastCompletionCountReset,
       windowStartTime: windowStartTime ?? this.windowStartTime,
       windowEndTime: windowEndTime ?? this.windowEndTime,
       availableDays: availableDays ?? this.availableDays,

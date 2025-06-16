@@ -5,7 +5,7 @@ part 'completion_collection.g.dart';
 @Collection()
 class CompletionCollection {
   Id isarId = Isar.autoIncrement;
-  
+
   late String id;
   late String habitId;
   late String userId;

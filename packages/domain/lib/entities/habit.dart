@@ -1,4 +1,3 @@
-
 import '../services/time_service.dart';
 // TODO(bridger): TimeOfDay import disabled to resolve conflicts
 // import 'time_of_day.dart';
@@ -26,26 +25,35 @@ class Habit {
   final String description;
   final HabitType type;
   final String? stackedOnHabitId; // For habit stacks
-  final List<String>? bundleChildIds; // For bundle habits - list of child habit IDs
+  final List<String>?
+      bundleChildIds; // For bundle habits - list of child habit IDs
   final String? parentBundleId; // For habits that belong to a bundle
   // TODO(bridger): Time-based fields disabled temporarily due to TimeOfDay conflicts
   // final TimeOfDay? alarmTime; // For timed stacks (DISABLED)
-  final int? timeoutMinutes; // For timed stacks/sessions - minutes after alarm/start (DISABLED)
+  final int?
+      timeoutMinutes; // For timed stacks/sessions - minutes after alarm/start (DISABLED)
   // final TimeOfDay? windowStartTime; // For time windows - start of availability (DISABLED)
   // final TimeOfDay? windowEndTime; // For time windows - end of availability (DISABLED)
   final List<int>? availableDays; // For time windows - days of week (DISABLED)
   final DateTime createdAt;
   final DateTime? lastCompleted;
   // TODO(bridger): Time-based session fields disabled temporarily
-  final DateTime? lastAlarmTriggered; // Track when alarm was last triggered (DISABLED)
-  final DateTime? sessionStartTime; // For timed sessions - when session started (DISABLED)
-  final DateTime? lastSessionStarted; // For timed sessions - when timer was last started (DISABLED)
-  final bool sessionCompletedToday; // For timed sessions - if timer completed today (DISABLED)
+  final DateTime?
+      lastAlarmTriggered; // Track when alarm was last triggered (DISABLED)
+  final DateTime?
+      sessionStartTime; // For timed sessions - when session started (DISABLED)
+  final DateTime?
+      lastSessionStarted; // For timed sessions - when timer was last started (DISABLED)
+  final bool
+      sessionCompletedToday; // For timed sessions - if timer completed today (DISABLED)
   final int dailyCompletionCount; // How many times completed today
   final DateTime? lastCompletionCountReset; // When daily count was last reset
-  final int dailyFailureCount; // For avoidance habits - how many times failed today
-  final DateTime? lastFailureCountReset; // When daily failure count was last reset
-  final bool avoidanceSuccessToday; // For avoidance habits - if successfully avoided today
+  final int
+      dailyFailureCount; // For avoidance habits - how many times failed today
+  final DateTime?
+      lastFailureCountReset; // When daily failure count was last reset
+  final bool
+      avoidanceSuccessToday; // For avoidance habits - if successfully avoided today
   final int currentStreak;
 
   const Habit({
@@ -113,9 +121,11 @@ class Habit {
   Habit complete() {
     final timeService = TimeService();
     final now = timeService.now();
-    
+
     // For non-basic and non-avoidance habits, keep the original once-per-day logic
-    if (type != HabitType.basic && type != HabitType.avoidance && _isCompletedToday()) {
+    if (type != HabitType.basic &&
+        type != HabitType.avoidance &&
+        _isCompletedToday()) {
       return this; // Already completed today for non-basic habits
     }
 
@@ -129,7 +139,7 @@ class Habit {
     int newDailyCount = dailyCompletionCount;
     int newFailureCount = dailyFailureCount;
     bool newAvoidanceSuccess = avoidanceSuccessToday;
-    
+
     if (type == HabitType.avoidance) {
       // For avoidance habits, "completion" means marking the day as successful
       newAvoidanceSuccess = true;
@@ -137,14 +147,17 @@ class Habit {
       newFailureCount = _shouldResetFailureCount(now) ? 0 : dailyFailureCount;
     } else {
       // For other habits, increment completion count
-      newDailyCount = _shouldResetDailyCount(now) ? 1 : dailyCompletionCount + 1;
+      newDailyCount =
+          _shouldResetDailyCount(now) ? 1 : dailyCompletionCount + 1;
     }
-    
+
     // For basic/avoidance habits, only update streak on first completion of the day
-    final shouldUpdateStreak = (type == HabitType.basic && newDailyCount == 1) ||
-                              (type == HabitType.avoidance && !avoidanceSuccessToday) ||
-                              (type != HabitType.basic && type != HabitType.avoidance);
-    final newStreak = shouldUpdateStreak ? _calculateNewStreak(now) : currentStreak;
+    final shouldUpdateStreak =
+        (type == HabitType.basic && newDailyCount == 1) ||
+            (type == HabitType.avoidance && !avoidanceSuccessToday) ||
+            (type != HabitType.basic && type != HabitType.avoidance);
+    final newStreak =
+        shouldUpdateStreak ? _calculateNewStreak(now) : currentStreak;
 
     return Habit(
       id: id,
@@ -167,9 +180,11 @@ class Habit {
       lastSessionStarted: lastSessionStarted,
       sessionCompletedToday: sessionCompletedToday,
       dailyCompletionCount: newDailyCount,
-      lastCompletionCountReset: _shouldResetDailyCount(now) ? now : lastCompletionCountReset,
+      lastCompletionCountReset:
+          _shouldResetDailyCount(now) ? now : lastCompletionCountReset,
       dailyFailureCount: newFailureCount,
-      lastFailureCountReset: _shouldResetFailureCount(now) ? now : lastFailureCountReset,
+      lastFailureCountReset:
+          _shouldResetFailureCount(now) ? now : lastFailureCountReset,
       avoidanceSuccessToday: newAvoidanceSuccess,
       currentStreak: newStreak,
     );
@@ -178,7 +193,7 @@ class Habit {
   /// Check if daily completion count should be reset
   bool _shouldResetDailyCount(DateTime now) {
     if (lastCompletionCountReset == null) return true;
-    
+
     final timeService = TimeService();
     return !timeService.isSameDay(lastCompletionCountReset!, now);
   }
@@ -186,7 +201,7 @@ class Habit {
   /// Check if daily failure count should be reset
   bool _shouldResetFailureCount(DateTime now) {
     if (lastFailureCountReset == null) return true;
-    
+
     final timeService = TimeService();
     return !timeService.isSameDay(lastFailureCountReset!, now);
   }
@@ -194,16 +209,17 @@ class Habit {
   /// Record a failure for avoidance habits
   Habit recordFailure() {
     if (type != HabitType.avoidance) return this;
-    
+
     final timeService = TimeService();
     final now = timeService.now();
-    
+
     // Reset failure count if it's a new day
-    final newFailureCount = _shouldResetFailureCount(now) ? 1 : dailyFailureCount + 1;
-    
+    final newFailureCount =
+        _shouldResetFailureCount(now) ? 1 : dailyFailureCount + 1;
+
     // Break streak on first failure of the day, but never go below 0
     final newStreak = dailyFailureCount == 0 ? 0 : currentStreak;
-    
+
     return Habit(
       id: id,
       name: name,
@@ -227,7 +243,8 @@ class Habit {
       dailyCompletionCount: dailyCompletionCount,
       lastCompletionCountReset: lastCompletionCountReset,
       dailyFailureCount: newFailureCount,
-      lastFailureCountReset: _shouldResetFailureCount(now) ? now : lastFailureCountReset,
+      lastFailureCountReset:
+          _shouldResetFailureCount(now) ? now : lastFailureCountReset,
       avoidanceSuccessToday: false, // Failed today
       currentStreak: newStreak,
     );
@@ -236,34 +253,35 @@ class Habit {
   /// Calculate XP reward based on completion count and habit type
   int calculateXPReward() {
     const baseXP = 1;
-    
+
     switch (type) {
       case HabitType.basic:
         // Diminishing returns: 1st = 1 XP, 2nd = 0.5 XP, 3rd+ = 0.25 XP
         if (dailyCompletionCount == 0) return baseXP; // First completion
-        if (dailyCompletionCount == 1) return (baseXP * 0.5).round(); // Second completion
+        if (dailyCompletionCount == 1)
+          return (baseXP * 0.5).round(); // Second completion
         return (baseXP * 0.25).round(); // Third+ completions
-      
+
       case HabitType.avoidance:
         // Reward for successfully avoiding, more XP for clean days
         if (dailyFailureCount == 0 && !avoidanceSuccessToday) {
           return baseXP; // First successful avoidance of the day
         }
         return 0; // No XP for marking already successful day or after failures
-      
+
       case HabitType.stack:
         return baseXP * 3; // Higher reward for habit stacks
-      
+
       case HabitType.bundle:
         return 0; // Bundle itself gives no XP, children give XP individually + combo bonus
-      
+
       // TODO(bridger): Disabled time-based habit types
       // case HabitType.timedSession:
       //   return baseXP * 2; // Reward for completing timed sessions
-      // 
+      //
       // case HabitType.alarmHabit:
       //   return baseXP * 2; // Reward for meeting alarm deadlines
-      // 
+      //
       // case HabitType.timeWindow:
       // case HabitType.dailyTimeWindow:
       //   return baseXP; // Standard reward for time window habits
@@ -276,10 +294,10 @@ class Habit {
   /// TODO(bridger): Start a timed session (DISABLED - time-based habits temporarily disabled)
   // Habit startTimedSession() {
   //   if (type != HabitType.timedSession) return this;
-  //   
+  //
   //   final timeService = TimeService();
   //   final now = timeService.now();
-  //   
+  //
   //   // Check if already started today
   //   if (lastSessionStarted != null && timeService.isSameDay(lastSessionStarted!, now)) {
   //     return this; // Already started today
@@ -348,7 +366,7 @@ class Habit {
   /// TODO(bridger): Check if timed session has been started today (DISABLED - time-based habits temporarily disabled)
   // bool hasStartedSessionToday() {
   //   if (type != HabitType.timedSession || lastSessionStarted == null) return false;
-  //   
+  //
   //   final timeService = TimeService();
   //   return timeService.isSameDay(lastSessionStarted!, timeService.now());
   // }
@@ -376,7 +394,7 @@ class Habit {
     if (childIds.length < 2) {
       throw ArgumentError('Bundle must contain at least 2 child habits');
     }
-    
+
     return Habit.create(
       name: name,
       description: description,
@@ -392,7 +410,7 @@ class Habit {
 
   bool _isCompletedToday() {
     if (lastCompleted == null) return false;
-    
+
     final timeService = TimeService();
     return timeService.isSameDay(lastCompleted!, timeService.now());
   }
@@ -404,8 +422,10 @@ class Habit {
     }
 
     final timeService = TimeService();
-    final daysDifference = timeService.daysBetween(lastCompleted!, completionTime);
-    print('🔥 Days since last completion: $daysDifference, current streak: $currentStreak');
+    final daysDifference =
+        timeService.daysBetween(lastCompleted!, completionTime);
+    print(
+        '🔥 Days since last completion: $daysDifference, current streak: $currentStreak');
 
     if (daysDifference == 1) {
       // Consecutive day - extend streak
@@ -418,7 +438,8 @@ class Habit {
       return currentStreak;
     } else {
       // Gap in days - restart streak
-      print('🔥 Gap of $daysDifference days - streak resets: $currentStreak → 1');
+      print(
+          '🔥 Gap of $daysDifference days - streak resets: $currentStreak → 1');
       return 1;
     }
   }
@@ -454,56 +475,70 @@ class Habit {
 
   /// Convert habit to JSON for sync queue
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'name': name,
-    'description': description,
-    'type': type.name,
-    'stackedOnHabitId': stackedOnHabitId,
-    'bundleChildIds': bundleChildIds,
-    'parentBundleId': parentBundleId,
-    'timeoutMinutes': timeoutMinutes,
-    'availableDays': availableDays,
-    'createdAt': createdAt.toIso8601String(),
-    'lastCompleted': lastCompleted?.toIso8601String(),
-    'lastAlarmTriggered': lastAlarmTriggered?.toIso8601String(),
-    'sessionStartTime': sessionStartTime?.toIso8601String(),
-    'lastSessionStarted': lastSessionStarted?.toIso8601String(),
-    'sessionCompletedToday': sessionCompletedToday,
-    'dailyCompletionCount': dailyCompletionCount,
-    'lastCompletionCountReset': lastCompletionCountReset?.toIso8601String(),
-    'dailyFailureCount': dailyFailureCount,
-    'lastFailureCountReset': lastFailureCountReset?.toIso8601String(),
-    'avoidanceSuccessToday': avoidanceSuccessToday,
-    'currentStreak': currentStreak,
-  };
+        'id': id,
+        'name': name,
+        'description': description,
+        'type': type.name,
+        'stackedOnHabitId': stackedOnHabitId,
+        'bundleChildIds': bundleChildIds,
+        'parentBundleId': parentBundleId,
+        'timeoutMinutes': timeoutMinutes,
+        'availableDays': availableDays,
+        'createdAt': createdAt.toIso8601String(),
+        'lastCompleted': lastCompleted?.toIso8601String(),
+        'lastAlarmTriggered': lastAlarmTriggered?.toIso8601String(),
+        'sessionStartTime': sessionStartTime?.toIso8601String(),
+        'lastSessionStarted': lastSessionStarted?.toIso8601String(),
+        'sessionCompletedToday': sessionCompletedToday,
+        'dailyCompletionCount': dailyCompletionCount,
+        'lastCompletionCountReset': lastCompletionCountReset?.toIso8601String(),
+        'dailyFailureCount': dailyFailureCount,
+        'lastFailureCountReset': lastFailureCountReset?.toIso8601String(),
+        'avoidanceSuccessToday': avoidanceSuccessToday,
+        'currentStreak': currentStreak,
+      };
 
   /// Create habit from JSON for sync queue
   factory Habit.fromJson(Map<String, dynamic> json) => Habit(
-    id: json['id'] as String,
-    name: json['name'] as String,
-    description: json['description'] as String,
-    type: HabitType.values.firstWhere((e) => e.name == json['type']),
-    stackedOnHabitId: json['stackedOnHabitId'] as String?,
-    bundleChildIds: (json['bundleChildIds'] as List<dynamic>?)?.cast<String>(),
-    parentBundleId: json['parentBundleId'] as String?,
-    timeoutMinutes: json['timeoutMinutes'] as int?,
-    availableDays: (json['availableDays'] as List<dynamic>?)?.cast<int>(),
-    createdAt: DateTime.parse(json['createdAt'] as String),
-    lastCompleted: json['lastCompleted'] != null ? DateTime.parse(json['lastCompleted'] as String) : null,
-    lastAlarmTriggered: json['lastAlarmTriggered'] != null ? DateTime.parse(json['lastAlarmTriggered'] as String) : null,
-    sessionStartTime: json['sessionStartTime'] != null ? DateTime.parse(json['sessionStartTime'] as String) : null,
-    lastSessionStarted: json['lastSessionStarted'] != null ? DateTime.parse(json['lastSessionStarted'] as String) : null,
-    sessionCompletedToday: json['sessionCompletedToday'] as bool? ?? false,
-    dailyCompletionCount: json['dailyCompletionCount'] as int? ?? 0,
-    lastCompletionCountReset: json['lastCompletionCountReset'] != null ? DateTime.parse(json['lastCompletionCountReset'] as String) : null,
-    dailyFailureCount: json['dailyFailureCount'] as int? ?? 0,
-    lastFailureCountReset: json['lastFailureCountReset'] != null ? DateTime.parse(json['lastFailureCountReset'] as String) : null,
-    avoidanceSuccessToday: json['avoidanceSuccessToday'] as bool? ?? false,
-    currentStreak: json['currentStreak'] as int? ?? 0,
-  );
+        id: json['id'] as String,
+        name: json['name'] as String,
+        description: json['description'] as String,
+        type: HabitType.values.firstWhere((e) => e.name == json['type']),
+        stackedOnHabitId: json['stackedOnHabitId'] as String?,
+        bundleChildIds:
+            (json['bundleChildIds'] as List<dynamic>?)?.cast<String>(),
+        parentBundleId: json['parentBundleId'] as String?,
+        timeoutMinutes: json['timeoutMinutes'] as int?,
+        availableDays: (json['availableDays'] as List<dynamic>?)?.cast<int>(),
+        createdAt: DateTime.parse(json['createdAt'] as String),
+        lastCompleted: json['lastCompleted'] != null
+            ? DateTime.parse(json['lastCompleted'] as String)
+            : null,
+        lastAlarmTriggered: json['lastAlarmTriggered'] != null
+            ? DateTime.parse(json['lastAlarmTriggered'] as String)
+            : null,
+        sessionStartTime: json['sessionStartTime'] != null
+            ? DateTime.parse(json['sessionStartTime'] as String)
+            : null,
+        lastSessionStarted: json['lastSessionStarted'] != null
+            ? DateTime.parse(json['lastSessionStarted'] as String)
+            : null,
+        sessionCompletedToday: json['sessionCompletedToday'] as bool? ?? false,
+        dailyCompletionCount: json['dailyCompletionCount'] as int? ?? 0,
+        lastCompletionCountReset: json['lastCompletionCountReset'] != null
+            ? DateTime.parse(json['lastCompletionCountReset'] as String)
+            : null,
+        dailyFailureCount: json['dailyFailureCount'] as int? ?? 0,
+        lastFailureCountReset: json['lastFailureCountReset'] != null
+            ? DateTime.parse(json['lastFailureCountReset'] as String)
+            : null,
+        avoidanceSuccessToday: json['avoidanceSuccessToday'] as bool? ?? false,
+        currentStreak: json['currentStreak'] as int? ?? 0,
+      );
 
   @override
-  String toString() => 'Habit(id: $id, name: $name, type: ${type.displayName}, streak: $currentStreak)';
+  String toString() =>
+      'Habit(id: $id, name: $name, type: ${type.displayName}, streak: $currentStreak)';
 }
 
 /// Simple ID generator for habits
@@ -516,19 +551,20 @@ String _generateId() {
 /// Get the current streak for a habit (considering missed days)
 int getCurrentStreak(Habit habit) {
   if (habit.lastCompleted == null) return 0;
-  
+
   final timeService = TimeService();
   final daysSinceLastCompleted = timeService.daysBetween(
     habit.lastCompleted!,
     timeService.now(),
   );
-  
+
   // If more than 1 day has passed without completion, streak is broken
   if (daysSinceLastCompleted > 1) {
-    print('💔 Streak broken for ${habit.name}: $daysSinceLastCompleted days since last completion');
+    print(
+        '💔 Streak broken for ${habit.name}: $daysSinceLastCompleted days since last completion');
     return 0;
   }
-  
+
   // Otherwise, return the stored streak
   return habit.currentStreak;
 }
@@ -536,7 +572,7 @@ int getCurrentStreak(Habit habit) {
 /// Check if a habit should show as completed today
 bool isHabitCompletedToday(Habit habit) {
   if (habit.lastCompleted == null) return false;
-  
+
   final timeService = TimeService();
   return timeService.isSameDay(habit.lastCompleted!, timeService.now());
 }

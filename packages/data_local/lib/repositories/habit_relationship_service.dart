@@ -3,7 +3,8 @@ import 'package:domain/entities/habit.dart';
 /// Generic service for managing parent-child relationships between habits
 /// Supports bundles, stacks, and future grouping types
 class HabitRelationshipService {
-  static final HabitRelationshipService _instance = HabitRelationshipService._internal();
+  static final HabitRelationshipService _instance =
+      HabitRelationshipService._internal();
   factory HabitRelationshipService() => _instance;
   HabitRelationshipService._internal();
 
@@ -16,7 +17,7 @@ class HabitRelationshipService {
     return allHabits.where((habit) {
       // Exclude the parent itself
       if (excludeParentId != null && habit.id == excludeParentId) return false;
-      
+
       switch (groupType) {
         case HabitType.bundle:
           // Bundles can contain any habit except other bundles
@@ -38,20 +39,23 @@ class HabitRelationshipService {
     String? parentId,
   }) {
     final children = allHabits.where((h) => childIds.contains(h.id)).toList();
-    
+
     // Check minimum requirements
     switch (groupType) {
       case HabitType.bundle:
         if (childIds.length < 2) {
-          return GroupingValidationResult.error('Bundle must have at least 2 habits');
+          return GroupingValidationResult.error(
+              'Bundle must have at least 2 habits');
         }
         if (childIds.length > 8) {
-          return GroupingValidationResult.error('Bundle cannot have more than 8 habits');
+          return GroupingValidationResult.error(
+              'Bundle cannot have more than 8 habits');
         }
         break;
       case HabitType.stack:
         if (childIds.length != 1) {
-          return GroupingValidationResult.error('Stack must build on exactly 1 base habit');
+          return GroupingValidationResult.error(
+              'Stack must build on exactly 1 base habit');
         }
         break;
       default:
@@ -62,12 +66,16 @@ class HabitRelationshipService {
     for (final child in children) {
       // Prevent nesting
       if (child.type == groupType) {
-        return GroupingValidationResult.error('Cannot nest ${groupType.displayName} inside ${groupType.displayName}');
+        return GroupingValidationResult.error(
+            'Cannot nest ${groupType.displayName} inside ${groupType.displayName}');
       }
-      
+
       // Check if already grouped
-      if (groupType == HabitType.bundle && child.parentBundleId != null && child.parentBundleId != parentId) {
-        return GroupingValidationResult.error('${child.name} is already part of another bundle');
+      if (groupType == HabitType.bundle &&
+          child.parentBundleId != null &&
+          child.parentBundleId != parentId) {
+        return GroupingValidationResult.error(
+            '${child.name} is already part of another bundle');
       }
     }
 
@@ -82,19 +90,21 @@ class HabitRelationshipService {
     required List<Habit> allHabits,
   }) {
     final updatedHabits = <Habit>[];
-    
+
     for (final habit in allHabits) {
       if (childIds.contains(habit.id)) {
         // Update child to reference parent
-        final updatedChild = _createChildRelationship(habit, parentId, relationshipType);
+        final updatedChild =
+            _createChildRelationship(habit, parentId, relationshipType);
         updatedHabits.add(updatedChild);
       } else if (habit.id == parentId) {
         // Update parent to reference children
-        final updatedParent = _createParentRelationship(habit, childIds, relationshipType);
+        final updatedParent =
+            _createParentRelationship(habit, childIds, relationshipType);
         updatedHabits.add(updatedParent);
       }
     }
-    
+
     return updatedHabits;
   }
 
@@ -105,7 +115,7 @@ class HabitRelationshipService {
     required List<Habit> allHabits,
   }) {
     final updatedHabits = <Habit>[];
-    
+
     for (final habit in allHabits) {
       if (habit.id == childId) {
         // Clear parent reference from child
@@ -119,7 +129,7 @@ class HabitRelationshipService {
         }
       }
     }
-    
+
     return updatedHabits;
   }
 
@@ -129,23 +139,24 @@ class HabitRelationshipService {
     required List<Habit> allHabits,
   }) {
     List<String>? childIds;
-    
+
     switch (parent.type) {
       case HabitType.bundle:
         childIds = parent.bundleChildIds;
         break;
       case HabitType.stack:
-        childIds = parent.stackedOnHabitId != null ? [parent.stackedOnHabitId!] : null;
+        childIds =
+            parent.stackedOnHabitId != null ? [parent.stackedOnHabitId!] : null;
         break;
       default:
         return [];
     }
-    
+
     if (childIds == null || childIds.isEmpty) return [];
-    
+
     // Create lookup map for O(1) access
     final habitMap = {for (final habit in allHabits) habit.id: habit};
-    
+
     // Return in order specified by parent
     return childIds
         .map((id) => habitMap[id])
@@ -155,8 +166,9 @@ class HabitRelationshipService {
   }
 
   /// Private helper methods
-  
-  Habit _createChildRelationship(Habit child, String parentId, HabitType relationshipType) {
+
+  Habit _createChildRelationship(
+      Habit child, String parentId, HabitType relationshipType) {
     switch (relationshipType) {
       case HabitType.bundle:
         return _copyHabitWithChanges(child, parentBundleId: parentId);
@@ -168,7 +180,8 @@ class HabitRelationshipService {
     }
   }
 
-  Habit _createParentRelationship(Habit parent, List<String> childIds, HabitType relationshipType) {
+  Habit _createParentRelationship(
+      Habit parent, List<String> childIds, HabitType relationshipType) {
     switch (relationshipType) {
       case HabitType.bundle:
         return _copyHabitWithChanges(parent, bundleChildIds: childIds);
@@ -186,7 +199,8 @@ class HabitRelationshipService {
   Habit? _removeChildFromParent(Habit parent, String childId) {
     switch (parent.type) {
       case HabitType.bundle:
-        final updatedChildIds = parent.bundleChildIds?.where((id) => id != childId).toList();
+        final updatedChildIds =
+            parent.bundleChildIds?.where((id) => id != childId).toList();
         if (updatedChildIds == null || updatedChildIds.length < 2) {
           return null; // Bundle becomes invalid
         }
@@ -241,8 +255,10 @@ class GroupingValidationResult {
 
   const GroupingValidationResult._({required this.isValid, this.errorMessage});
 
-  factory GroupingValidationResult.success() => const GroupingValidationResult._(isValid: true);
-  factory GroupingValidationResult.error(String message) => GroupingValidationResult._(isValid: false, errorMessage: message);
+  factory GroupingValidationResult.success() =>
+      const GroupingValidationResult._(isValid: true);
+  factory GroupingValidationResult.error(String message) =>
+      GroupingValidationResult._(isValid: false, errorMessage: message);
 
   @override
   String toString() => isValid ? 'Valid' : 'Error: $errorMessage';

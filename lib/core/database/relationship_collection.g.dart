@@ -204,13 +204,13 @@ P _relationshipCollectionDeserializeProp<P>(
 
 const _RelationshipCollectionstatusEnumValueMap = {
   r'pending': r'pending',
-  r'accepted': r'accepted',
+  r'active': r'active',
   r'blocked': r'blocked',
   r'ended': r'ended',
 };
 const _RelationshipCollectionstatusValueEnumMap = {
   r'pending': RelationshipStatus.pending,
-  r'accepted': RelationshipStatus.accepted,
+  r'active': RelationshipStatus.active,
   r'blocked': RelationshipStatus.blocked,
   r'ended': RelationshipStatus.ended,
 };

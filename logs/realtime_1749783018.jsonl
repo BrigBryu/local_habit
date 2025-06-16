@@ -1,0 +1,1 @@
+{"type": "connection_error", "error": "BaseEventLoop.create_connection() got an unexpected keyword argument 'extra_headers'", "timestamp": "2025-06-12T22:50:18.876694"}

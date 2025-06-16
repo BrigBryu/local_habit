@@ -12,7 +12,7 @@ class PartnerHabitsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final partnerHabitsAsync = ref.watch(partnerHabitsProvider);
-    
+
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: partnerHabitsAsync.when(
@@ -44,9 +44,11 @@ class PartnerHabitsPage extends ConsumerWidget {
         ),
         data: (partnerHabits) {
           // Filter to show only top-level habits (not children of bundles or stacks)
-          final topLevelHabits = partnerHabits.where((habit) => 
-            habit.parentBundleId == null && habit.stackedOnHabitId == null
-          ).toList();
+          final topLevelHabits = partnerHabits
+              .where((habit) =>
+                  habit.parentBundleId == null &&
+                  habit.stackedOnHabitId == null)
+              .toList();
 
           if (topLevelHabits.isEmpty) {
             return Center(
@@ -62,26 +64,21 @@ class PartnerHabitsPage extends ConsumerWidget {
                   Text(
                     'No Partner Connected',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      color: AppColors.draculaComment.withOpacity(0.7),
-                    ),
+                          color: AppColors.draculaComment.withOpacity(0.7),
+                        ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Connect with a partner to see their habits here',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.draculaComment.withOpacity(0.6),
-                    ),
+                          color: AppColors.draculaComment.withOpacity(0.6),
+                        ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 24),
                   ElevatedButton.icon(
                     onPressed: () {
-                      // TODO: Navigate to partner connection screen
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Partner connection feature coming soon!'),
-                        ),
-                      );
+                      Navigator.of(context).pushNamed('/partner-settings');
                     },
                     icon: const Icon(Icons.person_add),
                     label: const Text('Connect Partner'),
@@ -100,18 +97,22 @@ class PartnerHabitsPage extends ConsumerWidget {
             itemCount: topLevelHabits.length,
             itemBuilder: (context, index) {
               final habit = topLevelHabits[index];
-              
+
               // Create read-only habit tiles
               switch (habit.type) {
                 case HabitType.bundle:
-                  return PartnerBundleHabitTile(habit: habit, allHabits: partnerHabits);
+                  return PartnerBundleHabitTile(
+                      habit: habit, allHabits: partnerHabits);
                 case HabitType.stack:
-                  return PartnerStackHabitTile(habit: habit, allHabits: partnerHabits);
+                  return PartnerStackHabitTile(
+                      habit: habit, allHabits: partnerHabits);
                 case HabitType.avoidance:
                   return PartnerAvoidanceHabitTile(habit: habit);
                 case HabitType.basic:
                 default:
-                  return PartnerHabitTile(habit: habit); // Use partner version based on the proper tiles
+                  return PartnerHabitTile(
+                      habit:
+                          habit); // Use partner version based on the proper tiles
               }
             },
           );
@@ -136,27 +137,29 @@ class PartnerHabitTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isCompleted = _isHabitCompletedToday(habit);
     final colors = ref.watchColors;
-    
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         gradient: LinearGradient(
           colors: [
-            isCompleted 
-              ? colors.completedBackground.withOpacity(0.6) // Dimmer for partner
-              : colors.draculaCurrentLine.withOpacity(0.4),
-            isCompleted 
-              ? colors.completedBackground.withOpacity(0.3) // Dimmer for partner
-              : colors.draculaCurrentLine.withOpacity(0.2),
+            isCompleted
+                ? colors.completedBackground
+                    .withOpacity(0.6) // Dimmer for partner
+                : colors.draculaCurrentLine.withOpacity(0.4),
+            isCompleted
+                ? colors.completedBackground
+                    .withOpacity(0.3) // Dimmer for partner
+                : colors.draculaCurrentLine.withOpacity(0.2),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         border: Border.all(
-          color: isCompleted 
-            ? colors.completedBorder.withOpacity(0.6) // Dimmer for partner
-            : colors.basicHabit.withOpacity(0.3),
+          color: isCompleted
+              ? colors.completedBorder.withOpacity(0.6) // Dimmer for partner
+              : colors.basicHabit.withOpacity(0.3),
           width: 2,
         ),
         boxShadow: [
@@ -178,16 +181,19 @@ class PartnerHabitTile extends ConsumerWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: _getHabitTypeColor(ref).withOpacity(0.1), // Dimmer for partner
+                  color: _getHabitTypeColor(ref)
+                      .withOpacity(0.1), // Dimmer for partner
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: _getHabitTypeColor(ref).withOpacity(0.2), // Dimmer for partner
+                    color: _getHabitTypeColor(ref)
+                        .withOpacity(0.2), // Dimmer for partner
                     width: 2,
                   ),
                 ),
                 child: Icon(
                   _getHabitTypeIcon(),
-                  color: _getHabitTypeColor(ref).withOpacity(0.8), // Dimmer for partner
+                  color: _getHabitTypeColor(ref)
+                      .withOpacity(0.8), // Dimmer for partner
                   size: 24,
                 ),
               ),
@@ -221,8 +227,11 @@ class PartnerHabitTile extends ConsumerWidget {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        decoration: isCompleted ? TextDecoration.lineThrough : null,
-                        color: isCompleted ? colors.completedTextOnGreen.withOpacity(0.8) : colors.draculaPurple.withOpacity(0.9),
+                        decoration:
+                            isCompleted ? TextDecoration.lineThrough : null,
+                        color: isCompleted
+                            ? colors.completedTextOnGreen.withOpacity(0.8)
+                            : colors.draculaPurple.withOpacity(0.9),
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -231,7 +240,9 @@ class PartnerHabitTile extends ConsumerWidget {
                     Text(
                       _buildSubtitleText(ref),
                       style: TextStyle(
-                        color: isCompleted ? colors.completedTextOnGreen.withOpacity(0.7) : colors.basicHabit.withOpacity(0.8),
+                        color: isCompleted
+                            ? colors.completedTextOnGreen.withOpacity(0.7)
+                            : colors.basicHabit.withOpacity(0.8),
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                       ),
@@ -259,21 +270,21 @@ class PartnerHabitTile extends ConsumerWidget {
                 height: 40,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: isCompleted 
-                    ? colors.completed.withOpacity(0.8) 
-                    : colors.draculaCurrentLine.withOpacity(0.3),
+                  color: isCompleted
+                      ? colors.completed.withOpacity(0.8)
+                      : colors.draculaCurrentLine.withOpacity(0.3),
                   border: Border.all(
-                    color: isCompleted 
-                      ? colors.completed.withOpacity(0.8) 
-                      : colors.draculaComment.withOpacity(0.4),
+                    color: isCompleted
+                        ? colors.completed.withOpacity(0.8)
+                        : colors.draculaComment.withOpacity(0.4),
                     width: 2,
                   ),
                 ),
                 child: Icon(
                   isCompleted ? Icons.check : Icons.radio_button_unchecked,
-                  color: isCompleted 
-                    ? Colors.white 
-                    : colors.draculaComment.withOpacity(0.6),
+                  color: isCompleted
+                      ? Colors.white
+                      : colors.draculaComment.withOpacity(0.6),
                   size: 24,
                 ),
               ),
@@ -288,12 +299,13 @@ class PartnerHabitTile extends ConsumerWidget {
     final colors = ref.watchColors;
     switch (habit.type) {
       case HabitType.basic:
-        final count = _isHabitCompletedToday(habit) ? habit.dailyCompletionCount : 0;
+        final count =
+            _isHabitCompletedToday(habit) ? habit.dailyCompletionCount : 0;
         if (count > 0) {
           return 'Basic Habit · $count completed today';
         }
         return 'Basic Habit';
-        
+
       case HabitType.avoidance:
         final failures = habit.dailyFailureCount;
         if (habit.avoidanceSuccessToday) {
@@ -302,11 +314,11 @@ class PartnerHabitTile extends ConsumerWidget {
           return 'Avoidance · $failures failure(s) today';
         }
         return 'Avoidance · In progress';
-        
+
       case HabitType.bundle:
         final childCount = habit.bundleChildIds?.length ?? 0;
         return 'Bundle · $childCount habits';
-        
+
       case HabitType.stack:
         return 'Habit Stack';
     }
@@ -325,7 +337,7 @@ class PartnerHabitTile extends ConsumerWidget {
         return colors.stackHabit;
     }
   }
-  
+
   IconData _getHabitTypeIcon() {
     switch (habit.type) {
       case HabitType.basic:
@@ -344,8 +356,8 @@ class PartnerHabitTile extends ConsumerWidget {
     final now = DateTime.now();
     final lastCompleted = habit.lastCompleted!;
     return now.year == lastCompleted.year &&
-           now.month == lastCompleted.month &&
-           now.day == lastCompleted.day;
+        now.month == lastCompleted.month &&
+        now.day == lastCompleted.day;
   }
 }
 
@@ -425,12 +437,14 @@ class PartnerBundleHabitTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final childHabits = habit.bundleChildIds
-        ?.map((id) => allHabits.where((h) => h.id == id).firstOrNull)
-        .where((h) => h != null)
-        .cast<Habit>()
-        .toList() ?? [];
+            ?.map((id) => allHabits.where((h) => h.id == id).firstOrNull)
+            .where((h) => h != null)
+            .cast<Habit>()
+            .toList() ??
+        [];
 
-    final completedCount = childHabits.where((h) => h.sessionCompletedToday).length;
+    final completedCount =
+        childHabits.where((h) => h.sessionCompletedToday).length;
     final totalCount = childHabits.length;
 
     return Card(
@@ -489,11 +503,11 @@ class PartnerStackHabitTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // TODO: Implement proper stack step retrieval
-    final stackSteps = allHabits
-        .where((h) => h.stackedOnHabitId == habit.id)
-        .toList();
+    final stackSteps =
+        allHabits.where((h) => h.stackedOnHabitId == habit.id).toList();
 
-    final completedCount = stackSteps.where((h) => h.sessionCompletedToday).length;
+    final completedCount =
+        stackSteps.where((h) => h.sessionCompletedToday).length;
     final totalCount = stackSteps.length;
 
     return Card(
