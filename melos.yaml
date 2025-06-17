@@ -62,3 +62,27 @@ scripts:
     exec:
       concurrency: 10
     description: Get dependencies for all packages
+
+  clean:
+    run: flutter clean
+    exec:
+      concurrency: 10
+    packageFilters:
+      flutter: true
+    description: Clean all Flutter packages
+
+  analyze:fatal:
+    run: flutter analyze --fatal-warnings
+    exec:
+      concurrency: 10
+    packageFilters:
+      flutter: true
+    description: Run analyzer with fatal warnings
+
+  build:android:
+    run: flutter build apk --debug
+    exec:
+      concurrency: 1
+    packageFilters:
+      flutter: true
+    description: Build Android APK

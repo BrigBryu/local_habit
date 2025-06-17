@@ -63,6 +63,9 @@ dev_dependencies:
   
   # Testing
   mockito: ^5.4.4
+  
+  # Workspace management
+  melos: ^6.0.0
 
   path: any
 flutter:
