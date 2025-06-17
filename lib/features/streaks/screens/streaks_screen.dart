@@ -49,7 +49,8 @@ class StreaksScreen extends ConsumerWidget {
                     ref,
                     isMe: true,
                     streakDays: 23,
-                    startDate: DateTime.now().subtract(const Duration(days: 22)),
+                    startDate:
+                        DateTime.now().subtract(const Duration(days: 22)),
                     endDate: DateTime.now(),
                     completionRate: 0.85,
                   ),
@@ -61,7 +62,8 @@ class StreaksScreen extends ConsumerWidget {
                     ref,
                     isMe: false,
                     streakDays: 18,
-                    startDate: DateTime.now().subtract(const Duration(days: 17)),
+                    startDate:
+                        DateTime.now().subtract(const Duration(days: 17)),
                     endDate: DateTime.now(),
                     completionRate: 0.78,
                   ),
@@ -216,15 +218,18 @@ class StreaksScreen extends ConsumerWidget {
                               height: 36,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: colors.draculaCurrentLine.withOpacity(0.3),
+                                color:
+                                    colors.draculaCurrentLine.withOpacity(0.3),
                               ),
                             ),
                             // Progress circle
                             CircularProgressIndicator(
                               value: completionRate,
                               strokeWidth: 3,
-                              valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
-                              backgroundColor: colors.draculaCurrentLine.withOpacity(0.2),
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(primaryColor),
+                              backgroundColor:
+                                  colors.draculaCurrentLine.withOpacity(0.2),
                             ),
                             // Center percentage
                             Center(
@@ -263,8 +268,8 @@ class StreaksScreen extends ConsumerWidget {
 
   Widget _buildDayTilesSection(BuildContext context, WidgetRef ref) {
     final colors = ref.watchColors;
-    final last30Days = List.generate(30, (index) => 
-        DateTime.now().subtract(Duration(days: 29 - index)));
+    final last30Days = List.generate(
+        30, (index) => DateTime.now().subtract(Duration(days: 29 - index)));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -307,12 +312,12 @@ class StreaksScreen extends ConsumerWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
-        color: isToday 
+        color: isToday
             ? colors.primaryPurple.withOpacity(0.1)
             : colors.draculaCurrentLine.withOpacity(0.3),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isToday 
+          color: isToday
               ? colors.primaryPurple.withOpacity(0.3)
               : colors.draculaCurrentLine,
           width: 1,
@@ -334,7 +339,7 @@ class StreaksScreen extends ConsumerWidget {
                     Text(
                       _formatDayLabel(date),
                       style: TextStyle(
-                        color: isToday 
+                        color: isToday
                             ? colors.primaryPurple
                             : colors.draculaForeground,
                         fontSize: 14,
@@ -362,14 +367,20 @@ class StreaksScreen extends ConsumerWidget {
                   // My completion
                   Icon(
                     myCompleted ? Icons.check_circle : Icons.circle_outlined,
-                    color: myCompleted ? colors.primaryPurple : colors.draculaComment,
+                    color: myCompleted
+                        ? colors.primaryPurple
+                        : colors.draculaComment,
                     size: 24,
                   ),
                   const SizedBox(width: 8),
                   // Partner completion
                   Icon(
-                    partnerCompleted ? Icons.check_circle : Icons.circle_outlined,
-                    color: partnerCompleted ? colors.purpleAccent : colors.draculaComment,
+                    partnerCompleted
+                        ? Icons.check_circle
+                        : Icons.circle_outlined,
+                    color: partnerCompleted
+                        ? colors.purpleAccent
+                        : colors.draculaComment,
                     size: 24,
                   ),
                 ],
@@ -379,7 +390,8 @@ class StreaksScreen extends ConsumerWidget {
 
               // Habit count chip
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   color: colors.draculaCyan.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(16),
@@ -415,10 +427,20 @@ class StreaksScreen extends ConsumerWidget {
 
   String _formatDate(DateTime date) {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
     ];
-    
+
     final month = months[date.month - 1];
     return '$month ${date.day}';
   }
@@ -426,21 +448,31 @@ class StreaksScreen extends ConsumerWidget {
   String _formatDayLabel(DateTime date) {
     const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
     ];
-    
+
     final dayName = days[date.weekday - 1];
     final month = months[date.month - 1];
-    
+
     return '$dayName • $month ${date.day}';
   }
 
   bool _isToday(DateTime date) {
     final today = DateTime.now();
     return date.year == today.year &&
-           date.month == today.month &&
-           date.day == today.day;
+        date.month == today.month &&
+        date.day == today.day;
   }
 
   bool _isMyHabitCompletedOnDate(DateTime date) {

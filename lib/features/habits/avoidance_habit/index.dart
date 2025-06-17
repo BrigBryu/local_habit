@@ -1,6 +1,7 @@
 // Export all avoidance habit components
 export 'add_avoidance_habit_screen.dart';
 export 'avoidance_habit_tile.dart';
+export 'partner_avoidance_habit_tile.dart';
 export 'providers.dart';
 
 // TODO: Future avoidance habit components

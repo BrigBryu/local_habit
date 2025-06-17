@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
-import 'theme_extensions.dart';
 
 /// Centralized theme configuration for the app
 class AppTheme {
@@ -76,10 +75,7 @@ class AppTheme {
       ),
 
       // Extensions for custom colors
-      extensions: [
-        HabitColorsExtension.light,
-        CompletionColorsExtension.light,
-      ],
+      extensions: const [],
     );
   }
 
@@ -149,10 +145,7 @@ class AppTheme {
       ),
 
       // Extensions for custom colors
-      extensions: [
-        HabitColorsExtension.dark,
-        CompletionColorsExtension.dark,
-      ],
+      extensions: const [],
     );
   }
 }

@@ -108,35 +108,41 @@ class _StackStepCardState extends ConsumerState<StackStepCard>
         _stackService.isStackCompleted(widget.stack, widget.allHabits);
 
     if (nextStep == null && isCompleted) {
-      return _buildCompletionCard(progress);
+      return RepaintBoundary(child: _buildCompletionCard(progress));
     }
 
     if (nextStep == null) {
-      return _buildEmptyStackCard();
+      return RepaintBoundary(child: _buildEmptyStackCard());
     }
 
-    return SlideTransition(
-      position: _slideAnimation,
-      child: AnimatedBuilder(
-        animation: _flipAnimation,
-        builder: (context, child) {
-          return Transform(
-            alignment: Alignment.center,
-            transform: Matrix4.identity()
-              ..setEntry(3, 2, 0.001)
-              ..rotateY(_flipAnimation.value * 3.14159),
-            child: _flipAnimation.value < 0.5
-                ? Transform.scale(
-                    scale: _scaleAnimation.value,
-                    child: _buildStepCard(nextStep, progress),
-                  )
-                : Transform(
-                    alignment: Alignment.center,
-                    transform: Matrix4.identity()..rotateY(3.14159),
-                    child: _buildCheckmarkCard(),
-                  ),
-          );
-        },
+    return RepaintBoundary(
+      child: SlideTransition(
+        position: _slideAnimation,
+        child: AnimatedBuilder(
+          animation: _flipAnimation,
+          builder: (context, child) {
+            return Transform(
+              alignment: Alignment.center,
+              transform: Matrix4.identity()
+                ..setEntry(3, 2, 0.001)
+                ..rotateY(_flipAnimation.value * 3.14159),
+              child: _flipAnimation.value < 0.5
+                  ? Transform.scale(
+                      scale: _scaleAnimation.value,
+                      child: RepaintBoundary(
+                        child: _buildStepCard(nextStep, progress),
+                      ),
+                    )
+                  : Transform(
+                      alignment: Alignment.center,
+                      transform: Matrix4.identity()..rotateY(3.14159),
+                      child: RepaintBoundary(
+                        child: _buildCheckmarkCard(),
+                      ),
+                    ),
+            );
+          },
+        ),
       ),
     );
   }

@@ -5,14 +5,14 @@ import 'package:logger/logger.dart';
 import '../../core/auth/username_auth_service.dart';
 import '../../core/auth/auth_wrapper.dart';
 import '../../core/theme/flexible_theme_system.dart';
-import '../../providers/repository_init_provider.dart';
 import 'username_sign_in_screen.dart';
 
 class UsernameSignUpScreen extends ConsumerStatefulWidget {
   const UsernameSignUpScreen({super.key});
 
   @override
-  ConsumerState<UsernameSignUpScreen> createState() => _UsernameSignUpScreenState();
+  ConsumerState<UsernameSignUpScreen> createState() =>
+      _UsernameSignUpScreenState();
 }
 
 class _UsernameSignUpScreenState extends ConsumerState<UsernameSignUpScreen> {
@@ -39,29 +39,81 @@ class _UsernameSignUpScreenState extends ConsumerState<UsernameSignUpScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final result = await UsernameAuthService.instance.signUp(
-        _usernameController.text.trim(),
-        _passwordController.text,
-      );
+      final username = _usernameController.text.trim();
+      _logger.i('Regular sign up attempt for username: $username');
+
+      final result = await UsernameAuthService.instance
+          .signUp(username, _passwordController.text);
 
       if (result.isSuccess) {
-        _logger.i('Sign up successful - auto signed in');
-        _logger.i('Current user ID: ${UsernameAuthService.instance.getCurrentUserId()}');
-        _logger.i('Is authenticated: ${UsernameAuthService.instance.isAuthenticated}');
-        
-        // Update auth state to trigger navigation
-        ref.read(authStateProvider.notifier).state = true;
-        _logger.i('Auth state provider updated to true');
-        
-        // Invalidate the repository provider to reinitialize with new user
-        ref.invalidate(repositoryProvider);
-        _logger.i('Repository provider invalidated for new user');
+        final currentUserId = UsernameAuthService.instance.getCurrentUserId();
+        final isAuthenticated = UsernameAuthService.instance.isAuthenticated;
+
+        _logger.i(
+            'Sign up successful for $username (ID: $currentUserId, authenticated: $isAuthenticated)');
+        _showSnackBar(
+            'Account created and signed in successfully!', Colors.green);
+
+        // Force refresh auth state to trigger navigation
+        ref.read(authStateNotifierProvider.notifier).refresh();
       } else {
-        _showSnackBar(result.error ?? 'Sign up failed', Colors.red);
+        _logger.e('Sign up failed for $username: ${result.error}');
+        _showSnackBar(result.error ?? 'Please try again', Colors.red);
       }
     } catch (e) {
       _logger.e('Sign up error', error: e);
-      _showSnackBar('An unexpected error occurred', Colors.red);
+      _showSnackBar('Please try again', Colors.red);
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _quickSignUpWithAutoIncrement() async {
+    setState(() => _isLoading = true);
+
+    try {
+      // Find the next available username starting from user1
+      for (var i = 1; i <= 100; ++i) {
+        final username = 'user$i';
+        _logger.i('Attempting to create account: $username');
+
+        final result =
+            await UsernameAuthService.instance.signUp(username, 'q1234567');
+
+        if (result.isSuccess) {
+          final currentUserId = UsernameAuthService.instance.getCurrentUserId();
+          final isAuthenticated = UsernameAuthService.instance.isAuthenticated;
+
+          _logger.i(
+              'Quick sign up successful for $username (ID: $currentUserId, authenticated: $isAuthenticated)');
+          _showSnackBar(
+              'Account created and signed in as $username!', Colors.green);
+
+          // Force refresh auth state to trigger navigation
+          ref.read(authStateNotifierProvider.notifier).refresh();
+          return;
+        }
+
+        // Check if this was a "username exists" error
+        if (result.error?.toLowerCase().contains('exists') == true) {
+          _logger.i('Username $username already exists, trying next...');
+          continue;
+        }
+
+        // Non-existence error - show and stop
+        _logger.e('Account creation failed for $username: ${result.error}');
+        _showSnackBar('Please try again', Colors.red);
+        return;
+      }
+
+      // Exhausted all usernames
+      _logger.w('All test usernames user1-user100 are taken');
+      _showSnackBar('All test usernames taken', Colors.amber);
+    } catch (e) {
+      _logger.e('Quick sign up error', error: e);
+      _showSnackBar('Please try again', Colors.red);
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -97,7 +149,7 @@ class _UsernameSignUpScreenState extends ConsumerState<UsernameSignUpScreen> {
               children: [
                 // Logo or app name
                 Text(
-                  'Create Account',
+                  'Create Account :)',
                   style: TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
@@ -112,7 +164,57 @@ class _UsernameSignUpScreenState extends ConsumerState<UsernameSignUpScreen> {
                     color: colors.draculaComment,
                   ),
                 ),
-                const SizedBox(height: 48),
+                const SizedBox(height: 32),
+
+                // Quick test button at the very top for visibility
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: colors.primaryPurple.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: colors.primaryPurple, width: 2),
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        '🚀 QUICK TEST ACCOUNT',
+                        style: TextStyle(
+                          color: colors.primaryPurple,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 56,
+                        child: ElevatedButton(
+                          onPressed: _isLoading
+                              ? null
+                              : () => _quickSignUpWithAutoIncrement(),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: colors.primaryPurple,
+                            foregroundColor: Colors.white,
+                            elevation: 8,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: _isLoading
+                              ? const CircularProgressIndicator(
+                                  color: Colors.white)
+                              : const Text(
+                                  'CREATE USER1, USER2, ETC.',
+                                  style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 32),
 
                 // Username field
                 TextFormField(
@@ -138,7 +240,8 @@ class _UsernameSignUpScreenState extends ConsumerState<UsernameSignUpScreen> {
                     ),
                     filled: true,
                     fillColor: colors.cardBackgroundDark,
-                    prefixIcon: Icon(Icons.person, color: colors.draculaComment),
+                    prefixIcon:
+                        Icon(Icons.person, color: colors.draculaComment),
                   ),
                   textInputAction: TextInputAction.next,
                   validator: (value) {
@@ -233,10 +336,11 @@ class _UsernameSignUpScreenState extends ConsumerState<UsernameSignUpScreen> {
                     ),
                     filled: true,
                     fillColor: colors.cardBackgroundDark,
-                    prefixIcon: Icon(Icons.lock_outline, color: colors.draculaComment),
+                    prefixIcon:
+                        Icon(Icons.lock_outline, color: colors.draculaComment),
                     suffixIcon: IconButton(
-                      onPressed: () =>
-                          setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+                      onPressed: () => setState(() =>
+                          _obscureConfirmPassword = !_obscureConfirmPassword),
                       icon: Icon(
                         _obscureConfirmPassword
                             ? Icons.visibility
@@ -289,7 +393,8 @@ class _UsernameSignUpScreenState extends ConsumerState<UsernameSignUpScreen> {
                       onPressed: () {
                         Navigator.of(context).pushReplacement(
                           MaterialPageRoute(
-                              builder: (context) => const UsernameSignInScreen()),
+                              builder: (context) =>
+                                  const UsernameSignInScreen()),
                         );
                       },
                       child: Text(

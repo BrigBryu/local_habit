@@ -56,13 +56,13 @@ final GoRouter appRouter = GoRouter(
 extension AppNavigationExtension on BuildContext {
   /// Navigate to streaks dashboard
   void goToStreaks() => go(AppRoutes.streaks);
-  
+
   /// Navigate to streak calendar
   void goToStreaksCalendar() => go(AppRoutes.streaksCalendar);
-  
+
   /// Push streaks dashboard
   void pushStreaks() => push(AppRoutes.streaks);
-  
+
   /// Push streak calendar
   void pushStreaksCalendar() => push(AppRoutes.streaksCalendar);
 }

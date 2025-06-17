@@ -16,7 +16,7 @@ class UsernameAuthService {
   UsernameAuthService._();
 
   final _logger = Logger();
-  
+
   String? _currentUserId;
   String? _currentUsername;
 
@@ -24,17 +24,17 @@ class UsernameAuthService {
   Future<AuthResult> signUp(String username, String password) async {
     try {
       final normalizedUsername = username.toLowerCase().trim();
-      
+
       _logger.i('Sign up attempt for username: $normalizedUsername');
       _logger.i('Original username: \"$username\"');
       _logger.i('Normalized username: \"$normalizedUsername\"');
       _logger.i('Username length: ${normalizedUsername.length}');
-      
+
       // Validate input
       if (normalizedUsername.isEmpty || normalizedUsername.length < 3) {
         return AuthResult.error('Username must be at least 3 characters long');
       }
-      
+
       if (password.isEmpty || password.length < 6) {
         return AuthResult.error('Password must be at least 6 characters long');
       }
@@ -45,7 +45,7 @@ class UsernameAuthService {
 
       // Create account via Supabase RPC
       final response = await supabase.rpc(
-        'create_account', 
+        'create_account',
         params: {
           'p_username': normalizedUsername,
           'p_password_hash': hashedPassword,
@@ -68,22 +68,27 @@ class UsernameAuthService {
       return AuthResult.success();
     } catch (e) {
       _logger.e('Registration failed', error: e);
-      
+
       // Parse specific error messages
       final errorMessage = e.toString().toLowerCase();
-      
+
       if (errorMessage.contains('username already exists')) {
-        return AuthResult.error('This username is already taken. Please choose a different one.');
-      } else if (errorMessage.contains('network') || errorMessage.contains('connection')) {
-        return AuthResult.error('Network error. Please check your internet connection and try again.');
+        return AuthResult.error(
+            'This username is already taken. Please choose a different one.');
+      } else if (errorMessage.contains('network') ||
+          errorMessage.contains('connection')) {
+        return AuthResult.error(
+            'Network error. Please check your internet connection and try again.');
       } else if (errorMessage.contains('timeout')) {
         return AuthResult.error('Connection timeout. Please try again.');
       } else if (errorMessage.contains('invalid')) {
         return AuthResult.error('Invalid username or password format.');
       } else if (errorMessage.contains('p0001')) {
-        return AuthResult.error('Username validation failed. Please use only letters, numbers, and underscores.');
+        return AuthResult.error(
+            'Username validation failed. Please use only letters, numbers, and underscores.');
       } else {
-        return AuthResult.error('Account creation failed. Please try again later.');
+        return AuthResult.error(
+            'Account creation failed. Please try again later.');
       }
     }
   }
@@ -92,18 +97,19 @@ class UsernameAuthService {
   Future<AuthResult> signIn(String username, String password) async {
     try {
       final normalizedUsername = username.toLowerCase().trim();
-      
-      _logger.i('Sign in attempt for username: $normalizedUsername');
-      
+
+      _logger.i('[signIn] Attempt for username: $normalizedUsername');
+
       // Get account from Supabase
       final response = await supabase.rpc(
-        'login_account', 
+        'login_account',
         params: {
           'p_username': normalizedUsername,
         },
       ) as Map<String, dynamic>?;
 
       if (response == null) {
+        _logger.e('[signIn] RPC returned null - username not found');
         return AuthResult.error('Username not found');
       }
 
@@ -112,36 +118,48 @@ class UsernameAuthService {
 
       // Verify password using SHA-256
       final isValidPassword = _verifyPassword(password, storedPasswordHash);
-      
+
       if (!isValidPassword) {
+        _logger.e('[signIn] Password verification failed');
         return AuthResult.error('Invalid password');
       }
 
-      // Sign in
+      // Set user data
       _currentUserId = userData['id'];
       _currentUsername = userData['username'];
+      _logger.i('[signIn] Set user data - ID: $_currentUserId, username: $_currentUsername');
 
       // Persist to storage
       await _saveCurrentUser();
+      _logger.i('[signIn] User data saved to storage');
 
-      _logger.i('User signed in: $normalizedUsername');
+      // Check isAuthenticated after setting data
+      final authStatus = isAuthenticated;
+      _logger.i('[signIn] isAuthenticated status: $authStatus');
+
+      _logger.i('[signIn] SUCCESS for: $normalizedUsername');
       return AuthResult.success();
     } catch (e) {
       _logger.e('Sign in failed', error: e);
-      
+
       // Parse specific error messages
       final errorMessage = e.toString().toLowerCase();
-      
-      if (errorMessage.contains('username not found') || errorMessage.contains('null')) {
-        return AuthResult.error('Username not found. Please check your username or create a new account.');
+
+      if (errorMessage.contains('username not found') ||
+          errorMessage.contains('null')) {
+        return AuthResult.error(
+            'Username not found. Please check your username or create a new account.');
       } else if (errorMessage.contains('invalid password')) {
         return AuthResult.error('Incorrect password. Please try again.');
-      } else if (errorMessage.contains('network') || errorMessage.contains('connection')) {
-        return AuthResult.error('Network error. Please check your internet connection and try again.');
+      } else if (errorMessage.contains('network') ||
+          errorMessage.contains('connection')) {
+        return AuthResult.error(
+            'Network error. Please check your internet connection and try again.');
       } else if (errorMessage.contains('timeout')) {
         return AuthResult.error('Connection timeout. Please try again.');
       } else {
-        return AuthResult.error('Sign in failed. Please check your credentials and try again.');
+        return AuthResult.error(
+            'Sign in failed. Please check your credentials and try again.');
       }
     }
   }
@@ -158,7 +176,9 @@ class UsernameAuthService {
 
   /// Check if user is authenticated
   bool get isAuthenticated {
-    return _currentUserId != null && _currentUsername != null;
+    final result = _currentUserId != null && _currentUsername != null;
+    _logger.d('[isAuthenticated] userID: $_currentUserId, username: $_currentUsername → $result');
+    return result;
   }
 
   /// Sign out current user
@@ -166,12 +186,12 @@ class UsernameAuthService {
     try {
       _currentUserId = null;
       _currentUsername = null;
-      
+
       // Clear from storage
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('current_user_id');
       await prefs.remove('current_username');
-      
+
       _logger.i('User signed out');
     } catch (e) {
       _logger.e('Sign out failed', error: e);
@@ -184,7 +204,7 @@ class UsernameAuthService {
       final prefs = await SharedPreferences.getInstance();
       _currentUserId = prefs.getString('current_user_id');
       _currentUsername = prefs.getString('current_username');
-      
+
       if (_currentUserId != null && _currentUsername != null) {
         _logger.i('Session restored for user: $_currentUsername');
       }
@@ -226,7 +246,7 @@ class UsernameAuthService {
     try {
       final parts = storedHash.split(':');
       if (parts.length != 2) return false;
-      
+
       final salt = parts[0];
       final expectedHash = _hashPassword(password, salt);
       return expectedHash == storedHash;
@@ -235,16 +255,15 @@ class UsernameAuthService {
       return false;
     }
   }
-
 }
 
 /// Authentication result wrapper
 class AuthResult {
   final bool isSuccess;
   final String? error;
-  
+
   AuthResult._(this.isSuccess, this.error);
-  
+
   factory AuthResult.success() => AuthResult._(true, null);
   factory AuthResult.error(String error) => AuthResult._(false, error);
 }

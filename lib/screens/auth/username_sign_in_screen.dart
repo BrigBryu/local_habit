@@ -5,14 +5,14 @@ import 'package:logger/logger.dart';
 import '../../core/auth/username_auth_service.dart';
 import '../../core/auth/auth_wrapper.dart';
 import '../../core/theme/flexible_theme_system.dart';
-import '../../providers/repository_init_provider.dart';
 import 'username_sign_up_screen.dart';
 
 class UsernameSignInScreen extends ConsumerStatefulWidget {
   const UsernameSignInScreen({super.key});
 
   @override
-  ConsumerState<UsernameSignInScreen> createState() => _UsernameSignInScreenState();
+  ConsumerState<UsernameSignInScreen> createState() =>
+      _UsernameSignInScreenState();
 }
 
 class _UsernameSignInScreenState extends ConsumerState<UsernameSignInScreen> {
@@ -31,30 +31,43 @@ class _UsernameSignInScreenState extends ConsumerState<UsernameSignInScreen> {
   }
 
   Future<void> _signIn() async {
-    if (!_formKey.currentState!.validate()) return;
+    _logger.i('Sign in button pressed');
+
+    if (!_formKey.currentState!.validate()) {
+      _logger.w('Form validation failed');
+      return;
+    }
 
     setState(() => _isLoading = true);
 
     try {
-      final result = await UsernameAuthService.instance.signIn(
-        _usernameController.text.trim(),
-        _passwordController.text,
-      );
+      final username = _usernameController.text.trim();
+      final password = _passwordController.text;
+      _logger.i('Attempting sign in with username: $username');
+
+      final result =
+          await UsernameAuthService.instance.signIn(username, password);
 
       if (result.isSuccess) {
-        _logger.i('Sign in successful');
-        // Update auth state to trigger navigation
-        ref.read(authStateProvider.notifier).state = true;
-        
-        // Invalidate the repository provider to reinitialize with signed-in user
-        ref.invalidate(repositoryProvider);
-        _logger.i('Repository provider invalidated for signed-in user');
+        final currentUserId = UsernameAuthService.instance.getCurrentUserId();
+        final isAuthenticated = UsernameAuthService.instance.isAuthenticated;
+
+        _logger.i(
+            'Sign in successful for $username (ID: $currentUserId, authenticated: $isAuthenticated)');
+
+        // Clear any existing snackbars and show success
+        ScaffoldMessenger.of(context).clearSnackBars();
+        _showSnackBar('Signed in successfully!', Colors.green);
+
+        // Force refresh auth state to trigger navigation
+        ref.read(authStateNotifierProvider.notifier).refresh();
       } else {
-        _showSnackBar(result.error ?? 'Sign in failed', Colors.red);
+        _logger.e('Sign in failed for $username: ${result.error}');
+        _showSnackBar(result.error ?? 'Please try again', Colors.red);
       }
     } catch (e) {
       _logger.e('Sign in error', error: e);
-      _showSnackBar('An unexpected error occurred', Colors.red);
+      _showSnackBar('Please try again', Colors.red);
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -105,7 +118,7 @@ class _UsernameSignInScreenState extends ConsumerState<UsernameSignInScreen> {
                     color: colors.draculaComment,
                   ),
                 ),
-                const SizedBox(height: 48),
+                const SizedBox(height: 32),
 
                 // Username field
                 TextFormField(
@@ -131,7 +144,8 @@ class _UsernameSignInScreenState extends ConsumerState<UsernameSignInScreen> {
                     ),
                     filled: true,
                     fillColor: colors.cardBackgroundDark,
-                    prefixIcon: Icon(Icons.person, color: colors.draculaComment),
+                    prefixIcon:
+                        Icon(Icons.person, color: colors.draculaComment),
                   ),
                   textInputAction: TextInputAction.next,
                   validator: (value) {
@@ -223,7 +237,8 @@ class _UsernameSignInScreenState extends ConsumerState<UsernameSignInScreen> {
                       onPressed: () {
                         Navigator.of(context).pushReplacement(
                           MaterialPageRoute(
-                              builder: (context) => const UsernameSignUpScreen()),
+                              builder: (context) =>
+                                  const UsernameSignUpScreen()),
                         );
                       },
                       child: Text(

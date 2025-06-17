@@ -46,3 +46,22 @@ app.*.map.json
 
 # Environment variables
 .env
+
+# Node modules (if any)
+node_modules/
+
+# Logs and debugging
+logs/
+*.pid
+*.log
+
+# macOS
+.DS_Store
+
+# Coverage reports
+coverage/
+*.lcov
+
+# Build artifacts
+build/
+.dart_tool/

@@ -309,31 +309,30 @@ class SettingsScreen extends ConsumerWidget {
         if (shouldSignOut == true) {
           final logger = Logger();
           logger.i('=== SIGNING OUT USER ===');
-          
+
           try {
             // Sign out from auth service
             await UsernameAuthService.instance.signOut();
             logger.i('Username auth service signed out');
-            
-            // Update auth state to trigger AuthWrapper rebuild
-            ref.read(authStateProvider.notifier).state = false;
-            logger.i('Auth state updated to false');
-            
+
+            // Force refresh auth state to trigger navigation
+            ref.read(authStateNotifierProvider.notifier).refresh();
+
             // Invalidate all providers to clear user data
             ref.invalidate(repositoryProvider);
             logger.i('Repository provider invalidated');
-            
+
             // Close the settings screen immediately
             if (context.mounted) {
               Navigator.of(context).pop();
               logger.i('Settings screen closed');
             }
-            
+
             logger.i('Sign out completed successfully');
           } catch (e) {
             logger.e('Error during sign out: $e');
-            // Still try to update auth state even if there's an error
-            ref.read(authStateProvider.notifier).state = false;
+            // Force refresh auth state even on error
+            ref.read(authStateNotifierProvider.notifier).refresh();
             if (context.mounted) {
               Navigator.of(context).pop();
             }

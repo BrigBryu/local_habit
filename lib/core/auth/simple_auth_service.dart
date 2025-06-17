@@ -52,9 +52,11 @@ class SimpleAuthService {
         if (_localUsers[email]!['password'] == password) {
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString('current_user_email', email);
-          await prefs.setString('current_user_display_name', _localUsers[email]!['displayName']!);
-          await prefs.setString('current_user_id', _localUsers[email]!['userId']!);
-          
+          await prefs.setString(
+              'current_user_display_name', _localUsers[email]!['displayName']!);
+          await prefs.setString(
+              'current_user_id', _localUsers[email]!['userId']!);
+
           _logger.i('Local user signed in: $email');
           return AuthResult.success();
         } else {
@@ -108,9 +110,9 @@ class SimpleAuthService {
       // Check Supabase first
       final supabaseUser = supabase.auth.currentUser;
       if (supabaseUser != null) {
-        return supabaseUser.userMetadata?['display_name'] ?? 
-               supabaseUser.email ?? 
-               'User';
+        return supabaseUser.userMetadata?['display_name'] ??
+            supabaseUser.email ??
+            'User';
       }
 
       // Check local storage

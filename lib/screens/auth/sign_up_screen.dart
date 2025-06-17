@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
 
-import '../../core/auth/auth_service.dart';
-import '../../core/auth/simple_auth_service.dart';
+import '../../core/auth/username_auth_service.dart';
+import '../../core/auth/auth_wrapper.dart';
 import '../../core/theme/flexible_theme_system.dart';
 import '../../core/validation/validation_service.dart';
 import 'sign_in_screen.dart';
-import 'email_verification_screen.dart';
 
 class SignUpScreen extends ConsumerStatefulWidget {
   const SignUpScreen({super.key});
@@ -19,20 +18,18 @@ class SignUpScreen extends ConsumerStatefulWidget {
 class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   final Logger _logger = Logger();
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  final _displayNameController = TextEditingController();
+  final _usernameController = TextEditingController();
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
 
   @override
   void dispose() {
-    _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
-    _displayNameController.dispose();
+    _usernameController.dispose();
     super.dispose();
   }
 
@@ -47,21 +44,22 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // Use simple auth service for immediate sign-up and sign-in
-      final result = await SimpleAuthService.instance.signUpAndSignIn(
-        _emailController.text.trim(),
+      // Use username auth service for consistent authentication
+      final result = await UsernameAuthService.instance.signUp(
+        _usernameController.text.trim(),
         _passwordController.text,
-        _displayNameController.text.trim(),
       );
 
       if (result.isSuccess) {
-        _logger.i('Sign up and sign in successful - no email verification needed');
-        _showSnackBar('Account created and signed in!', Colors.green);
-        // AuthWrapper will automatically handle navigation to main app
+        _logger.i('Sign up successful - automatically signed in');
+        _showSnackBar(
+            'Account created and signed in successfully!', Colors.green);
+
+        // Auth stream will handle navigation automatically
       } else {
-        if (result.error?.contains('already registered') == true) {
+        if (result.error?.contains('already exists') == true) {
           _showSnackBar(
-              'This email is already registered. Please sign in instead.',
+              'This username is already taken. Please try a different one.',
               Colors.orange);
         } else {
           _showSnackBar(result.error ?? 'Sign up failed', Colors.red);
@@ -69,6 +67,46 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       }
     } catch (e) {
       _logger.e('Sign up error', error: e);
+      _showSnackBar('An unexpected error occurred', Colors.red);
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _quickSignUpWithAutoIncrement() async {
+    setState(() => _isLoading = true);
+
+    try {
+      // Find the next available username starting from user1
+      for (int i = 1; i <= 100; i++) {
+        final username = 'user$i';
+        final result = await UsernameAuthService.instance.signUp(
+          username,
+          'q1234567',
+        );
+
+        if (result.isSuccess) {
+          _logger.i('Quick sign up successful for $username');
+          _showSnackBar(
+              'Account created and signed in as $username!', Colors.green);
+
+          // Auth stream will handle navigation automatically
+          return;
+        } else if (!result.error!.contains('already exists')) {
+          // If it's not a "username exists" error, show the actual error
+          _showSnackBar(
+              'Failed to create account: ${result.error}', Colors.red);
+          return;
+        }
+        // If username exists, try the next number
+      }
+
+      _showSnackBar('Could not find available username (tried user1-user100)',
+          Colors.red);
+    } catch (e) {
+      _logger.e('Quick sign up error', error: e);
       _showSnackBar('An unexpected error occurred', Colors.red);
     } finally {
       if (mounted) {
@@ -107,8 +145,58 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
             key: _formKey,
             child: SingleChildScrollView(
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  const SizedBox(height: 16),
+
+                  // Quick test button at the very top for visibility
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: colors.primaryPurple.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: colors.primaryPurple, width: 2),
+                    ),
+                    child: Column(
+                      children: [
+                        Text(
+                          '🚀 QUICK TEST ACCOUNT',
+                          style: TextStyle(
+                            color: colors.primaryPurple,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 56,
+                          child: ElevatedButton(
+                            onPressed: _isLoading
+                                ? null
+                                : () => _quickSignUpWithAutoIncrement(),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: colors.primaryPurple,
+                              foregroundColor: Colors.white,
+                              elevation: 8,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: _isLoading
+                                ? const CircularProgressIndicator(
+                                    color: Colors.white)
+                                : const Text(
+                                    'CREATE USER1, USER2, ETC.',
+                                    style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                   const SizedBox(height: 32),
 
                   // Logo or app name
@@ -119,15 +207,16 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                       fontWeight: FontWeight.bold,
                       color: colors.primaryPurple,
                     ),
+                    textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 48),
+                  const SizedBox(height: 32),
 
-                  // Display name field
+                  // Username field
                   TextFormField(
-                    controller: _displayNameController,
+                    controller: _usernameController,
                     style: TextStyle(color: colors.draculaForeground),
                     decoration: InputDecoration(
-                      labelText: 'Display Name',
+                      labelText: 'Username',
                       labelStyle: TextStyle(color: colors.draculaComment),
                       enabledBorder: OutlineInputBorder(
                         borderSide: BorderSide(color: colors.draculaComment),
@@ -151,45 +240,6 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                       final result = ValidationService.instance
                           .validateUsername(value ?? '');
                       return result.isValid ? null : result.errorMessage;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Email field
-                  TextFormField(
-                    controller: _emailController,
-                    style: TextStyle(color: colors.draculaForeground),
-                    decoration: InputDecoration(
-                      labelText: 'Email',
-                      labelStyle: TextStyle(color: colors.draculaComment),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: colors.draculaComment),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: colors.primaryPurple),
-                      ),
-                      errorBorder: const OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.red),
-                      ),
-                      focusedErrorBorder: const OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.red),
-                      ),
-                      filled: true,
-                      fillColor: colors.cardBackgroundDark,
-                      prefixIcon:
-                          Icon(Icons.email, color: colors.draculaComment),
-                    ),
-                    keyboardType: TextInputType.emailAddress,
-                    textInputAction: TextInputAction.next,
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Email is required';
-                      }
-                      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                          .hasMatch(value)) {
-                        return 'Please enter a valid email';
-                      }
-                      return null;
                     },
                   ),
                   const SizedBox(height: 16),
@@ -295,22 +345,20 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Sign up button
+                  // Regular sign up button
                   SizedBox(
                     width: double.infinity,
                     height: 48,
                     child: ElevatedButton(
                       onPressed: _isLoading ? null : _signUp,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: colors.primaryPurple,
-                        foregroundColor: Colors.white,
+                        backgroundColor: colors.draculaComment,
+                        foregroundColor: colors.draculaBackground,
                       ),
-                      child: _isLoading
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : const Text('Sign Up'),
+                      child: const Text('Manual Sign Up'),
                     ),
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 24),
 
                   // Sign in link
                   Row(

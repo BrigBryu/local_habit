@@ -64,16 +64,16 @@ class HabitTile extends ConsumerWidget {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: _getHabitTypeColor(ref).withOpacity(0.15),
+                    color: _getHabitTypeColor(colors).withOpacity(0.15),
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: _getHabitTypeColor(ref).withOpacity(0.3),
+                      color: _getHabitTypeColor(colors).withOpacity(0.3),
                       width: 2,
                     ),
                   ),
                   child: Icon(
                     _getHabitTypeIcon(),
-                    color: _getHabitTypeColor(ref),
+                    color: _getHabitTypeColor(colors),
                     size: 24,
                   ),
                 ),
@@ -185,8 +185,7 @@ class HabitTile extends ConsumerWidget {
     return HomeHabitCheckButton(habit: habit);
   }
 
-  Color _getHabitTypeColor(WidgetRef ref) {
-    final colors = ref.watchColors;
+  Color _getHabitTypeColor(FlexibleColors colors) {
     switch (habit.type) {
       case HabitType.basic:
         return colors.basicHabit;
@@ -230,6 +229,7 @@ class HomeHabitCheckButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isCompleted = isHabitCompletedToday(habit);
+    final colors = ref.watchColors;
 
     if (isCompleted) {
       return Container(
@@ -237,10 +237,10 @@ class HomeHabitCheckButton extends ConsumerWidget {
         height: 40,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: ref.watchColors.completed,
+          color: colors.completed,
           boxShadow: [
             BoxShadow(
-              color: ref.watchColors.completed.withOpacity(0.3),
+              color: colors.completed.withOpacity(0.3),
               blurRadius: 4,
               offset: const Offset(0, 2),
             ),
@@ -261,9 +261,9 @@ class HomeHabitCheckButton extends ConsumerWidget {
         height: 40,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: ref.watchColors.draculaCurrentLine.withOpacity(0.15),
+          color: colors.draculaCurrentLine.withOpacity(0.15),
           border: Border.all(
-            color: ref.watchColors.draculaPink,
+            color: colors.draculaPink,
             width: 2,
           ),
           boxShadow: [
@@ -276,7 +276,7 @@ class HomeHabitCheckButton extends ConsumerWidget {
         ),
         child: Icon(
           Icons.circle_outlined,
-          color: ref.watchColors.draculaPink,
+          color: colors.draculaPink,
           size: 24,
         ),
       ),
@@ -287,11 +287,12 @@ class HomeHabitCheckButton extends ConsumerWidget {
     final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
     final result = await habitsNotifier.completeHabit(habit.id);
 
+    final colors = ref.read(flexibleColorsProvider);
     if (result != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(result),
-          backgroundColor: ref.read(flexibleColorsProvider).success,
+          backgroundColor: colors.success,
           behavior: SnackBarBehavior.floating,
           duration: const Duration(seconds: 2),
         ),
@@ -301,7 +302,7 @@ class HomeHabitCheckButton extends ConsumerWidget {
         SnackBar(
           content:
               Text('${habit.name} completed! +${habit.calculateXPReward()} XP'),
-          backgroundColor: ref.read(flexibleColorsProvider).success,
+          backgroundColor: colors.success,
           behavior: SnackBarBehavior.floating,
           duration: const Duration(seconds: 2),
         ),

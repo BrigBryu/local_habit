@@ -8,7 +8,6 @@ import '../core/auth/username_auth_service.dart';
 import '../core/network/partner_service.dart';
 import '../core/theme/flexible_theme_system.dart';
 
-
 /// Provider for partner relationships
 final partnerRelationshipsProvider =
     FutureProvider<List<PartnerDto>>((ref) async {
@@ -22,7 +21,7 @@ final partnerRelationshipsProvider =
   }
 
   logger.d('🚀 Fetching relationships for user: $userId');
-  
+
   try {
     final partners = await PartnerService.instance.getPartners();
     logger.d('📦 Provider returning ${partners.length} partners');
@@ -76,7 +75,8 @@ class _PartnerSettingsScreenState extends ConsumerState<PartnerSettingsScreen> {
   Future<void> _showUsernameSelection() async {
     // For username auth demo, just show current username info
     final currentUsername = UsernameAuthService.instance.getCurrentUsername();
-    _showSnackBar('Current username: ${currentUsername ?? "Not set"}', Colors.blue);
+    _showSnackBar(
+        'Current username: ${currentUsername ?? "Not set"}', Colors.blue);
   }
 
   Future<void> _createInviteCode() async {
@@ -127,7 +127,7 @@ class _PartnerSettingsScreenState extends ConsumerState<PartnerSettingsScreen> {
       await PartnerService.instance.linkPartner(partnerUsername);
       _partnerUsernameController.clear();
       _showSnackBar('Successfully linked to $partnerUsername!', Colors.green);
-      
+
       // Force refresh relationships
       ref.invalidate(partnerRelationshipsProvider);
     } catch (e) {
@@ -354,10 +354,11 @@ class _PartnerSettingsScreenState extends ConsumerState<PartnerSettingsScreen> {
                                 '📝 UI rendering partner list with ${partners.length} items');
                             return Column(
                               children: partners.map((partner) {
-                                _logger.d(
-                                    '🎨 Rendering partner: ${partner.id}');
+                                _logger
+                                    .d('🎨 Rendering partner: ${partner.id}');
 
-                                String partnerDisplayName = partner.partnerUsername;
+                                String partnerDisplayName =
+                                    partner.partnerUsername;
 
                                 return Card(
                                   color: colors.backgroundDark,

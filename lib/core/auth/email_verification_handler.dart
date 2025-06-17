@@ -12,15 +12,16 @@ class EmailVerificationHandler {
   static Future<bool> handleEmailVerification(String verificationCode) async {
     try {
       // Extract verification code from URL if needed
-      final code = verificationCode.contains('code=') 
+      final code = verificationCode.contains('code=')
           ? verificationCode.split('code=')[1].split('&')[0]
           : verificationCode;
 
-      _logger.i('Attempting to verify email with code: ${code.substring(0, 8)}...');
+      _logger.i(
+          'Attempting to verify email with code: ${code.substring(0, 8)}...');
 
       // For now, we'll check if the user's email is verified after they click the link
       // In a production app, you'd want to implement proper deep linking
-      
+
       return true; // Assume verification worked if they got the code
     } catch (e) {
       _logger.e('Email verification failed', error: e);
@@ -40,7 +41,8 @@ class EmailVerificationHandler {
   }
 
   /// Show instructions for manual email verification
-  static void showEmailVerificationInstructions(BuildContext context, String email) {
+  static void showEmailVerificationInstructions(
+      BuildContext context, String email) {
     showDialog(
       context: context,
       barrierDismissible: false,

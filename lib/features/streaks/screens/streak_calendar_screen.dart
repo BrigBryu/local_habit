@@ -6,9 +6,11 @@ import '../widgets/day_detail_bottom_sheet.dart';
 
 enum CalendarView { calendar, stats }
 
-final selectedHabitFilterProvider = StateProvider<String>((ref) => 'All Habits');
+final selectedHabitFilterProvider =
+    StateProvider<String>((ref) => 'All Habits');
 final selectedMonthProvider = StateProvider<DateTime>((ref) => DateTime.now());
-final calendarViewProvider = StateProvider<CalendarView>((ref) => CalendarView.calendar);
+final calendarViewProvider =
+    StateProvider<CalendarView>((ref) => CalendarView.calendar);
 
 class StreakCalendarScreen extends ConsumerWidget {
   const StreakCalendarScreen({super.key});
@@ -70,7 +72,7 @@ class StreakCalendarScreen extends ConsumerWidget {
                   ],
                 ),
               ),
-              
+
               // Filter row
               _buildFilterRow(context, ref),
             ],
@@ -102,12 +104,12 @@ class StreakCalendarScreen extends ConsumerWidget {
         margin: const EdgeInsets.all(4),
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
         decoration: BoxDecoration(
-          color: isSelected 
+          color: isSelected
               ? colors.primaryPurple.withOpacity(0.2)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: isSelected 
+            color: isSelected
                 ? colors.primaryPurple.withOpacity(0.4)
                 : Colors.transparent,
             width: 1,
@@ -125,7 +127,8 @@ class StreakCalendarScreen extends ConsumerWidget {
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? colors.primaryPurple : colors.draculaComment,
+                color:
+                    isSelected ? colors.primaryPurple : colors.draculaComment,
                 fontSize: 14,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
               ),
@@ -173,7 +176,8 @@ class StreakCalendarScreen extends ConsumerWidget {
                   ),
                   onChanged: (value) {
                     if (value != null) {
-                      ref.read(selectedHabitFilterProvider.notifier).state = value;
+                      ref.read(selectedHabitFilterProvider.notifier).state =
+                          value;
                     }
                   },
                   items: _getHabitFilterOptions().map((option) {
@@ -199,14 +203,16 @@ class StreakCalendarScreen extends ConsumerWidget {
               children: [
                 IconButton(
                   onPressed: () {
-                    final newMonth = DateTime(selectedMonth.year, selectedMonth.month - 1);
+                    final newMonth =
+                        DateTime(selectedMonth.year, selectedMonth.month - 1);
                     ref.read(selectedMonthProvider.notifier).state = newMonth;
                   },
-                  icon: Icon(Icons.chevron_left, color: colors.draculaForeground),
-                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                  icon:
+                      Icon(Icons.chevron_left, color: colors.draculaForeground),
+                  constraints:
+                      const BoxConstraints(minWidth: 32, minHeight: 32),
                   padding: EdgeInsets.zero,
                 ),
-                
                 Text(
                   _formatMonth(selectedMonth),
                   style: TextStyle(
@@ -215,14 +221,16 @@ class StreakCalendarScreen extends ConsumerWidget {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                
                 IconButton(
                   onPressed: () {
-                    final newMonth = DateTime(selectedMonth.year, selectedMonth.month + 1);
+                    final newMonth =
+                        DateTime(selectedMonth.year, selectedMonth.month + 1);
                     ref.read(selectedMonthProvider.notifier).state = newMonth;
                   },
-                  icon: Icon(Icons.chevron_right, color: colors.draculaForeground),
-                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                  icon: Icon(Icons.chevron_right,
+                      color: colors.draculaForeground),
+                  constraints:
+                      const BoxConstraints(minWidth: 32, minHeight: 32),
                   padding: EdgeInsets.zero,
                 ),
               ],
@@ -258,18 +266,18 @@ class StreakCalendarScreen extends ConsumerWidget {
               focusedDay: selectedMonth,
               calendarFormat: CalendarFormat.month,
               startingDayOfWeek: StartingDayOfWeek.monday,
-              
+
               // Styling
               calendarStyle: CalendarStyle(
                 // Outside days (previous/next month)
                 outsideDaysVisible: false,
-                
+
                 // Weekend styling
                 weekendTextStyle: TextStyle(color: colors.draculaForeground),
-                
+
                 // Default day styling
                 defaultTextStyle: TextStyle(color: colors.draculaForeground),
-                
+
                 // Today styling
                 todayTextStyle: TextStyle(
                   color: colors.draculaBackground,
@@ -279,7 +287,7 @@ class StreakCalendarScreen extends ConsumerWidget {
                   color: colors.primaryPurple,
                   shape: BoxShape.circle,
                 ),
-                
+
                 // Selected day styling
                 selectedTextStyle: TextStyle(
                   color: colors.draculaBackground,
@@ -289,19 +297,19 @@ class StreakCalendarScreen extends ConsumerWidget {
                   color: colors.purpleAccent,
                   shape: BoxShape.circle,
                 ),
-                
+
                 // Marker styling
                 markerDecoration: BoxDecoration(
                   color: colors.draculaCyan,
                   shape: BoxShape.circle,
                 ),
                 markersMaxCount: 1,
-                
+
                 // Cell styling
                 cellMargin: const EdgeInsets.all(4),
                 cellPadding: EdgeInsets.zero,
               ),
-              
+
               // Header styling
               headerStyle: HeaderStyle(
                 formatButtonVisible: false,
@@ -314,7 +322,7 @@ class StreakCalendarScreen extends ConsumerWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              
+
               // Days of week styling
               daysOfWeekStyle: DaysOfWeekStyle(
                 weekdayStyle: TextStyle(
@@ -326,26 +334,28 @@ class StreakCalendarScreen extends ConsumerWidget {
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              
+
               // Calendar builders
               calendarBuilders: CalendarBuilders(
                 defaultBuilder: (context, day, focusedDay) {
                   return _buildCalendarDay(context, ref, day, selectedFilter);
                 },
                 todayBuilder: (context, day, focusedDay) {
-                  return _buildCalendarDay(context, ref, day, selectedFilter, isToday: true);
+                  return _buildCalendarDay(context, ref, day, selectedFilter,
+                      isToday: true);
                 },
               ),
-              
+
               // Event handling
               onDaySelected: (selectedDay, focusedDay) {
                 showDayDetailBottomSheet(
                   context,
                   date: selectedDay,
-                  habitFilter: selectedFilter != 'All Habits' ? selectedFilter : null,
+                  habitFilter:
+                      selectedFilter != 'All Habits' ? selectedFilter : null,
                 );
               },
-              
+
               onPageChanged: (focusedDay) {
                 ref.read(selectedMonthProvider.notifier).state = focusedDay;
               },
@@ -370,7 +380,8 @@ class StreakCalendarScreen extends ConsumerWidget {
   }) {
     final colors = ref.watchColors;
     final myCompleted = _isMyHabitCompletedOnDate(day, selectedFilter);
-    final partnerCompleted = _isPartnerHabitCompletedOnDate(day, selectedFilter);
+    final partnerCompleted =
+        _isPartnerHabitCompletedOnDate(day, selectedFilter);
     final habitCount = _getHabitCountForDate(day, selectedFilter);
 
     Color backgroundColor;
@@ -387,7 +398,8 @@ class StreakCalendarScreen extends ConsumerWidget {
       borderColor = colors.primaryPurple;
     } else if (myCompleted || partnerCompleted) {
       // Only one completed - 50% opacity
-      final completedColor = myCompleted ? colors.primaryPurple : colors.purpleAccent;
+      final completedColor =
+          myCompleted ? colors.primaryPurple : colors.purpleAccent;
       gradientColors = [
         completedColor.withOpacity(0.5),
         completedColor.withOpacity(0.3),
@@ -534,7 +546,6 @@ class StreakCalendarScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 12),
-          
           Row(
             children: [
               Expanded(
@@ -557,9 +568,7 @@ class StreakCalendarScreen extends ConsumerWidget {
               ),
             ],
           ),
-          
           const SizedBox(height: 8),
-          
           Row(
             children: [
               Expanded(
@@ -605,13 +614,14 @@ class StreakCalendarScreen extends ConsumerWidget {
           width: 20,
           height: 20,
           decoration: BoxDecoration(
-            gradient: colors.length > 1
-                ? LinearGradient(colors: colors)
-                : null,
+            gradient: colors.length > 1 ? LinearGradient(colors: colors) : null,
             color: colors.length == 1 ? colors.first : null,
             shape: BoxShape.circle,
             border: Border.all(
-              color: borderColor ?? (isSolid ? Colors.transparent : themeColors.draculaCurrentLine),
+              color: borderColor ??
+                  (isSolid
+                      ? Colors.transparent
+                      : themeColors.draculaCurrentLine),
               width: borderColor != null ? 2 : 1,
             ),
           ),
@@ -646,9 +656,9 @@ class StreakCalendarScreen extends ConsumerWidget {
             colors.primaryPurple,
             Icons.local_fire_department,
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           _buildStatsCard(
             context,
             ref,
@@ -657,9 +667,9 @@ class StreakCalendarScreen extends ConsumerWidget {
             colors.draculaYellow,
             Icons.emoji_events,
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           _buildStatsCard(
             context,
             ref,
@@ -668,9 +678,9 @@ class StreakCalendarScreen extends ConsumerWidget {
             colors.draculaGreen,
             Icons.trending_up,
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Coming soon placeholder
           Container(
             padding: const EdgeInsets.all(32),
@@ -794,10 +804,20 @@ class StreakCalendarScreen extends ConsumerWidget {
 
   String _formatMonth(DateTime date) {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
     ];
-    
+
     return '${months[date.month - 1]} ${date.year}';
   }
 
