@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:domain/domain.dart';
+import 'package:flutter/foundation.dart';
 import 'package:logger/logger.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -18,10 +19,10 @@ class RealtimeService {
   RealtimeChannel? _habitsChannel;
   RealtimeChannel? _completionsChannel;
 
-  // Stream controllers for realtime updates
-  final _habitsUpdateController = StreamController<List<Habit>>.broadcast();
+  // Stream controllers for realtime updates with sync option to prevent buffering
+  final _habitsUpdateController = StreamController<List<Habit>>.broadcast(sync: true);
   final _completionsUpdateController =
-      StreamController<Map<String, dynamic>>.broadcast();
+      StreamController<Map<String, dynamic>>.broadcast(sync: true);
 
   /// Stream of habit updates from realtime
   Stream<List<Habit>> get habitsUpdates => _habitsUpdateController.stream;
@@ -79,8 +80,10 @@ class RealtimeService {
           )
           .subscribe();
 
-      _logger.d(
-          'Subscribed to habits realtime updates for users: $allowedUserIds');
+      if (kDebugMode) {
+        _logger.d(
+            'Subscribed to habits realtime updates for users: $allowedUserIds');
+      }
     } catch (e, stackTrace) {
       _logger.e('Failed to subscribe to habits updates',
           error: e, stackTrace: stackTrace);
@@ -112,8 +115,10 @@ class RealtimeService {
           )
           .subscribe();
 
-      _logger.d(
-          'Subscribed to completions realtime updates for users: $allowedUserIds');
+      if (kDebugMode) {
+        _logger.d(
+            'Subscribed to completions realtime updates for users: $allowedUserIds');
+      }
     } catch (e, stackTrace) {
       _logger.e('Failed to subscribe to completions updates',
           error: e, stackTrace: stackTrace);
@@ -149,9 +154,11 @@ class RealtimeService {
   /// Handle habits table changes
   void _onHabitsChange(PostgresChangePayload payload) {
     try {
-      _logger.i('REALTIME HABITS: ${payload.eventType} on ${payload.table}');
-      _logger.i('PAYLOAD NEW: ${payload.newRecord}');
-      _logger.i('PAYLOAD OLD: ${payload.oldRecord}');
+      if (kDebugMode) {
+        _logger.i('REALTIME HABITS: ${payload.eventType} on ${payload.table}');
+        _logger.i('PAYLOAD NEW: ${payload.newRecord}');
+        _logger.i('PAYLOAD OLD: ${payload.oldRecord}');
+      }
 
       switch (payload.eventType) {
         case PostgresChangeEvent.insert:
@@ -175,10 +182,12 @@ class RealtimeService {
   /// Handle completions table changes
   void _onCompletionsChange(PostgresChangePayload payload) {
     try {
-      _logger
-          .i('REALTIME COMPLETIONS: ${payload.eventType} on ${payload.table}');
-      _logger.i('PAYLOAD NEW: ${payload.newRecord}');
-      _logger.i('PAYLOAD OLD: ${payload.oldRecord}');
+      if (kDebugMode) {
+        _logger
+            .i('REALTIME COMPLETIONS: ${payload.eventType} on ${payload.table}');
+        _logger.i('PAYLOAD NEW: ${payload.newRecord}');
+        _logger.i('PAYLOAD OLD: ${payload.oldRecord}');
+      }
 
       // Forward completion events to stream
       _completionsUpdateController.add({
@@ -195,7 +204,9 @@ class RealtimeService {
   void _handleHabitInsert(Map<String, dynamic> record) {
     try {
       final habit = SupabaseHabitDto.fromJson(record).toDomain();
-      _logger.d('New habit created: ${habit.name}');
+      if (kDebugMode) {
+        _logger.d('New habit created: ${habit.name}');
+      }
       // Trigger refresh of habits list
       _triggerHabitsRefresh();
     } catch (e, stackTrace) {
@@ -208,7 +219,9 @@ class RealtimeService {
   void _handleHabitUpdate(Map<String, dynamic> record) {
     try {
       final habit = SupabaseHabitDto.fromJson(record).toDomain();
-      _logger.d('Habit updated: ${habit.name}');
+      if (kDebugMode) {
+        _logger.d('Habit updated: ${habit.name}');
+      }
       // Trigger refresh of habits list
       _triggerHabitsRefresh();
     } catch (e, stackTrace) {
@@ -221,7 +234,9 @@ class RealtimeService {
   void _handleHabitDelete(Map<String, dynamic> record) {
     try {
       final habitId = record['id'] as String;
-      _logger.d('Habit deleted: $habitId');
+      if (kDebugMode) {
+        _logger.d('Habit deleted: $habitId');
+      }
       // Trigger refresh of habits list
       _triggerHabitsRefresh();
     } catch (e, stackTrace) {
@@ -232,8 +247,10 @@ class RealtimeService {
 
   /// Trigger habits list refresh (providers will listen to this)
   void _triggerHabitsRefresh() {
-    // Send empty list to signal refresh needed
-    _habitsUpdateController.add([]);
+    // Only trigger if there are active listeners to prevent memory buildup
+    if (_habitsUpdateController.hasListener) {
+      _habitsUpdateController.add([]);
+    }
   }
 
   /// Dispose realtime service

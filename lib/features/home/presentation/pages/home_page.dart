@@ -97,15 +97,19 @@ class HomePage extends ConsumerWidget {
                           final habit = habits[index];
                           // Use different tiles for different habit types
                           if (habit.type == HabitType.bundle) {
-                            return BundleHabitTile(
-                              habit: habit,
-                              allHabits: allHabits.value ??
-                                  [], // Extract value from AsyncValue
+                            return RepaintBoundary(
+                              child: BundleHabitTile(
+                                habit: habit,
+                                allHabits: allHabits.value ??
+                                    [], // Extract value from AsyncValue
+                              ),
                             );
                           } else {
-                            return HabitTile(
-                              habit: habit,
-                              onTap: () => _navigateToViewHabit(context, habit),
+                            return RepaintBoundary(
+                              child: HabitTile(
+                                habit: habit,
+                                onTap: () => _navigateToViewHabit(context, habit),
+                              ),
                             );
                           }
                         },

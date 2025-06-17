@@ -42,7 +42,7 @@ class DayDetailBottomSheet extends ConsumerWidget {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          
+
           // Header
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -87,14 +87,14 @@ class DayDetailBottomSheet extends ConsumerWidget {
               ],
             ),
           ),
-          
+
           // Divider
           Container(
             height: 1,
             color: colors.draculaCurrentLine,
             margin: const EdgeInsets.symmetric(horizontal: 20),
           ),
-          
+
           // Content
           Expanded(
             child: SingleChildScrollView(
@@ -109,9 +109,9 @@ class DayDetailBottomSheet extends ConsumerWidget {
                     _getMyHabitsForDate(date, habitFilter),
                     colors.primaryPurple,
                   ),
-                  
+
                   const SizedBox(height: 24),
-                  
+
                   // Partner habits section
                   _buildSection(
                     context,
@@ -179,9 +179,9 @@ class DayDetailBottomSheet extends ConsumerWidget {
             ],
           ),
         ),
-        
+
         const SizedBox(height: 12),
-        
+
         // Habits list
         if (habits.isEmpty)
           Container(
@@ -211,7 +211,8 @@ class DayDetailBottomSheet extends ConsumerWidget {
     );
   }
 
-  Widget _buildHabitItem(BuildContext context, WidgetRef ref, HabitDetail habit) {
+  Widget _buildHabitItem(
+      BuildContext context, WidgetRef ref, HabitDetail habit) {
     final colors = ref.watchColors;
 
     return Container(
@@ -249,9 +250,9 @@ class DayDetailBottomSheet extends ConsumerWidget {
               size: 18,
             ),
           ),
-          
+
           const SizedBox(width: 12),
-          
+
           // Habit details
           Expanded(
             child: Column(
@@ -265,9 +266,8 @@ class DayDetailBottomSheet extends ConsumerWidget {
                         : colors.draculaForeground,
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    decoration: habit.isCompleted
-                        ? TextDecoration.lineThrough
-                        : null,
+                    decoration:
+                        habit.isCompleted ? TextDecoration.lineThrough : null,
                   ),
                 ),
                 if (habit.description.isNotEmpty) ...[
@@ -283,7 +283,7 @@ class DayDetailBottomSheet extends ConsumerWidget {
               ],
             ),
           ),
-          
+
           // Completion status
           Icon(
             habit.isCompleted ? Icons.check_circle : Icons.circle_outlined,
@@ -297,14 +297,24 @@ class DayDetailBottomSheet extends ConsumerWidget {
 
   String _formatDate(DateTime date) {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
     ];
     const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    
+
     final dayName = days[date.weekday - 1];
     final month = months[date.month - 1];
-    
+
     return '$dayName • $month ${date.day}';
   }
 
@@ -343,7 +353,8 @@ class DayDetailBottomSheet extends ConsumerWidget {
     return allHabits;
   }
 
-  List<HabitDetail> _getPartnerHabitsForDate(DateTime date, String? habitFilter) {
+  List<HabitDetail> _getPartnerHabitsForDate(
+      DateTime date, String? habitFilter) {
     // Mock data - replace with actual data provider
     final allHabits = [
       HabitDetail(

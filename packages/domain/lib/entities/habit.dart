@@ -449,8 +449,7 @@ class Habit {
     if (type == HabitType.stack && stackedOnHabitId != null) {
       return '$name 📚'; // Stack emoji
     } else if (type == HabitType.bundle) {
-      final childCount = bundleChildIds?.length ?? 0;
-      return '$name 📦($childCount)'; // Bundle emoji with count
+      return '$name 📦'; // Bundle emoji
     } else if (type == HabitType.avoidance) {
       return '$name 🚫'; // Avoidance emoji
     }

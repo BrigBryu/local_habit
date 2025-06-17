@@ -23,8 +23,9 @@ class PartnerService {
       }
 
       // Generate a simple invite code (in production, you might want to store this in a table)
-      final inviteCode = 'INV${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}';
-      
+      final inviteCode =
+          'INV${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}';
+
       _logger.i('Created invite code: $inviteCode for user: $currentUserId');
       return inviteCode;
     } catch (e) {
@@ -49,7 +50,7 @@ class PartnerService {
 
       // Call Supabase RPC to link partner
       final response = await supabase.rpc(
-        'link_partner', 
+        'link_partner',
         params: {
           'p_user_id': currentUserId,
           'p_partner_username': partnerUsername.trim(),
@@ -65,24 +66,27 @@ class PartnerService {
       _logger.e('Error type: ${e.runtimeType}');
       _logger.e('Error message: ${e.toString()}');
       _logger.e('Partner username: "$partnerUsername"');
-      _logger.e('Current user ID: ${UsernameAuthService.instance.getCurrentUserId()}');
-      
+      _logger.e(
+          'Current user ID: ${UsernameAuthService.instance.getCurrentUserId()}');
+
       // Print the full error details
       if (e is Exception) {
         _logger.e('Exception details: $e');
       }
-      
+
       final errorMessage = e.toString().toLowerCase();
       _logger.e('Lowercase error message: "$errorMessage"');
-      
+
       if (errorMessage.contains('partner username not found')) {
         throw Exception('No user found with username: $partnerUsername');
       } else if (errorMessage.contains('cannot link to yourself')) {
         throw Exception('Cannot link to yourself');
       } else if (errorMessage.contains('already linked to this partner')) {
         throw Exception('Already linked to this partner');
-      } else if (errorMessage.contains('function') && errorMessage.contains('does not exist')) {
-        throw Exception('Database function not found. Please check your database setup.');
+      } else if (errorMessage.contains('function') &&
+          errorMessage.contains('does not exist')) {
+        throw Exception(
+            'Database function not found. Please check your database setup.');
       } else {
         throw Exception('Error linking partner: ${e.toString()}');
       }
@@ -97,7 +101,8 @@ class PartnerService {
         throw Exception('No authenticated user');
       }
 
-      _logger.i('Linking partner by code: $inviteCode for user: $currentUserId');
+      _logger
+          .i('Linking partner by code: $inviteCode for user: $currentUserId');
 
       // In a real implementation, you would:
       // 1. Look up the invite code in a database table
@@ -123,7 +128,7 @@ class PartnerService {
 
       // Call Supabase RPC to remove partner
       await supabase.rpc(
-        'remove_partner', 
+        'remove_partner',
         params: {
           'p_user_id': currentUserId,
           'p_partner_id': partnerId,
@@ -150,7 +155,7 @@ class PartnerService {
 
       // Call Supabase RPC to get partners
       final response = await supabase.rpc(
-        'get_partners', 
+        'get_partners',
         params: {
           'p_user_id': currentUserId,
         },
@@ -162,7 +167,8 @@ class PartnerService {
       }
 
       final partnersData = response as List<dynamic>;
-      final partners = partnersData.map((data) => PartnerDto.fromJson(data)).toList();
+      final partners =
+          partnersData.map((data) => PartnerDto.fromJson(data)).toList();
 
       _logger.i('Found ${partners.length} partners');
       return partners;

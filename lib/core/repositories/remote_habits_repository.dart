@@ -75,21 +75,31 @@ class RemoteHabitsRepository implements HabitsRepository {
   Stream<List<Habit>> ownHabits() {
     try {
       // Skip auth check for dev users
-      _logger.d('Streaming habits for user: $_currentUserId');
+      _logger.d('🏠 [RemoteRepo] Streaming own habits for user: $_currentUserId');
 
       return supabase
           .from('habits')
           .stream(primaryKey: ['id'])
           .eq('user_id', _currentUserId)
-          .map((data) => data.toHabitDomainList())
+          .map((data) {
+            _logger.d('🔄 [RemoteRepo] Own habits raw data: ${data.length} records for $_currentUserId');
+            data.forEach((record) {
+              _logger.d('📋 [RemoteRepo] Own habit record: id=${record['id']}, name=${record['name']}, user_id=${record['user_id']}');
+            });
+            
+            final habits = data.toHabitDomainList();
+            _logger.d('✅ [RemoteRepo] Own habits converted: ${habits.length} domain habits');
+            
+            return habits;
+          })
           .handleError((error, stackTrace) {
-            _logger.e('Error streaming own habits from Supabase',
+            _logger.e('❌ [RemoteRepo] Error streaming own habits from Supabase',
                 error: error, stackTrace: stackTrace);
             // Return empty stream on error
             return Stream.value(<Habit>[]);
           });
     } catch (e, stackTrace) {
-      _logger.e('Failed to create own habits stream',
+      _logger.e('❌ [RemoteRepo] Failed to create own habits stream',
           error: e, stackTrace: stackTrace);
       return Stream.value(<Habit>[]);
     }
@@ -99,21 +109,34 @@ class RemoteHabitsRepository implements HabitsRepository {
   Stream<List<Habit>> partnerHabits(String partnerId) {
     try {
       // Skip auth check for dev users
-      _logger.d('Streaming partner habits for: $partnerId');
+      _logger.d('🔍 [RemoteRepo] Streaming partner habits for: $partnerId');
 
       return supabase
           .from('habits')
           .stream(primaryKey: ['id'])
           .eq('user_id', partnerId)
-          .map((data) => data.toHabitDomainList())
+          .map((data) {
+            _logger.d('🔄 [RemoteRepo] Raw Supabase data received: ${data.length} records');
+            data.forEach((record) {
+              _logger.d('📋 [RemoteRepo] Habit record: id=${record['id']}, name=${record['name']}, user_id=${record['user_id']}');
+            });
+            
+            final habits = data.toHabitDomainList();
+            _logger.d('✅ [RemoteRepo] Converted to ${habits.length} domain habits for partner $partnerId');
+            habits.forEach((habit) {
+              _logger.d('📝 [RemoteRepo] Domain habit: ${habit.name} (${habit.type})');
+            });
+            
+            return habits;
+          })
           .handleError((error, stackTrace) {
-            _logger.e('Error streaming partner habits from Supabase',
+            _logger.e('❌ [RemoteRepo] Error streaming partner habits from Supabase',
                 error: error, stackTrace: stackTrace);
             // Return empty stream on error
             return Stream.value(<Habit>[]);
           });
     } catch (e, stackTrace) {
-      _logger.e('Failed to create partner habits stream',
+      _logger.e('❌ [RemoteRepo] Failed to create partner habits stream',
           error: e, stackTrace: stackTrace);
       return Stream.value(<Habit>[]);
     }
@@ -138,7 +161,7 @@ class RemoteHabitsRepository implements HabitsRepository {
       // Create DTO and insert to Supabase
       final dto = SupabaseHabitDto.fromDomain(habit, _currentUserId);
       final habitJson = dto.toJson();
-      
+
       _logger.d('Inserting habit data: $habitJson');
 
       await supabase.from('habits').insert(habitJson);
@@ -147,10 +170,8 @@ class RemoteHabitsRepository implements HabitsRepository {
 
       return null; // Success
     } catch (e, stackTrace) {
-      _logger.e(
-          'Failed to add habit remotely, enqueuing for retry',
-          error: e,
-          stackTrace: stackTrace);
+      _logger.e('Failed to add habit remotely, enqueuing for retry',
+          error: e, stackTrace: stackTrace);
 
       // Enqueue for later sync
       await SyncQueue.instance.enqueue(SyncOp.addHabit(habit));

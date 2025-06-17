@@ -7,17 +7,19 @@ import '../../core/theme/flexible_theme_system.dart';
 
 class EmailVerificationScreen extends ConsumerStatefulWidget {
   final String email;
-  
+
   const EmailVerificationScreen({
     required this.email,
     super.key,
   });
 
   @override
-  ConsumerState<EmailVerificationScreen> createState() => _EmailVerificationScreenState();
+  ConsumerState<EmailVerificationScreen> createState() =>
+      _EmailVerificationScreenState();
 }
 
-class _EmailVerificationScreenState extends ConsumerState<EmailVerificationScreen> {
+class _EmailVerificationScreenState
+    extends ConsumerState<EmailVerificationScreen> {
   final Logger _logger = Logger();
   bool _isResending = false;
 
@@ -25,8 +27,9 @@ class _EmailVerificationScreenState extends ConsumerState<EmailVerificationScree
     setState(() => _isResending = true);
 
     try {
-      final result = await AuthService.instance.resendVerification(widget.email);
-      
+      final result =
+          await AuthService.instance.resendVerification(widget.email);
+
       if (result.isSuccess) {
         _showSnackBar('Verification email resent successfully', Colors.green);
       } else {

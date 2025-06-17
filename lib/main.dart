@@ -10,35 +10,49 @@ import 'core/auth/auth_wrapper.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Load environment variables - check for dev environment first
+  // Load environment variables quickly
   const isDev = bool.fromEnvironment('DEV', defaultValue: false);
   final envFile = isDev ? '.env.dev' : '.env';
   await dotenv.load(fileName: envFile);
 
-  // Initialize Supabase
-  try {
-    await SupabaseClientService.instance
-        .initialize()
-        .timeout(const Duration(seconds: 15));
+  debugPrint('App Startup Completed - launching UI');
+  
+  // Launch app immediately, initialize services in background
+  runApp(const ProviderScope(child: HabitLevelUpApp()));
+
+  // Initialize services asynchronously after UI starts
+  _initializeServicesInBackground();
+}
+
+/// Initialize heavy services in background after UI launches
+void _initializeServicesInBackground() async {
+  // Initialize Supabase in background
+  SupabaseClientService.instance
+      .initialize()
+      .timeout(const Duration(seconds: 15))
+      .then((_) {
     debugPrint('Supabase initialization completed');
-  } catch (e) {
+    
+    // Check initial Supabase session
+    final session = SupabaseClientService.instance.supabase.auth.currentSession;
+    debugPrint('Initial Supabase session: $session');
+  }).catchError((e) {
     debugPrint(
         'Supabase initialization failed or timed out: $e - continuing in offline mode');
-  }
+  });
 
-  // Initialize username authentication service
-  try {
-    await UsernameAuthService.instance.initialize();
+  // Initialize username authentication service in background
+  UsernameAuthService.instance.initialize().then((_) {
     debugPrint('Username authentication service initialized');
-  } catch (e) {
+  }).catchError((e) {
     debugPrint('Username auth initialization failed: $e');
-  }
+  });
 
   // Handle TEST_USER_OVERRIDE for automated testing
   final testUserOverride = Platform.environment['TEST_USER_OVERRIDE'];
   if (testUserOverride != null && testUserOverride.isNotEmpty) {
     debugPrint('TEST_USER_OVERRIDE detected: $testUserOverride');
-    
+
     // Extract username from email format if needed
     String testUsername;
     if (testUserOverride.contains('@')) {
@@ -46,29 +60,10 @@ void main() async {
     } else {
       testUsername = testUserOverride;
     }
-    
-    try {
-      // Try to sign in with test user
-      final result = await UsernameAuthService.instance.signIn(testUsername, 'testpass123');
-      if (result.isSuccess) {
-        debugPrint('Test user auto-signed in successfully: $testUsername');
-      } else {
-        debugPrint('Test user sign-in failed, trying to create account: ${result.error}');
-        // If sign-in fails, try to create the test account
-        final createResult = await UsernameAuthService.instance.signUp(testUsername, 'testpass123');
-        if (createResult.isSuccess) {
-          debugPrint('Test user account created and signed in: $testUsername');
-        } else {
-          debugPrint('Test user account creation failed: ${createResult.error}');
-        }
-      }
-    } catch (e) {
-      debugPrint('Test user override failed: $e');
-    }
-  }
 
-  // Initialize Isar for web if needed
-  // Note: In Isar 3.1.0+ this is handled automatically
+    // Auto-sign in test user in background
+    _signInTestUser(testUsername);
+  }
 
   debugPrint('Running with Supabase integration enabled');
 
@@ -77,10 +72,32 @@ void main() async {
     debugPrint('SYNC_QUEUE_SELFTEST flag detected - simulation would run here');
     // TODO: Implement sync queue simulation
   }
+}
 
-  debugPrint('App Startup Completed - launching UI');
-
-  runApp(const ProviderScope(child: HabitLevelUpApp()));
+/// Sign in test user asynchronously
+void _signInTestUser(String testUsername) async {
+  try {
+    // Try to sign in with test user
+    final result = await UsernameAuthService.instance
+        .signIn(testUsername, 'testpass123');
+    if (result.isSuccess) {
+      debugPrint('Test user auto-signed in successfully: $testUsername');
+    } else {
+      debugPrint(
+          'Test user sign-in failed, trying to create account: ${result.error}');
+      // If sign-in fails, try to create the test account
+      final createResult = await UsernameAuthService.instance
+          .signUp(testUsername, 'testpass123');
+      if (createResult.isSuccess) {
+        debugPrint('Test user account created and signed in: $testUsername');
+      } else {
+        debugPrint(
+            'Test user account creation failed: ${createResult.error}');
+      }
+    }
+  } catch (e) {
+    debugPrint('Test user override failed: $e');
+  }
 }
 
 class HabitLevelUpApp extends ConsumerWidget {

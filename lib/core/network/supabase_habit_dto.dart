@@ -60,35 +60,35 @@ class SupabaseHabitDto {
       ownerId: json['user_id'] as String,
       type: json['type'] as String? ?? 'basic',
       stackedOnHabitId: json['stacked_on_habit_id'] as String?,
-      bundleChildIds: json['bundle_child_ids'] != null 
+      bundleChildIds: json['bundle_child_ids'] != null
           ? List<String>.from(json['bundle_child_ids'] as List)
           : null,
       parentBundleId: json['parent_bundle_id'] as String?,
       timeoutMinutes: json['timeout_minutes'] as int? ?? 30,
-      availableDays: json['available_days'] != null 
+      availableDays: json['available_days'] != null
           ? List<int>.from(json['available_days'] as List)
           : null,
       createdAt: DateTime.parse(json['created_at'] as String),
-      lastCompleted: json['last_completed'] != null 
-          ? DateTime.parse(json['last_completed'] as String) 
+      lastCompleted: json['last_completed'] != null
+          ? DateTime.parse(json['last_completed'] as String)
           : null,
-      lastAlarmTriggered: json['last_alarm_triggered'] != null 
-          ? DateTime.parse(json['last_alarm_triggered'] as String) 
+      lastAlarmTriggered: json['last_alarm_triggered'] != null
+          ? DateTime.parse(json['last_alarm_triggered'] as String)
           : null,
-      sessionStartTime: json['session_start_time'] != null 
-          ? DateTime.parse(json['session_start_time'] as String) 
+      sessionStartTime: json['session_start_time'] != null
+          ? DateTime.parse(json['session_start_time'] as String)
           : null,
-      lastSessionStarted: json['last_session_started'] != null 
-          ? DateTime.parse(json['last_session_started'] as String) 
+      lastSessionStarted: json['last_session_started'] != null
+          ? DateTime.parse(json['last_session_started'] as String)
           : null,
       sessionCompletedToday: json['session_completed_today'] as bool? ?? false,
       dailyCompletionCount: json['daily_completion_count'] as int? ?? 0,
-      lastCompletionCountReset: json['last_completion_count_reset'] != null 
-          ? DateTime.parse(json['last_completion_count_reset'] as String) 
+      lastCompletionCountReset: json['last_completion_count_reset'] != null
+          ? DateTime.parse(json['last_completion_count_reset'] as String)
           : null,
       dailyFailureCount: json['daily_failure_count'] as int? ?? 0,
-      lastFailureCountReset: json['last_failure_count_reset'] != null 
-          ? DateTime.parse(json['last_failure_count_reset'] as String) 
+      lastFailureCountReset: json['last_failure_count_reset'] != null
+          ? DateTime.parse(json['last_failure_count_reset'] as String)
           : null,
       avoidanceSuccessToday: json['avoidance_success_today'] as bool? ?? false,
       currentStreak: json['current_streak'] as int? ?? 0,
@@ -124,7 +124,8 @@ class SupabaseHabitDto {
       'last_alarm_triggered': lastAlarmTriggered?.toIso8601String(),
       'session_start_time': sessionStartTime?.toIso8601String(),
       'last_session_started': lastSessionStarted?.toIso8601String(),
-      'last_completion_count_reset': lastCompletionCountReset?.toIso8601String(),
+      'last_completion_count_reset':
+          lastCompletionCountReset?.toIso8601String(),
       'last_failure_count_reset': lastFailureCountReset?.toIso8601String(),
     };
   }

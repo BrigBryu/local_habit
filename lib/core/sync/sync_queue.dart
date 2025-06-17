@@ -118,8 +118,10 @@ class SyncQueue {
 
   /// Start background processing of sync queue
   Future<void> _startProcessing() async {
-    // Process queue immediately on startup
-    await _processQueue();
+    // Delay initial processing to let app startup complete
+    Future.delayed(const Duration(seconds: 10), () {
+      _processQueue();
+    });
 
     // Schedule periodic processing
     _retryTimer = Timer.periodic(const Duration(minutes: 5), (_) {
@@ -127,31 +129,66 @@ class SyncQueue {
     });
   }
 
-  /// Process all pending operations in the queue
+  /// Process pending operations with memory-efficient pagination
   Future<void> _processQueue() async {
     if (_repository == null) return;
 
     try {
-      final pendingOpsBefore =
-          await _db.isar.syncOps.filter().completedEqualTo(false).findAll();
-
-      if (pendingOpsBefore.isEmpty) {
-        // Log pending count when queue is empty
-        final finalCount = await getPendingCount();
-        _logger.i('SyncQueue: Pending: $finalCount');
+      // Get total count first without loading all objects
+      final totalPending = await _db.isar.syncOps.filter().completedEqualTo(false).count();
+      
+      if (totalPending == 0) {
+        _logger.i('SyncQueue: No pending operations');
         return;
       }
 
-      _logger
-          .d('Processing ${pendingOpsBefore.length} pending sync operations');
+      _logger.d('Processing $totalPending pending sync operations (paginated)');
 
-      for (final op in pendingOpsBefore) {
-        await _processOperation(op);
+      // Process in small pages to prevent memory exhaustion
+      const pageSize = 20;
+      int processed = 0;
+      int offset = 0;
+      
+      while (offset < totalPending) {
+        // Fetch only a small page of operations
+        final pageOps = await _db.isar.syncOps
+            .filter()
+            .completedEqualTo(false)
+            .offset(offset)
+            .limit(pageSize)
+            .findAll();
+            
+        if (pageOps.isEmpty) break;
+        
+        // Process this page
+        for (final op in pageOps) {
+          await _processOperation(op);
+          processed++;
+          
+          // Yield control after every operation to prevent blocking
+          if (processed % 5 == 0) {
+            await Future.delayed(const Duration(milliseconds: 5));
+          }
+        }
+        
+        offset += pageSize;
+        
+        // Log progress and yield control
+        if (processed % 50 == 0) {
+          _logger.d('Processed $processed/$totalPending operations');
+          await Future.delayed(const Duration(milliseconds: 20));
+        }
+        
+        // Safety break if we've processed too many
+        if (processed > 1000) {
+          _logger.w('Processed 1000 operations, pausing to prevent memory issues');
+          break;
+        }
       }
 
-      // Log pending count after processing
+      // Log final count
       final finalCount = await getPendingCount();
-      _logger.i('SyncQueue: Pending after processing: $finalCount');
+      _logger.i('SyncQueue: Processed $processed operations, $finalCount remaining');
     } catch (e, stackTrace) {
       _logger.e('Error processing sync queue',
           error: e, stackTrace: stackTrace);
