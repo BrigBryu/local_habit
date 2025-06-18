@@ -19,6 +19,7 @@ class HabitCollection {
   String? stackedOnHabitId;
   List<String>? bundleChildIds;
   String? parentBundleId;
+  String? parentStackId;
 
   // New stack fields per spec
   List<String>? stackChildIds;
@@ -60,6 +61,7 @@ class HabitCollection {
       ..stackedOnHabitId = habit.stackedOnHabitId
       ..bundleChildIds = habit.bundleChildIds
       ..parentBundleId = habit.parentBundleId
+      ..parentStackId = habit.parentStackId
       ..stackChildIds = habit.stackChildIds
       ..currentChildIndex = habit.currentChildIndex
       ..timeoutMinutes = habit.timeoutMinutes
@@ -87,6 +89,7 @@ class HabitCollection {
       stackedOnHabitId: stackedOnHabitId,
       bundleChildIds: bundleChildIds,
       parentBundleId: parentBundleId,
+      parentStackId: parentStackId,
       stackChildIds: stackChildIds,
       currentChildIndex: currentChildIndex,
       timeoutMinutes: timeoutMinutes,

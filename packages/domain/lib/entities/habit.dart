@@ -28,6 +28,7 @@ class Habit {
   final List<String>?
       bundleChildIds; // For bundle habits - list of child habit IDs
   final String? parentBundleId; // For habits that belong to a bundle
+  final String? parentStackId; // For habits that belong to a stack
   // New stack fields per spec
   final List<String>?
       stackChildIds; // For stack habits - ordered list of child habit IDs
@@ -68,6 +69,7 @@ class Habit {
     this.stackedOnHabitId,
     this.bundleChildIds,
     this.parentBundleId,
+    this.parentStackId,
     this.stackChildIds,
     this.currentChildIndex = 0,
     // TODO(bridger): TimeOfDay fields disabled
@@ -98,6 +100,7 @@ class Habit {
     String? stackedOnHabitId,
     List<String>? bundleChildIds,
     String? parentBundleId,
+    String? parentStackId,
     List<String>? stackChildIds,
     int currentChildIndex = 0,
     // TODO(bridger): TimeOfDay parameters disabled
@@ -115,6 +118,7 @@ class Habit {
       stackedOnHabitId: stackedOnHabitId,
       bundleChildIds: bundleChildIds,
       parentBundleId: parentBundleId,
+      parentStackId: parentStackId,
       stackChildIds: stackChildIds,
       currentChildIndex: currentChildIndex,
       // TODO(bridger): TimeOfDay fields disabled in factory

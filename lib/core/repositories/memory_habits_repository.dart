@@ -144,6 +144,19 @@ class MemoryHabitsRepository implements HabitsRepository {
   }
 
   @override
+  Future<String?> completeStackChild(String stackId) async {
+    try {
+      // For memory repository, this is a simplified implementation
+      // In a real app, this would integrate with the stack progress service
+      _logger.d('Stack child completed for stack: $stackId');
+      return null; // Success
+    } catch (e) {
+      _logger.e('Failed to complete stack child', error: e);
+      return 'Failed to complete stack child: $e';
+    }
+  }
+
+  @override
   Future<String?> recordFailure(String habitId) async {
     try {
       final completion = CompletionRecord(

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:domain/domain.dart';
-import 'package:data_local/repositories/stack_service.dart';
+import '../../../core/services/stack_progress_service.dart';
 import '../../../providers/habits_provider.dart';
 import '../../../core/theme/flexible_theme_system.dart';
 import 'stack_info_screen.dart';
@@ -18,13 +18,12 @@ class StackHabitTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final stackService = StackService();
-    final progress = stackService.getStackProgress(habit, allHabits);
-    final isCompleted = stackService.isStackCompleted(habit, allHabits);
-    final nextStep = stackService.getNextIncompleteStep(habit, allHabits);
-    final steps = stackService.getStackSteps(habit, allHabits);
-    final progressPercentage =
-        stackService.getStackProgressPercentage(habit, allHabits);
+    final stackProgressService = StackProgressService();
+    final progress = stackProgressService.getStackProgress(habit, allHabits);
+    final isCompleted = stackProgressService.isStackComplete(habit, allHabits);
+    final currentChild = stackProgressService.getCurrentChild(habit, allHabits);
+    final allChildren = stackProgressService.getStackChildren(habit, allHabits);
+    final progressPercentage = progress.total > 0 ? progress.completed / progress.total : 0.0;
     final colors = ref.watchColors;
 
     return Container(
@@ -91,7 +90,7 @@ class StackHabitTile extends ConsumerWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        _buildSubtitleText(progress, nextStep, isCompleted),
+                        _buildSubtitleText(progress, currentChild, isCompleted),
                         style: TextStyle(
                           color: isCompleted
                               ? colors.completedTextOnGreen
@@ -115,15 +114,15 @@ class StackHabitTile extends ConsumerWidget {
                         ),
                       ],
                       // Show mini step indicator
-                      if (steps.isNotEmpty) ...[
+                      if (allChildren.isNotEmpty) ...[
                         const SizedBox(height: 8),
-                        _buildMiniStepIndicator(context, ref, steps, progress),
+                        _buildMiniStepIndicator(context, ref, allChildren, progress),
                       ],
                     ],
                   ),
                 ),
                 // Next step button or completion checkmark
-                _buildTrailingWidget(context, ref, nextStep, isCompleted),
+                _buildTrailingWidget(context, ref, currentChild, isCompleted),
               ],
             ),
           ),
@@ -191,20 +190,20 @@ class StackHabitTile extends ConsumerWidget {
   Widget _buildMiniStepIndicator(
     BuildContext context,
     WidgetRef ref,
-    List<Habit> steps,
+    List<Habit> children,
     StackProgress progress,
   ) {
     final colors = ref.watchColors;
     final maxStepsToShow = 5;
-    final stepsToShow = steps.take(maxStepsToShow).toList();
+    final stepsToShow = children.take(maxStepsToShow).toList();
 
     return Row(
       children: [
         ...stepsToShow.asMap().entries.map((entry) {
           final index = entry.key;
-          final step = entry.value;
-          final isCompleted = isHabitCompletedToday(step);
-          final isCurrent = index == progress.completed && !isCompleted;
+          final child = entry.value;
+          final isCompleted = index < progress.completed;
+          final isCurrent = index == progress.currentIndex;
 
           return Container(
             margin: const EdgeInsets.only(right: 4),
@@ -225,10 +224,10 @@ class StackHabitTile extends ConsumerWidget {
             ),
           );
         }).toList(),
-        if (steps.length > maxStepsToShow) ...[
+        if (children.length > maxStepsToShow) ...[
           const SizedBox(width: 4),
           Text(
-            '+${steps.length - maxStepsToShow}',
+            '+${children.length - maxStepsToShow}',
             style: TextStyle(
               fontSize: 10,
               color: colors.draculaComment,
@@ -241,7 +240,7 @@ class StackHabitTile extends ConsumerWidget {
   }
 
   String _buildSubtitleText(
-      StackProgress progress, Habit? nextStep, bool isCompleted) {
+      StackProgress progress, Habit? currentChild, bool isCompleted) {
     if (isCompleted) {
       return 'Stack Complete! ✅ +1 XP Bonus';
     }
@@ -250,8 +249,8 @@ class StackHabitTile extends ConsumerWidget {
       return 'Empty stack - add some habits';
     }
 
-    if (nextStep != null) {
-      return 'Next: ${nextStep.displayName}';
+    if (currentChild != null) {
+      return 'Next: ${currentChild.name}';
     }
 
     return 'Stack · ${progress.completed}/${progress.total} steps';
@@ -260,7 +259,7 @@ class StackHabitTile extends ConsumerWidget {
   Widget _buildTrailingWidget(
     BuildContext context,
     WidgetRef ref,
-    Habit? nextStep,
+    Habit? currentChild,
     bool isCompleted,
   ) {
     final colors = ref.watchColors;
@@ -288,7 +287,7 @@ class StackHabitTile extends ConsumerWidget {
       );
     }
 
-    if (nextStep == null) {
+    if (currentChild == null) {
       return Container(
         width: 40,
         height: 40,
@@ -309,7 +308,7 @@ class StackHabitTile extends ConsumerWidget {
     }
 
     return GestureDetector(
-      onTap: () => _completeNextStep(context, ref, nextStep),
+      onTap: () => _completeCurrentChild(context, ref),
       child: Container(
         width: 40,
         height: 40,
@@ -337,10 +336,9 @@ class StackHabitTile extends ConsumerWidget {
     );
   }
 
-  Future<void> _completeNextStep(
-      BuildContext context, WidgetRef ref, Habit nextStep) async {
+  Future<void> _completeCurrentChild(BuildContext context, WidgetRef ref) async {
     final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
-    final result = await habitsNotifier.completeHabit(nextStep.id);
+    final result = await habitsNotifier.completeStackChild(habit.id);
     final colors = ref.watchColors;
 
     if (result != null) {
@@ -354,15 +352,17 @@ class StackHabitTile extends ConsumerWidget {
       );
     } else {
       // Check if stack is now complete for bonus XP
-      final stackService = StackService();
-      final isNowComplete = stackService.isStackCompleted(habit, allHabits);
+      final stackProgressService = StackProgressService();
+      final isNowComplete = stackProgressService.isStackComplete(habit, allHabits);
+      final currentChild = stackProgressService.getCurrentChild(habit, allHabits);
+      
       final xpText = isNowComplete
-          ? '+${nextStep.calculateXPReward()} XP + 1 XP Stack Bonus!'
-          : '+${nextStep.calculateXPReward()} XP';
+          ? '+${currentChild?.calculateXPReward() ?? 20} XP + 1 XP Stack Bonus!'
+          : '+${currentChild?.calculateXPReward() ?? 20} XP';
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('${nextStep.name} completed! $xpText'),
+          content: Text('Stack step completed! $xpText'),
           backgroundColor: colors.success,
           behavior: SnackBarBehavior.floating,
           duration: const Duration(seconds: 3),

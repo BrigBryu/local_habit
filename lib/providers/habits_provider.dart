@@ -8,6 +8,7 @@ import 'package:logger/logger.dart';
 import '../core/repositories/habits_repository.dart';
 import '../core/repositories/simple_memory_repository.dart';
 import '../core/network/partner_service.dart';
+import '../core/services/stack_progress_service.dart';
 import '../screens/partner_settings_screen.dart';
 import 'repository_init_provider.dart';
 
@@ -278,27 +279,61 @@ class HabitsNotifier extends StateNotifier<AsyncValue<void>> {
     }
   }
 
-  // Stack-related methods (adapted from original)
+  // Stack-related methods (new architecture)
   Future<String?> addStack(
-      String name, String description, List<String> stepIds) async {
+      String name, String description, List<String> childIds) async {
     try {
       final habitsAsync = _ref.read(ownHabitsProvider);
       if (habitsAsync.value == null) return 'Failed to load habits';
 
-      final stack = _stackService.createStack(
+      // Validate stack creation using StackProgressService
+      final stackProgressService = StackProgressService();
+      final validationError = stackProgressService.validateStackCreation(childIds, habitsAsync.value!);
+      if (validationError != null) {
+        return validationError;
+      }
+
+      // Create stack using new architecture
+      final stack = Habit.create(
         name: name,
         description: description,
-        stepIds: stepIds,
-        allHabits: habitsAsync.value!,
+        type: HabitType.stack,
+        stackChildIds: List.from(childIds),
+        currentChildIndex: 0,
       );
 
       await addHabit(stack);
 
-      // Update step habits to reference the stack
-      final updatedSteps = _stackService.assignStepsToStack(
-          stack.id, stepIds, habitsAsync.value!);
-      for (final step in updatedSteps) {
-        await updateHabit(step);
+      // Update child habits to reference the stack with parentStackId
+      for (final childId in childIds) {
+        final child = habitsAsync.value!.firstWhere((h) => h.id == childId);
+        final updatedChild = Habit(
+          id: child.id,
+          name: child.name,
+          description: child.description,
+          type: child.type,
+          stackedOnHabitId: child.stackedOnHabitId,
+          bundleChildIds: child.bundleChildIds,
+          parentBundleId: child.parentBundleId,
+          parentStackId: stack.id, // Set parent stack reference
+          stackChildIds: child.stackChildIds,
+          currentChildIndex: child.currentChildIndex,
+          timeoutMinutes: child.timeoutMinutes,
+          availableDays: child.availableDays,
+          createdAt: child.createdAt,
+          lastCompleted: child.lastCompleted,
+          lastAlarmTriggered: child.lastAlarmTriggered,
+          sessionStartTime: child.sessionStartTime,
+          lastSessionStarted: child.lastSessionStarted,
+          sessionCompletedToday: child.sessionCompletedToday,
+          dailyCompletionCount: child.dailyCompletionCount,
+          lastCompletionCountReset: child.lastCompletionCountReset,
+          dailyFailureCount: child.dailyFailureCount,
+          lastFailureCountReset: child.lastFailureCountReset,
+          avoidanceSuccessToday: child.avoidanceSuccessToday,
+          currentStreak: child.currentStreak,
+        );
+        await updateHabit(updatedChild);
       }
 
       return null; // Success
@@ -399,6 +434,9 @@ class HabitsNotifier extends StateNotifier<AsyncValue<void>> {
       stackedOnHabitId: habit.stackedOnHabitId,
       bundleChildIds: habit.bundleChildIds,
       parentBundleId: habit.parentBundleId,
+      parentStackId: habit.parentStackId,
+      stackChildIds: habit.stackChildIds,
+      currentChildIndex: habit.currentChildIndex,
       timeoutMinutes: habit.timeoutMinutes,
       availableDays: habit.availableDays,
       createdAt: habit.createdAt,
@@ -506,6 +544,9 @@ class HabitsNotifier extends StateNotifier<AsyncValue<void>> {
         stackedOnHabitId: habitToAdd.stackedOnHabitId,
         bundleChildIds: habitToAdd.bundleChildIds,
         parentBundleId: bundleId,
+        parentStackId: habitToAdd.parentStackId,
+        stackChildIds: habitToAdd.stackChildIds,
+        currentChildIndex: habitToAdd.currentChildIndex,
         timeoutMinutes: habitToAdd.timeoutMinutes,
         availableDays: habitToAdd.availableDays,
         createdAt: habitToAdd.createdAt,
@@ -535,6 +576,95 @@ class HabitsNotifier extends StateNotifier<AsyncValue<void>> {
     } catch (e, stackTrace) {
       state = AsyncValue.error(e, stackTrace);
       return 'Failed to add habit to bundle: $e';
+    }
+  }
+
+  /// Complete the current stack child and advance to next step
+  Future<String?> completeStackChild(String stackId) async {
+    state = const AsyncValue.loading();
+    try {
+      final habitsAsync = _ref.read(ownHabitsProvider);
+      if (habitsAsync.value == null) {
+        return 'Failed to load habits';
+      }
+
+      final allHabits = habitsAsync.value!;
+      final stack = allHabits.firstWhere(
+        (h) => h.id == stackId,
+        orElse: () => throw Exception('Stack not found'),
+      );
+
+      if (stack.type != HabitType.stack) {
+        return 'Not a stack habit';
+      }
+
+      final stackProgressService = StackProgressService();
+      final currentChild = stackProgressService.getCurrentChild(stack, allHabits);
+      
+      if (currentChild == null) {
+        return 'No current child to complete';
+      }
+
+      // Complete the current child habit first
+      final childCompletionResult = await completeHabit(currentChild.id);
+      if (childCompletionResult != null) {
+        return childCompletionResult; // Child completion failed
+      }
+
+      // Get updated habits list after child completion
+      final updatedHabitsAsync = _ref.read(ownHabitsProvider);
+      if (updatedHabitsAsync.value == null) {
+        return 'Failed to reload habits after child completion';
+      }
+      final updatedAllHabits = updatedHabitsAsync.value!;
+      final updatedStack = updatedAllHabits.firstWhere((h) => h.id == stackId);
+
+      // Advance to next child
+      final newIndex = updatedStack.currentChildIndex + 1;
+      final isStackComplete = newIndex >= (updatedStack.stackChildIds?.length ?? 0);
+      
+      // Award bonus XP if stack is complete
+      if (isStackComplete) {
+        // TODO: Award +1 XP bonus through level service
+        _logger.i('Stack completed! Awarding +1 XP bonus');
+      }
+
+      // Update stack with new index (reset to 0 if complete for next day)
+      final updatedStackWithIndex = Habit(
+        id: updatedStack.id,
+        name: updatedStack.name,
+        description: updatedStack.description,
+        type: updatedStack.type,
+        stackedOnHabitId: updatedStack.stackedOnHabitId,
+        bundleChildIds: updatedStack.bundleChildIds,
+        parentBundleId: updatedStack.parentBundleId,
+        parentStackId: updatedStack.parentStackId,
+        stackChildIds: updatedStack.stackChildIds,
+        currentChildIndex: isStackComplete ? 0 : newIndex, // Reset or advance
+        timeoutMinutes: updatedStack.timeoutMinutes,
+        availableDays: updatedStack.availableDays,
+        createdAt: updatedStack.createdAt,
+        lastCompleted: isStackComplete ? DateTime.now() : updatedStack.lastCompleted,
+        lastAlarmTriggered: updatedStack.lastAlarmTriggered,
+        sessionStartTime: updatedStack.sessionStartTime,
+        lastSessionStarted: updatedStack.lastSessionStarted,
+        sessionCompletedToday: updatedStack.sessionCompletedToday,
+        dailyCompletionCount: updatedStack.dailyCompletionCount,
+        lastCompletionCountReset: updatedStack.lastCompletionCountReset,
+        dailyFailureCount: updatedStack.dailyFailureCount,
+        lastFailureCountReset: updatedStack.lastFailureCountReset,
+        avoidanceSuccessToday: updatedStack.avoidanceSuccessToday,
+        currentStreak: updatedStack.currentStreak,
+      );
+
+      await updateHabit(updatedStackWithIndex);
+
+      state = const AsyncValue.data(null);
+      _logger.i('Stack child completed and index advanced for stack ${stack.name}');
+      return null; // Success
+    } catch (e, stackTrace) {
+      state = AsyncValue.error(e, stackTrace);
+      return 'Failed to complete stack child: $e';
     }
   }
 }

@@ -32,7 +32,7 @@ class _AddStackHabitScreenState
       }
 
       // Don't allow habits already in bundles or stacks
-      if (habit.parentBundleId != null || habit.stackedOnHabitId != null) {
+      if (habit.parentBundleId != null || habit.stackedOnHabitId != null || habit.parentStackId != null) {
         return false;
       }
 
@@ -478,16 +478,11 @@ class _AddStackHabitScreenState
     final description = descriptionController.text.trim();
     final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
 
-    // Create the stack with child IDs
-    final stackHabit = Habit.create(
-      name: name,
-      description: description,
-      type: HabitType.stack,
-      stackChildIds: List.from(_selectedHabitIds),
-      currentChildIndex: 0,
-    );
-
-    await habitsNotifier.addHabit(stackHabit);
+    // Use addStack method to properly handle child habit updates
+    final error = await habitsNotifier.addStack(name, description, _selectedHabitIds);
+    if (error != null) {
+      throw Exception(error);
+    }
   }
 
   @override

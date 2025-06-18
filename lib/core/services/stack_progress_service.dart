@@ -14,6 +14,12 @@ class StackProgressService {
 
   /// Complete the current active child in a stack
   /// Returns result with updated stack and completion info
+  Future<StackCompletionResult?> completeCurrent(String stackId) async {
+    return null; // To be implemented by calling code
+  }
+
+  /// Complete the current active child in a stack
+  /// Returns result with updated stack and completion info
   Future<StackCompletionResult?> completeStackChild(
     String stackId,
     List<Habit> allHabits,
@@ -129,10 +135,11 @@ class StackProgressService {
     }
 
     final currentChildId = childIds[stack.currentChildIndex];
-    return allHabits.firstWhere(
-      (h) => h.id == currentChildId,
-      orElse: () => throw Exception('Stack child not found: $currentChildId'),
-    );
+    try {
+      return allHabits.firstWhere((h) => h.id == currentChildId);
+    } catch (e) {
+      return null; // Child not found in allHabits
+    }
   }
 
   /// Get all child habits in stack order
@@ -239,6 +246,10 @@ class StackProgressService {
 
       if (child.stackedOnHabitId != null) {
         return 'Habit ${child.name} is already in another stack (legacy)';
+      }
+
+      if (child.parentStackId != null) {
+        return 'Habit ${child.name} is already in another stack';
       }
 
       // Check if already in another stack (new architecture)

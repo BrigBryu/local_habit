@@ -11,6 +11,9 @@ class SupabaseHabitDto {
   final String? stackedOnHabitId;
   final List<String>? bundleChildIds;
   final String? parentBundleId;
+  final String? parentStackId;
+  final List<String>? stackChildIds;
+  final int currentChildIndex;
   final int? timeoutMinutes;
   final List<int>? availableDays;
   final DateTime createdAt;
@@ -35,6 +38,9 @@ class SupabaseHabitDto {
     this.stackedOnHabitId,
     this.bundleChildIds,
     this.parentBundleId,
+    this.parentStackId,
+    this.stackChildIds,
+    this.currentChildIndex = 0,
     this.timeoutMinutes,
     this.availableDays,
     required this.createdAt,
@@ -64,6 +70,11 @@ class SupabaseHabitDto {
           ? List<String>.from(json['bundle_child_ids'] as List)
           : null,
       parentBundleId: json['parent_bundle_id'] as String?,
+      parentStackId: json['parent_stack_id'] as String?,
+      stackChildIds: json['stack_child_ids'] != null
+          ? List<String>.from(json['stack_child_ids'] as List)
+          : null,
+      currentChildIndex: json['current_child_index'] as int? ?? 0,
       timeoutMinutes: json['timeout_minutes'] as int? ?? 30,
       availableDays: json['available_days'] != null
           ? List<int>.from(json['available_days'] as List)
@@ -118,6 +129,9 @@ class SupabaseHabitDto {
       'stacked_on_habit_id': stackedOnHabitId,
       'bundle_child_ids': bundleChildIds,
       'parent_bundle_id': parentBundleId,
+      'parent_stack_id': parentStackId,
+      'stack_child_ids': stackChildIds,
+      'current_child_index': currentChildIndex,
       'created_at': createdAt.toIso8601String(),
       'updated_at': DateTime.now().toIso8601String(),
       'last_completed': lastCompleted?.toIso8601String(),
@@ -153,6 +167,9 @@ class SupabaseHabitDto {
       stackedOnHabitId: stackedOnHabitId,
       bundleChildIds: bundleChildIds,
       parentBundleId: parentBundleId,
+      parentStackId: parentStackId,
+      stackChildIds: stackChildIds,
+      currentChildIndex: currentChildIndex,
       timeoutMinutes: timeoutMinutes,
       availableDays: availableDays,
       createdAt: createdAt,
@@ -181,6 +198,9 @@ class SupabaseHabitDto {
       stackedOnHabitId: habit.stackedOnHabitId,
       bundleChildIds: habit.bundleChildIds,
       parentBundleId: habit.parentBundleId,
+      parentStackId: habit.parentStackId,
+      stackChildIds: habit.stackChildIds,
+      currentChildIndex: habit.currentChildIndex,
       timeoutMinutes: habit.timeoutMinutes,
       availableDays: habit.availableDays,
       createdAt: habit.createdAt,
