@@ -20,7 +20,8 @@ class RealtimeService {
   RealtimeChannel? _completionsChannel;
 
   // Stream controllers for realtime updates with sync option to prevent buffering
-  final _habitsUpdateController = StreamController<List<Habit>>.broadcast(sync: true);
+  final _habitsUpdateController =
+      StreamController<List<Habit>>.broadcast(sync: true);
   final _completionsUpdateController =
       StreamController<Map<String, dynamic>>.broadcast(sync: true);
 
@@ -183,8 +184,8 @@ class RealtimeService {
   void _onCompletionsChange(PostgresChangePayload payload) {
     try {
       if (kDebugMode) {
-        _logger
-            .i('REALTIME COMPLETIONS: ${payload.eventType} on ${payload.table}');
+        _logger.i(
+            'REALTIME COMPLETIONS: ${payload.eventType} on ${payload.table}');
         _logger.i('PAYLOAD NEW: ${payload.newRecord}');
         _logger.i('PAYLOAD OLD: ${payload.oldRecord}');
       }

@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:domain/domain.dart';
-import 'package:data_local/repositories/stack_service.dart';
+import '../../../providers/habits_provider.dart';
 import '../../../core/theme/flexible_theme_system.dart';
-import 'stack_order_view.dart';
+import '../../../core/services/stack_progress_service.dart';
 
-/// Detailed information screen for habit stacks
-class StackInfoScreen extends ConsumerWidget {
+class StackInfoScreen extends ConsumerStatefulWidget {
   final Habit stack;
   final List<Habit> allHabits;
 
@@ -17,253 +16,423 @@ class StackInfoScreen extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final stackService = StackService();
+  ConsumerState<StackInfoScreen> createState() => _StackInfoScreenState();
+}
+
+class _StackInfoScreenState extends ConsumerState<StackInfoScreen> {
+  final _stackService = StackProgressService();
+
+  @override
+  Widget build(BuildContext context) {
+    final habitsAsync = ref.watch(habitsProvider);
+    final currentStack =
+        habitsAsync.value?.firstWhere((h) => h.id == widget.stack.id) ??
+            widget.stack;
+    final progress =
+        _stackService.getStackProgress(currentStack, widget.allHabits);
+    final isCompleted =
+        _stackService.isStackComplete(currentStack, widget.allHabits);
+    final children =
+        _stackService.getStackChildren(currentStack, widget.allHabits);
+    final currentChild =
+        _stackService.getCurrentChild(currentStack, widget.allHabits);
     final colors = ref.watchColors;
-    final progress = stackService.getStackProgress(stack, allHabits);
-    final steps = stackService.getStackSteps(stack, allHabits);
-    final isCompleted = stackService.isStackCompleted(stack, allHabits);
 
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         title: Text(
-          stack.name,
-          style: TextStyle(color: colors.stackHabit),
+          widget.stack.name,
+          style: TextStyle(color: colors.draculaForeground),
         ),
         backgroundColor: colors.draculaCurrentLine,
-        foregroundColor: colors.stackHabit,
-        elevation: 0,
+        iconTheme: IconThemeData(color: colors.draculaForeground),
         actions: [
-          if (steps.isNotEmpty)
-            IconButton(
-              onPressed: () => _navigateToOrderView(context),
-              icon: Icon(Icons.reorder, color: colors.stackHabit),
-              tooltip: 'Reorder Steps',
-            ),
+          IconButton(
+            icon: Icon(Icons.edit, color: colors.draculaPink),
+            onPressed: () => _showEditDialog(),
+            tooltip: 'Edit Stack',
+          ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildStackOverview(colors, progress, isCompleted),
-            const SizedBox(height: 24),
-            _buildStepsSection(context, ref, steps, colors, stackService),
-          ],
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              colors.draculaBackground,
+              colors.draculaCurrentLine.withOpacity(0.5),
+            ],
+          ),
+        ),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildStackHeader(currentStack, progress, isCompleted, colors),
+              const SizedBox(height: 24),
+              _buildProgressSection(
+                  progress, isCompleted, currentChild, colors),
+              const SizedBox(height: 24),
+              _buildChildrenSection(children, currentStack, colors),
+              if (children.isEmpty) ...[
+                const SizedBox(height: 24),
+                _buildEmptyState(colors),
+              ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildStackOverview(
-      FlexibleColors colors, StackProgress progress, bool isCompleted) {
+  Widget _buildStackHeader(Habit stack, StackProgress progress,
+      bool isCompleted, FlexibleColors colors) {
     return Container(
-      width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
         gradient: LinearGradient(
           colors: [
-            colors.stackHabit.withOpacity(0.15),
-            colors.stackHabit.withOpacity(0.08),
+            isCompleted
+                ? colors.draculaGreen.withOpacity(0.15)
+                : colors.stackHabit.withOpacity(0.1),
+            isCompleted
+                ? colors.draculaGreen.withOpacity(0.08)
+                : colors.stackHabit.withOpacity(0.05),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: colors.stackHabit.withOpacity(0.3),
+          color: isCompleted ? colors.draculaGreen : colors.stackHabit,
           width: 2,
         ),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            isCompleted ? Icons.military_tech : Icons.layers,
-            size: 48,
-            color: isCompleted ? colors.success : colors.stackHabit,
-          ),
-          const SizedBox(height: 12),
-          Text(
-            stack.name,
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: colors.stackHabit,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          if (stack.description.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Text(
-              stack.description,
-              style: TextStyle(
-                fontSize: 16,
-                color: colors.draculaCyan,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-          const SizedBox(height: 16),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildStatCard(
-                'Steps',
-                '${progress.total}',
-                Icons.format_list_numbered,
-                colors.draculaPurple,
-                colors,
-              ),
-              _buildStatCard(
-                'Completed',
-                '${progress.completed}',
-                Icons.check_circle,
-                colors.success,
-                colors,
-              ),
-              _buildStatCard(
-                'Remaining',
-                '${progress.total - progress.completed}',
-                Icons.pending_actions,
-                colors.warning,
-                colors,
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Container(
-            width: double.infinity,
-            height: 8,
-            decoration: BoxDecoration(
-              color: colors.draculaComment.withOpacity(0.3),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: FractionallySizedBox(
-              alignment: Alignment.centerLeft,
-              widthFactor: progress.total > 0
-                  ? progress.completed / progress.total
-                  : 0.0,
-              child: Container(
+              Container(
+                width: 60,
+                height: 60,
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      colors.stackHabit,
-                      colors.stackHabit.withOpacity(0.8)
-                    ],
+                  color: colors.stackHabit.withOpacity(0.15),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: colors.stackHabit.withOpacity(0.3),
+                    width: 2,
                   ),
-                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Icon(
+                  Icons.layers,
+                  color: colors.stackHabit,
+                  size: 32,
                 ),
               ),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            isCompleted
-                ? 'Stack Complete! 🎉'
-                : '${((progress.completed / (progress.total > 0 ? progress.total : 1)) * 100).round()}% Complete',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: isCompleted ? colors.success : colors.stackHabit,
-            ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      stack.name,
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: isCompleted
+                            ? colors.draculaGreen
+                            : colors.draculaPurple,
+                        decoration:
+                            isCompleted ? TextDecoration.lineThrough : null,
+                      ),
+                    ),
+                    if (stack.description.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        stack.description,
+                        style: TextStyle(
+                          color: colors.draculaCyan,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 8),
+                    Text(
+                      _stackService.getStackStatus(stack, widget.allHabits),
+                      style: TextStyle(
+                        color: isCompleted
+                            ? colors.draculaGreen
+                            : colors.stackHabit,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildStatCard(String label, String value, IconData icon, Color color,
-      FlexibleColors colors) {
+  Widget _buildProgressSection(StackProgress progress, bool isCompleted,
+      Habit? currentChild, FlexibleColors colors) {
+    final progressPercent =
+        progress.total > 0 ? progress.completed / progress.total : 0.0;
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
+        color: colors.draculaCurrentLine.withOpacity(0.3),
         border: Border.all(
-          color: color.withOpacity(0.3),
+          color: colors.draculaComment.withOpacity(0.3),
           width: 1,
         ),
       ),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: color, size: 20),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Progress',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: colors.draculaPurple,
+                ),
+              ),
+              Text(
+                '${progress.completed}/${progress.total}',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: colors.stackHabit,
+                ),
+              ),
+            ],
           ),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              color: colors.draculaComment,
+          const SizedBox(height: 16),
+          LinearProgressIndicator(
+            value: progressPercent,
+            backgroundColor: colors.draculaComment.withOpacity(0.3),
+            valueColor: AlwaysStoppedAnimation(
+              isCompleted ? colors.draculaGreen : colors.stackHabit,
             ),
+            minHeight: 8,
           ),
+          if (currentChild != null && !isCompleted) ...[
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                color: colors.stackHabit.withOpacity(0.1),
+                border: Border.all(
+                  color: colors.stackHabit.withOpacity(0.3),
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.play_arrow,
+                    color: colors.stackHabit,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Current: ${currentChild.name}',
+                      style: TextStyle(
+                        color: colors.stackHabit,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () => _completeCurrentChild(currentChild),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: colors.stackHabit,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text('Complete'),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );
   }
 
-  Widget _buildStepsSection(BuildContext context, WidgetRef ref,
-      List<Habit> steps, FlexibleColors colors, StackService stackService) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Icon(Icons.format_list_numbered,
-                color: colors.stackHabit, size: 20),
-            const SizedBox(width: 8),
-            Text(
-              'Steps (${steps.length})',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: colors.stackHabit,
-              ),
+  Widget _buildChildrenSection(
+      List<Habit> children, Habit stack, FlexibleColors colors) {
+    if (children.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        color: colors.draculaCurrentLine.withOpacity(0.3),
+        border: Border.all(
+          color: colors.draculaComment.withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Stack Steps',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: colors.draculaPurple,
+                  ),
+                ),
+                Text(
+                  '${children.length} steps',
+                  style: TextStyle(
+                    color: colors.draculaComment,
+                    fontSize: 14,
+                  ),
+                ),
+              ],
             ),
-            const Spacer(),
-            if (steps.isNotEmpty)
-              TextButton.icon(
-                onPressed: () => _navigateToOrderView(context),
-                icon: Icon(Icons.reorder, size: 16, color: colors.draculaPink),
-                label: Text(
-                  'Reorder',
-                  style: TextStyle(color: colors.draculaPink),
+          ),
+          ...children.asMap().entries.map((entry) {
+            final index = entry.key;
+            final child = entry.value;
+            final isCompleted = isHabitCompletedToday(child);
+            final isCurrent = index == stack.currentChildIndex;
+            final isPastCurrent = index < stack.currentChildIndex;
+
+            return Container(
+              margin: const EdgeInsets.only(bottom: 1),
+              decoration: BoxDecoration(
+                color: isCurrent
+                    ? colors.stackHabit.withOpacity(0.1)
+                    : isPastCurrent
+                        ? colors.draculaGreen.withOpacity(0.05)
+                        : colors.draculaCurrentLine.withOpacity(0.05),
+                border: Border(
+                  left: BorderSide(
+                    color: isCurrent
+                        ? colors.stackHabit
+                        : isPastCurrent
+                            ? colors.draculaGreen
+                            : colors.draculaComment.withOpacity(0.3),
+                    width: 4,
+                  ),
+                  bottom: index < children.length - 1
+                      ? BorderSide(
+                          color: colors.draculaComment.withOpacity(0.1),
+                          width: 0.5,
+                        )
+                      : BorderSide.none,
                 ),
               ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        if (steps.isEmpty)
-          _buildEmptySteps(colors)
-        else
-          ...steps.asMap().entries.map((entry) {
-            final index = entry.key;
-            final step = entry.value;
-            return _buildStepCard(step, index, colors, stackService);
+              child: ListTile(
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                leading: Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: isCompleted
+                        ? colors.draculaGreen
+                        : isCurrent
+                            ? colors.stackHabit
+                            : colors.draculaComment.withOpacity(0.3),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: isCompleted
+                        ? const Icon(Icons.check, color: Colors.white, size: 18)
+                        : Text(
+                            '${index + 1}',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          ),
+                  ),
+                ),
+                title: Text(
+                  child.name,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: isCompleted
+                        ? colors.draculaGreen
+                        : isCurrent
+                            ? colors.stackHabit
+                            : colors.draculaPurple,
+                    decoration: isCompleted ? TextDecoration.lineThrough : null,
+                  ),
+                ),
+                subtitle: child.description.isNotEmpty
+                    ? Text(
+                        child.description,
+                        style: TextStyle(
+                          color: colors.draculaCyan,
+                          fontSize: 12,
+                        ),
+                      )
+                    : null,
+                trailing: isCurrent && !isCompleted
+                    ? IconButton(
+                        onPressed: () => _completeCurrentChild(child),
+                        icon: Icon(
+                          Icons.play_circle_filled,
+                          color: colors.stackHabit,
+                          size: 28,
+                        ),
+                        tooltip: 'Complete this step',
+                      )
+                    : isCompleted
+                        ? Icon(
+                            Icons.check_circle,
+                            color: colors.draculaGreen,
+                            size: 24,
+                          )
+                        : Icon(
+                            Icons.radio_button_unchecked,
+                            color: colors.draculaComment,
+                            size: 24,
+                          ),
+              ),
+            );
           }),
-      ],
+        ],
+      ),
     );
   }
 
-  Widget _buildEmptySteps(FlexibleColors colors) {
+  Widget _buildEmptyState(FlexibleColors colors) {
     return Container(
-      width: double.infinity,
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
-        color: colors.draculaComment.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
+        color: colors.draculaCurrentLine.withOpacity(0.3),
         border: Border.all(
-          color: colors.draculaComment.withOpacity(0.2),
+          color: colors.draculaComment.withOpacity(0.3),
           width: 1,
         ),
       ),
@@ -271,24 +440,35 @@ class StackInfoScreen extends ConsumerWidget {
         children: [
           Icon(
             Icons.layers_clear,
-            size: 48,
             color: colors.draculaComment,
+            size: 64,
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           Text(
-            'No Steps Yet',
+            'Empty Stack',
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 20,
               fontWeight: FontWeight.bold,
               color: colors.draculaComment,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 8),
           Text(
-            'Add some habits to create your stack',
+            'This stack has no steps yet. Add some habits to get started!',
+            textAlign: TextAlign.center,
             style: TextStyle(
+              color: colors.draculaComment,
               fontSize: 14,
-              color: colors.draculaComment.withOpacity(0.7),
+            ),
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton.icon(
+            onPressed: _showEditDialog,
+            icon: const Icon(Icons.add),
+            label: const Text('Add Steps'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: colors.stackHabit,
+              foregroundColor: Colors.white,
             ),
           ),
         ],
@@ -296,187 +476,79 @@ class StackInfoScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildStepCard(
-      Habit step, int index, FlexibleColors colors, StackService stackService) {
-    final isCompleted = _isHabitCompletedToday(step);
-    final nextStep = stackService.getNextIncompleteStep(stack, allHabits);
-    final isNext = nextStep?.id == step.id;
+  Future<void> _completeCurrentChild(Habit child) async {
+    final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
+    final result = await habitsNotifier.completeHabit(child.id);
+    final colors = ref.read(flexibleColorsProvider);
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: isNext
-              ? [
-                  colors.stackHabit.withOpacity(0.2),
-                  colors.stackHabit.withOpacity(0.1)
-                ]
-              : isCompleted
-                  ? [
-                      colors.success.withOpacity(0.2),
-                      colors.success.withOpacity(0.1)
-                    ]
-                  : [
-                      colors.draculaComment.withOpacity(0.1),
-                      colors.draculaComment.withOpacity(0.05)
-                    ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+    if (result != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result),
+          backgroundColor: colors.error,
+          behavior: SnackBarBehavior.floating,
         ),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isNext
-              ? colors.stackHabit.withOpacity(0.4)
-              : isCompleted
-                  ? colors.success.withOpacity(0.4)
-                  : colors.draculaComment.withOpacity(0.3),
-          width: isNext ? 2 : 1,
+      );
+    } else {
+      // Check if stack is now complete for bonus XP
+      final isNowComplete =
+          _stackService.isStackComplete(widget.stack, widget.allHabits);
+      final xpText = isNowComplete
+          ? '+${child.calculateXPReward()} XP + 1 XP Stack Bonus!'
+          : '+${child.calculateXPReward()} XP';
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${child.name} completed! $xpText'),
+          backgroundColor: colors.success,
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 3),
         ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
+      );
+    }
+  }
+
+  void _showEditDialog() {
+    final colors = ref.read(flexibleColorsProvider);
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: colors.draculaCurrentLine,
+        title: Row(
           children: [
-            // Step number
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: isNext
-                      ? [
-                          colors.stackHabit.withOpacity(0.3),
-                          colors.stackHabit.withOpacity(0.2)
-                        ]
-                      : isCompleted
-                          ? [
-                              colors.success.withOpacity(0.3),
-                              colors.success.withOpacity(0.2)
-                            ]
-                          : [
-                              colors.draculaComment.withOpacity(0.2),
-                              colors.draculaComment.withOpacity(0.1)
-                            ],
-                ),
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: isNext
-                      ? colors.stackHabit.withOpacity(0.5)
-                      : isCompleted
-                          ? colors.success.withOpacity(0.5)
-                          : colors.draculaComment.withOpacity(0.3),
-                  width: 2,
-                ),
-              ),
-              child: Center(
-                child: Text(
-                  '${index + 1}',
-                  style: TextStyle(
-                    color: isNext
-                        ? colors.stackHabit
-                        : isCompleted
-                            ? colors.success
-                            : colors.draculaComment,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 16),
-            // Step details
+            Icon(Icons.edit, color: colors.draculaPink),
+            const SizedBox(width: 8),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          step.name,
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: isNext
-                                ? colors.stackHabit
-                                : isCompleted
-                                    ? colors.success
-                                    : colors.draculaPurple,
-                            decoration:
-                                isCompleted ? TextDecoration.lineThrough : null,
-                          ),
-                        ),
-                      ),
-                      if (isNext)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: colors.stackHabit.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            'Next',
-                            style: TextStyle(
-                              color: colors.stackHabit,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                  if (step.description.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      step.description,
-                      style: TextStyle(
-                        color: colors.draculaCyan,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ],
+              child: Text(
+                'Edit Stack',
+                style: TextStyle(color: colors.draculaPurple),
               ),
-            ),
-            const SizedBox(width: 16),
-            // Status icon
-            Icon(
-              isCompleted
-                  ? Icons.check_circle
-                  : isNext
-                      ? Icons.play_circle_outline
-                      : Icons.radio_button_unchecked,
-              color: isCompleted
-                  ? colors.success
-                  : isNext
-                      ? colors.stackHabit
-                      : colors.draculaComment,
-              size: 24,
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  void _navigateToOrderView(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => StackOrderView(
-          stack: stack,
-          allHabits: allHabits,
+        content: Text(
+          'Stack editing is not yet implemented. You can delete and recreate the stack if needed.',
+          style: TextStyle(color: colors.draculaCyan),
         ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('OK', style: TextStyle(color: colors.draculaComment)),
+          ),
+        ],
       ),
     );
   }
+}
 
-  bool _isHabitCompletedToday(Habit habit) {
-    if (habit.lastCompleted == null) return false;
-    final now = DateTime.now();
-    final lastCompleted = habit.lastCompleted!;
-    return now.year == lastCompleted.year &&
-        now.month == lastCompleted.month &&
-        now.day == lastCompleted.day;
-  }
+/// Helper function to check if habit was completed today
+bool isHabitCompletedToday(Habit habit) {
+  if (habit.lastCompleted == null) return false;
+
+  final now = DateTime.now();
+  final lastCompleted = habit.lastCompleted!;
+  return now.year == lastCompleted.year &&
+      now.month == lastCompleted.month &&
+      now.day == lastCompleted.day;
 }

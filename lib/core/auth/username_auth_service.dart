@@ -127,7 +127,8 @@ class UsernameAuthService {
       // Set user data
       _currentUserId = userData['id'];
       _currentUsername = userData['username'];
-      _logger.i('[signIn] Set user data - ID: $_currentUserId, username: $_currentUsername');
+      _logger.i(
+          '[signIn] Set user data - ID: $_currentUserId, username: $_currentUsername');
 
       // Persist to storage
       await _saveCurrentUser();
@@ -177,7 +178,8 @@ class UsernameAuthService {
   /// Check if user is authenticated
   bool get isAuthenticated {
     final result = _currentUserId != null && _currentUsername != null;
-    _logger.d('[isAuthenticated] userID: $_currentUserId, username: $_currentUsername → $result');
+    _logger.d(
+        '[isAuthenticated] userID: $_currentUserId, username: $_currentUsername → $result');
     return result;
   }
 

@@ -16,7 +16,7 @@ void main() async {
   await dotenv.load(fileName: envFile);
 
   debugPrint('App Startup Completed - launching UI');
-  
+
   // Launch app immediately, initialize services in background
   runApp(const ProviderScope(child: HabitLevelUpApp()));
 
@@ -32,7 +32,7 @@ void _initializeServicesInBackground() async {
       .timeout(const Duration(seconds: 15))
       .then((_) {
     debugPrint('Supabase initialization completed');
-    
+
     // Check initial Supabase session
     final session = SupabaseClientService.instance.supabase.auth.currentSession;
     debugPrint('Initial Supabase session: $session');
@@ -78,8 +78,8 @@ void _initializeServicesInBackground() async {
 void _signInTestUser(String testUsername) async {
   try {
     // Try to sign in with test user
-    final result = await UsernameAuthService.instance
-        .signIn(testUsername, 'testpass123');
+    final result =
+        await UsernameAuthService.instance.signIn(testUsername, 'testpass123');
     if (result.isSuccess) {
       debugPrint('Test user auto-signed in successfully: $testUsername');
     } else {
@@ -91,8 +91,7 @@ void _signInTestUser(String testUsername) async {
       if (createResult.isSuccess) {
         debugPrint('Test user account created and signed in: $testUsername');
       } else {
-        debugPrint(
-            'Test user account creation failed: ${createResult.error}');
+        debugPrint('Test user account creation failed: ${createResult.error}');
       }
     }
   } catch (e) {

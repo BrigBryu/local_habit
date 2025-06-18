@@ -24,10 +24,14 @@ class Habit {
   final String name;
   final String description;
   final HabitType type;
-  final String? stackedOnHabitId; // For habit stacks
+  final String? stackedOnHabitId; // For habit stacks (legacy)
   final List<String>?
       bundleChildIds; // For bundle habits - list of child habit IDs
   final String? parentBundleId; // For habits that belong to a bundle
+  // New stack fields per spec
+  final List<String>?
+      stackChildIds; // For stack habits - ordered list of child habit IDs
+  final int currentChildIndex; // Current child index for stack progress
   // TODO(bridger): Time-based fields disabled temporarily due to TimeOfDay conflicts
   // final TimeOfDay? alarmTime; // For timed stacks (DISABLED)
   final int?
@@ -64,6 +68,8 @@ class Habit {
     this.stackedOnHabitId,
     this.bundleChildIds,
     this.parentBundleId,
+    this.stackChildIds,
+    this.currentChildIndex = 0,
     // TODO(bridger): TimeOfDay fields disabled
     // this.alarmTime,
     this.timeoutMinutes,
@@ -92,6 +98,8 @@ class Habit {
     String? stackedOnHabitId,
     List<String>? bundleChildIds,
     String? parentBundleId,
+    List<String>? stackChildIds,
+    int currentChildIndex = 0,
     // TODO(bridger): TimeOfDay parameters disabled
     // TimeOfDay? alarmTime,
     int? timeoutMinutes,
@@ -107,6 +115,8 @@ class Habit {
       stackedOnHabitId: stackedOnHabitId,
       bundleChildIds: bundleChildIds,
       parentBundleId: parentBundleId,
+      stackChildIds: stackChildIds,
+      currentChildIndex: currentChildIndex,
       // TODO(bridger): TimeOfDay fields disabled in factory
       // alarmTime: alarmTime,
       timeoutMinutes: timeoutMinutes,
@@ -167,6 +177,8 @@ class Habit {
       stackedOnHabitId: stackedOnHabitId,
       bundleChildIds: bundleChildIds,
       parentBundleId: parentBundleId,
+      stackChildIds: stackChildIds,
+      currentChildIndex: currentChildIndex,
       // TODO(bridger): TimeOfDay fields disabled in complete()
       // alarmTime: alarmTime,
       timeoutMinutes: timeoutMinutes,
@@ -228,6 +240,8 @@ class Habit {
       stackedOnHabitId: stackedOnHabitId,
       bundleChildIds: bundleChildIds,
       parentBundleId: parentBundleId,
+      stackChildIds: stackChildIds,
+      currentChildIndex: currentChildIndex,
       // TODO(bridger): TimeOfDay fields disabled in recordFailure()
       // alarmTime: alarmTime,
       timeoutMinutes: timeoutMinutes,
@@ -481,6 +495,8 @@ class Habit {
         'stackedOnHabitId': stackedOnHabitId,
         'bundleChildIds': bundleChildIds,
         'parentBundleId': parentBundleId,
+        'stackChildIds': stackChildIds,
+        'currentChildIndex': currentChildIndex,
         'timeoutMinutes': timeoutMinutes,
         'availableDays': availableDays,
         'createdAt': createdAt.toIso8601String(),
@@ -507,6 +523,9 @@ class Habit {
         bundleChildIds:
             (json['bundleChildIds'] as List<dynamic>?)?.cast<String>(),
         parentBundleId: json['parentBundleId'] as String?,
+        stackChildIds:
+            (json['stackChildIds'] as List<dynamic>?)?.cast<String>(),
+        currentChildIndex: json['currentChildIndex'] as int? ?? 0,
         timeoutMinutes: json['timeoutMinutes'] as int?,
         availableDays: (json['availableDays'] as List<dynamic>?)?.cast<int>(),
         createdAt: DateTime.parse(json['createdAt'] as String),

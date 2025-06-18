@@ -3,35 +3,29 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:domain/domain.dart';
 import 'package:data_local/repositories/stack_service.dart';
 import '../../../providers/habits_provider.dart';
-import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/flexible_theme_system.dart';
 import 'stack_info_screen.dart';
 
-/// Stack habit tile that shows only the current step in sequence like a basic habit
 class StackHabitTile extends ConsumerWidget {
   final Habit habit;
   final List<Habit> allHabits;
 
-  const StackHabitTile(
-      {super.key, required this.habit, required this.allHabits});
+  const StackHabitTile({
+    super.key,
+    required this.habit,
+    required this.allHabits,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final stackService = StackService();
     final progress = stackService.getStackProgress(habit, allHabits);
     final isCompleted = stackService.isStackCompleted(habit, allHabits);
+    final nextStep = stackService.getNextIncompleteStep(habit, allHabits);
     final steps = stackService.getStackSteps(habit, allHabits);
     final progressPercentage =
         stackService.getStackProgressPercentage(habit, allHabits);
     final colors = ref.watchColors;
-    
-    // Get the current step to display
-    final currentStep = stackService.getNextIncompleteStep(habit, allHabits);
-    final currentStepIndex = currentStep != null ? steps.indexOf(currentStep) : -1;
-    
-    // If completed, show the stack name, otherwise show current step
-    final displayHabit = isCompleted ? habit : (currentStep ?? habit);
-    final canComplete = currentStep != null && !_isHabitCompletedToday(currentStep);
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -41,10 +35,10 @@ class StackHabitTile extends ConsumerWidget {
           colors: [
             isCompleted
                 ? colors.completedBackground.withOpacity(0.8)
-                : colors.stackHabit.withOpacity(0.15),
+                : colors.draculaCurrentLine.withOpacity(0.6),
             isCompleted
                 ? colors.completedBackground.withOpacity(0.4)
-                : colors.stackHabit.withOpacity(0.08),
+                : colors.draculaCurrentLine.withOpacity(0.3),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -70,119 +64,66 @@ class StackHabitTile extends ConsumerWidget {
           onTap: () => _navigateToStackInfo(context),
           child: Container(
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  isCompleted
-                      ? colors.draculaGreen.withOpacity(0.15)
-                      : colors.stackHabit.withOpacity(0.1),
-                  isCompleted
-                      ? colors.draculaGreen.withOpacity(0.08)
-                      : colors.stackHabit.withOpacity(0.05),
-                ],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-              ),
-            ),
             child: Row(
               children: [
-                // Progress Ring showing sequence progress
-                _buildProgressRing(
-                    progress, isCompleted, progressPercentage, context, ref),
+                // Progress visualization with layers icon
+                _buildProgressIndicator(
+                    context, ref, progress, progressPercentage, isCompleted),
                 const SizedBox(width: 16),
-                // Current Step Info
+                // Stack info
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Stack name with indicator
                       Text(
-                        '${habit.name} 📚',
+                        habit.name,
                         style: TextStyle(
                           fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: colors.stackHabit.withOpacity(0.9),
+                          fontWeight: FontWeight.bold,
+                          decoration:
+                              isCompleted ? TextDecoration.lineThrough : null,
+                          color: isCompleted
+                              ? colors.completedTextOnGreen
+                              : colors.draculaPurple,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
-                      // Current step info
-                      if (!isCompleted && currentStep != null) ...[
-                        Text(
-                          'Current: ${currentStep.name}',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: colors.stackHabit,
-                          ),
+                      Text(
+                        _buildSubtitleText(progress, nextStep, isCompleted),
+                        style: TextStyle(
+                          color: isCompleted
+                              ? colors.completedTextOnGreen
+                              : colors.stackHabit,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
                         ),
-                        if (currentStep.description.isNotEmpty) ...[
-                          const SizedBox(height: 2),
-                          Text(
-                            currentStep.description,
-                            style: TextStyle(
-                              color: colors.draculaCyan,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ] else if (isCompleted) ...[
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      if (habit.description.isNotEmpty) ...[
+                        const SizedBox(height: 2),
                         Text(
-                          'Stack Complete! 🎉',
+                          habit.description,
                           style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            decoration: TextDecoration.lineThrough,
-                            color: colors.draculaGreen,
-                          ),
-                        ),
-                      ] else ...[
-                        Text(
-                          'No steps available',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontStyle: FontStyle.italic,
                             color: colors.draculaComment,
+                            fontSize: 11,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
+                      ],
+                      // Show mini step indicator
+                      if (steps.isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        _buildMiniStepIndicator(context, ref, steps, progress),
                       ],
                     ],
                   ),
                 ),
-                // Complete button for current step
-                if (canComplete)
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          colors.stackHabit,
-                          colors.stackHabit.withOpacity(0.8),
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: colors.stackHabit.withOpacity(0.3),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: ElevatedButton.icon(
-                      onPressed: () => _completeCurrentStep(context, ref, currentStep!),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.transparent,
-                        foregroundColor: Colors.white,
-                        shadowColor: Colors.transparent,
-                        padding:
-                            const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                      ),
-                      icon: const Icon(Icons.check, size: 18),
-                      label: const Text('Complete', style: TextStyle(fontSize: 12)),
-                    ),
-                  ),
+                // Next step button or completion checkmark
+                _buildTrailingWidget(context, ref, nextStep, isCompleted),
               ],
             ),
           ),
@@ -191,66 +132,215 @@ class StackHabitTile extends ConsumerWidget {
     );
   }
 
-  Widget _buildProgressRing(StackProgress progress, bool isCompleted,
-      double progressPercentage, BuildContext context, WidgetRef ref) {
+  Widget _buildProgressIndicator(
+    BuildContext context,
+    WidgetRef ref,
+    StackProgress progress,
+    double progressPercentage,
+    bool isCompleted,
+  ) {
     final colors = ref.watchColors;
 
-    return Tooltip(
-      message: 'Stack progress: ${progress.completed}/${progress.total} steps completed',
-      child: SizedBox(
-        width: 56,
-        height: 56,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            CircularProgressIndicator(
-              value: progressPercentage,
-              backgroundColor: colors.draculaComment.withOpacity(0.3),
-              valueColor: AlwaysStoppedAnimation(
-                isCompleted ? colors.draculaGreen : colors.stackHabit,
-              ),
-              strokeWidth: 5,
+    return Container(
+      width: 48,
+      height: 48,
+      decoration: BoxDecoration(
+        color: colors.stackHabit.withOpacity(0.15),
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: colors.stackHabit.withOpacity(0.3),
+          width: 2,
+        ),
+      ),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Progress ring
+          CircularProgressIndicator(
+            value: progressPercentage,
+            backgroundColor: colors.draculaComment.withOpacity(0.3),
+            valueColor: AlwaysStoppedAnimation(
+              isCompleted ? colors.draculaGreen : colors.stackHabit,
             ),
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: Theme.of(context)
-                    .colorScheme
-                    .surfaceContainerHighest
-                    .withOpacity(0.15),
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 4,
-                    offset: const Offset(0, 1),
-                  ),
-                ],
+            strokeWidth: 3,
+          ),
+          // Layers icon with progress text
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.layers,
+                color: colors.stackHabit,
+                size: 16,
               ),
-              child: Center(
-                child: Text(
-                  '${progress.completed}/${progress.total}',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color:
-                        isCompleted ? colors.draculaGreen : colors.stackHabit,
-                  ),
+              Text(
+                '${progress.completed}/${progress.total}',
+                style: TextStyle(
+                  fontSize: 8,
+                  fontWeight: FontWeight.bold,
+                  color: isCompleted ? colors.draculaGreen : colors.stackHabit,
                 ),
               ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMiniStepIndicator(
+    BuildContext context,
+    WidgetRef ref,
+    List<Habit> steps,
+    StackProgress progress,
+  ) {
+    final colors = ref.watchColors;
+    final maxStepsToShow = 5;
+    final stepsToShow = steps.take(maxStepsToShow).toList();
+
+    return Row(
+      children: [
+        ...stepsToShow.asMap().entries.map((entry) {
+          final index = entry.key;
+          final step = entry.value;
+          final isCompleted = isHabitCompletedToday(step);
+          final isCurrent = index == progress.completed && !isCompleted;
+
+          return Container(
+            margin: const EdgeInsets.only(right: 4),
+            child: Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(
+                color: isCompleted
+                    ? colors.draculaGreen
+                    : isCurrent
+                        ? colors.stackHabit
+                        : colors.draculaComment.withOpacity(0.3),
+                shape: BoxShape.circle,
+                border: isCurrent
+                    ? Border.all(color: colors.stackHabit, width: 1)
+                    : null,
+              ),
+            ),
+          );
+        }).toList(),
+        if (steps.length > maxStepsToShow) ...[
+          const SizedBox(width: 4),
+          Text(
+            '+${steps.length - maxStepsToShow}',
+            style: TextStyle(
+              fontSize: 10,
+              color: colors.draculaComment,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  String _buildSubtitleText(
+      StackProgress progress, Habit? nextStep, bool isCompleted) {
+    if (isCompleted) {
+      return 'Stack Complete! ✅ +1 XP Bonus';
+    }
+
+    if (progress.total == 0) {
+      return 'Empty stack - add some habits';
+    }
+
+    if (nextStep != null) {
+      return 'Next: ${nextStep.displayName}';
+    }
+
+    return 'Stack · ${progress.completed}/${progress.total} steps';
+  }
+
+  Widget _buildTrailingWidget(
+    BuildContext context,
+    WidgetRef ref,
+    Habit? nextStep,
+    bool isCompleted,
+  ) {
+    final colors = ref.watchColors;
+
+    if (isCompleted) {
+      return Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: colors.completed,
+          boxShadow: [
+            BoxShadow(
+              color: colors.completed.withOpacity(0.3),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
             ),
           ],
+        ),
+        child: const Icon(
+          Icons.check,
+          color: Colors.white,
+          size: 24,
+        ),
+      );
+    }
+
+    if (nextStep == null) {
+      return Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: colors.draculaComment.withOpacity(0.15),
+          border: Border.all(
+            color: colors.draculaComment,
+            width: 2,
+          ),
+        ),
+        child: Icon(
+          Icons.add,
+          color: colors.draculaComment,
+          size: 20,
+        ),
+      );
+    }
+
+    return GestureDetector(
+      onTap: () => _completeNextStep(context, ref, nextStep),
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: colors.draculaCurrentLine.withOpacity(0.15),
+          border: Border.all(
+            color: colors.stackHabit,
+            width: 2,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 4,
+              offset: const Offset(0, 1),
+            ),
+          ],
+        ),
+        child: Icon(
+          Icons.play_arrow,
+          color: colors.stackHabit,
+          size: 24,
         ),
       ),
     );
   }
 
-  Future<void> _completeCurrentStep(BuildContext context, WidgetRef ref, Habit step) async {
-    if (_isHabitCompletedToday(step)) return; // Already completed
-
+  Future<void> _completeNextStep(
+      BuildContext context, WidgetRef ref, Habit nextStep) async {
     final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
-    final result = await habitsNotifier.completeHabit(step.id);
+    final result = await habitsNotifier.completeHabit(nextStep.id);
     final colors = ref.watchColors;
 
     if (result != null) {
@@ -258,14 +348,24 @@ class StackHabitTile extends ConsumerWidget {
         SnackBar(
           content: Text(result),
           backgroundColor: colors.error,
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 2),
         ),
       );
     } else {
+      // Check if stack is now complete for bonus XP
+      final stackService = StackService();
+      final isNowComplete = stackService.isStackCompleted(habit, allHabits);
+      final xpText = isNowComplete
+          ? '+${nextStep.calculateXPReward()} XP + 1 XP Stack Bonus!'
+          : '+${nextStep.calculateXPReward()} XP';
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content:
-              Text('✅ ${step.name} completed! +${step.calculateXPReward()} XP'),
+          content: Text('${nextStep.name} completed! $xpText'),
           backgroundColor: colors.success,
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 3),
         ),
       );
     }
@@ -280,14 +380,5 @@ class StackHabitTile extends ConsumerWidget {
         ),
       ),
     );
-  }
-
-  bool _isHabitCompletedToday(Habit habit) {
-    if (habit.lastCompleted == null) return false;
-    final now = DateTime.now();
-    final lastCompleted = habit.lastCompleted!;
-    return now.year == lastCompleted.year &&
-        now.month == lastCompleted.month &&
-        now.day == lastCompleted.day;
   }
 }

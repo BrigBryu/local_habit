@@ -59,7 +59,7 @@ class PartnerHabitsPage extends ConsumerWidget {
             // Check if we have any partner relationships to distinguish between
             // "no partner" vs "partner with no habits"
             final relationshipsAsync = ref.watch(partnerRelationshipsProvider);
-            
+
             return relationshipsAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (error, stack) => Center(
@@ -116,22 +116,31 @@ class PartnerHabitsPage extends ConsumerWidget {
                         const SizedBox(height: 16),
                         Text(
                           'No Partner Connected',
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                color: AppColors.draculaComment.withOpacity(0.7),
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleLarge
+                              ?.copyWith(
+                                color:
+                                    AppColors.draculaComment.withOpacity(0.7),
                               ),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           'Connect with a partner to see their habits here',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: AppColors.draculaComment.withOpacity(0.6),
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.copyWith(
+                                color:
+                                    AppColors.draculaComment.withOpacity(0.6),
                               ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 24),
                         ElevatedButton.icon(
                           onPressed: () {
-                            Navigator.of(context).pushNamed('/partner-settings');
+                            Navigator.of(context)
+                                .pushNamed('/partner-settings');
                           },
                           icon: const Icon(Icons.person_add),
                           label: const Text('Connect Partner'),
@@ -145,7 +154,8 @@ class PartnerHabitsPage extends ConsumerWidget {
                   );
                 } else {
                   // Partner connected but no habits yet
-                  final partnerUsernames = relationships.map((r) => r.partnerUsername).join(', ');
+                  final partnerUsernames =
+                      relationships.map((r) => r.partnerUsername).join(', ');
                   return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -158,22 +168,33 @@ class PartnerHabitsPage extends ConsumerWidget {
                         const SizedBox(height: 16),
                         Text(
                           'No Habits Yet',
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                color: AppColors.draculaComment.withOpacity(0.7),
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleLarge
+                              ?.copyWith(
+                                color:
+                                    AppColors.draculaComment.withOpacity(0.7),
                               ),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           'Your partner ($partnerUsernames) hasn\'t created any habits yet',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: AppColors.draculaComment.withOpacity(0.6),
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.copyWith(
+                                color:
+                                    AppColors.draculaComment.withOpacity(0.6),
                               ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 16),
                         Text(
                           'When they create habits, they\'ll appear here automatically!',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(
                                 color: AppColors.draculaPurple.withOpacity(0.8),
                               ),
                           textAlign: TextAlign.center,

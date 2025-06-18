@@ -48,10 +48,10 @@ class AuthStateNotifier extends StateNotifier<bool> {
   void refresh() async {
     final logger = Logger();
     logger.i('[AuthStateNotifier] Force refresh requested');
-    
+
     // Give the service a moment to update its state
     await Future.delayed(const Duration(milliseconds: 50));
-    
+
     final currentState = UsernameAuthService.instance.isAuthenticated;
     logger.i('[AuthStateNotifier] Force refresh: $state → $currentState');
     state = currentState;
@@ -59,7 +59,8 @@ class AuthStateNotifier extends StateNotifier<bool> {
 }
 
 /// Provider for the auth state notifier
-final authStateNotifierProvider = StateNotifierProvider<AuthStateNotifier, bool>((ref) {
+final authStateNotifierProvider =
+    StateNotifierProvider<AuthStateNotifier, bool>((ref) {
   return AuthStateNotifier();
 });
 
@@ -73,7 +74,8 @@ class AuthWrapper extends ConsumerWidget {
     final logger = Logger();
 
     logger.d('AuthWrapper building - isAuthenticated: $isAuthenticated');
-    logger.d('Current user ID: ${UsernameAuthService.instance.getCurrentUserId()}');
+    logger.d(
+        'Current user ID: ${UsernameAuthService.instance.getCurrentUserId()}');
 
     if (isAuthenticated) {
       logger.i('Showing main app (HomeTabScaffold)');

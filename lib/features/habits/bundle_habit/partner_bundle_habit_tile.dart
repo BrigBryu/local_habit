@@ -45,9 +45,10 @@ class _ExpandablePartnerBundleTile extends ConsumerWidget {
         childHabits.where((h) => _isHabitCompletedToday(h)).length;
     final totalCount = childHabits.length;
     final isCompleted = completedCount == totalCount && totalCount > 0;
-    final progressPercentage = totalCount > 0 ? completedCount / totalCount : 0.0;
+    final progressPercentage =
+        totalCount > 0 ? completedCount / totalCount : 0.0;
     final colors = ref.watchColors;
-    
+
     // Use the same expansion provider pattern as the regular bundle tile
     final isExpanded = ref.watch(bundleExpandedProvider(habit.id));
 
@@ -85,7 +86,8 @@ class _ExpandablePartnerBundleTile extends ConsumerWidget {
         borderRadius: BorderRadius.circular(10),
         child: Column(
           children: [
-            _buildPartnerBundleHeader(context, ref, completedCount, totalCount, isCompleted, progressPercentage, childHabits),
+            _buildPartnerBundleHeader(context, ref, completedCount, totalCount,
+                isCompleted, progressPercentage, childHabits),
             AnimatedCrossFade(
               duration: const Duration(milliseconds: 200),
               crossFadeState: isExpanded
@@ -131,7 +133,8 @@ class _ExpandablePartnerBundleTile extends ConsumerWidget {
       child: Row(
         children: [
           // Progress Ring
-          _buildProgressRing(completedCount, totalCount, isCompleted, progressPercentage, context, ref, children),
+          _buildProgressRing(completedCount, totalCount, isCompleted,
+              progressPercentage, context, ref, children),
           const SizedBox(width: 16),
           // Bundle Info
           Expanded(
@@ -238,7 +241,9 @@ class _ExpandablePartnerBundleTile extends ConsumerWidget {
               value: progressPercentage,
               backgroundColor: colors.draculaComment.withOpacity(0.2),
               valueColor: AlwaysStoppedAnimation(
-                isCompleted ? colors.draculaGreen.withOpacity(0.8) : colors.draculaComment.withOpacity(0.8),
+                isCompleted
+                    ? colors.draculaGreen.withOpacity(0.8)
+                    : colors.draculaComment.withOpacity(0.8),
               ),
               strokeWidth: 5,
             ),
@@ -265,7 +270,9 @@ class _ExpandablePartnerBundleTile extends ConsumerWidget {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
-                    color: isCompleted ? colors.draculaGreen.withOpacity(0.9) : colors.draculaCyan.withOpacity(0.9),
+                    color: isCompleted
+                        ? colors.draculaGreen.withOpacity(0.9)
+                        : colors.draculaCyan.withOpacity(0.9),
                   ),
                 ),
               ),
@@ -382,7 +389,7 @@ class _ExpandablePartnerBundleTile extends ConsumerWidget {
         ),
         trailing: Icon(
           isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
-          color: isCompleted 
+          color: isCompleted
               ? colors.draculaGreen.withOpacity(0.8)
               : colors.draculaComment.withOpacity(0.6),
           size: 20,

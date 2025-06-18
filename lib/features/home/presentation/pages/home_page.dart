@@ -108,7 +108,8 @@ class HomePage extends ConsumerWidget {
                             return RepaintBoundary(
                               child: HabitTile(
                                 habit: habit,
-                                onTap: () => _navigateToViewHabit(context, habit),
+                                onTap: () =>
+                                    _navigateToViewHabit(context, habit),
                               ),
                             );
                           }

@@ -135,8 +135,9 @@ class SyncQueue {
 
     try {
       // Get total count first without loading all objects
-      final totalPending = await _db.isar.syncOps.filter().completedEqualTo(false).count();
-      
+      final totalPending =
+          await _db.isar.syncOps.filter().completedEqualTo(false).count();
+
       if (totalPending == 0) {
         _logger.i('SyncQueue: No pending operations');
         return;
@@ -148,7 +149,7 @@ class SyncQueue {
       const pageSize = 20;
       int processed = 0;
       int offset = 0;
-      
+
       while (offset < totalPending) {
         // Fetch only a small page of operations
         final pageOps = await _db.isar.syncOps
@@ -157,38 +158,40 @@ class SyncQueue {
             .offset(offset)
             .limit(pageSize)
             .findAll();
-            
+
         if (pageOps.isEmpty) break;
-        
+
         // Process this page
         for (final op in pageOps) {
           await _processOperation(op);
           processed++;
-          
+
           // Yield control after every operation to prevent blocking
           if (processed % 5 == 0) {
             await Future.delayed(const Duration(milliseconds: 5));
           }
         }
-        
+
         offset += pageSize;
-        
+
         // Log progress and yield control
         if (processed % 50 == 0) {
           _logger.d('Processed $processed/$totalPending operations');
           await Future.delayed(const Duration(milliseconds: 20));
         }
-        
+
         // Safety break if we've processed too many
         if (processed > 1000) {
-          _logger.w('Processed 1000 operations, pausing to prevent memory issues');
+          _logger
+              .w('Processed 1000 operations, pausing to prevent memory issues');
           break;
         }
       }
 
       // Log final count
       final finalCount = await getPendingCount();
-      _logger.i('SyncQueue: Processed $processed operations, $finalCount remaining');
+      _logger.i(
+          'SyncQueue: Processed $processed operations, $finalCount remaining');
     } catch (e, stackTrace) {
       _logger.e('Error processing sync queue',
           error: e, stackTrace: stackTrace);

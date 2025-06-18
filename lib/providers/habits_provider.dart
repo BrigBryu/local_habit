@@ -29,18 +29,21 @@ final immediateHabitsProvider = FutureProvider<List<Habit>>((ref) async {
 });
 
 // Super simplified stream provider for partner habits with autoDispose
-final partnerHabitsProvider = StreamProvider.autoDispose<List<Habit>>((ref) async* {
+final partnerHabitsProvider =
+    StreamProvider.autoDispose<List<Habit>>((ref) async* {
   final repository = ref.watch(habitsRepositoryProvider);
   final logger = Logger();
 
   if (kDebugMode) {
-    logger.d('🚀 PartnerHabitsProvider: Starting simplified provider (autoDispose)');
+    logger.d(
+        '🚀 PartnerHabitsProvider: Starting simplified provider (autoDispose)');
   }
 
   // Always yield empty first to prevent infinite loading
   yield <Habit>[];
   if (kDebugMode) {
-    logger.d('✅ PartnerHabitsProvider: Yielded initial empty list to exit loading state');
+    logger.d(
+        '✅ PartnerHabitsProvider: Yielded initial empty list to exit loading state');
   }
 
   // Add a small delay to ensure the UI updates with the empty state
@@ -50,7 +53,7 @@ final partnerHabitsProvider = StreamProvider.autoDispose<List<Habit>>((ref) asyn
     if (kDebugMode) {
       logger.d('🔄 PartnerHabitsProvider: Fetching relationships...');
     }
-    
+
     // Get relationships with shorter timeout
     final relationships = await ref
         .read(partnerRelationshipsProvider.future)
@@ -63,9 +66,10 @@ final partnerHabitsProvider = StreamProvider.autoDispose<List<Habit>>((ref) asyn
     });
 
     if (kDebugMode) {
-      logger.d('✅ PartnerHabitsProvider: Got ${relationships.length} relationships');
+      logger.d(
+          '✅ PartnerHabitsProvider: Got ${relationships.length} relationships');
     }
-    
+
     if (relationships.isEmpty) {
       if (kDebugMode) {
         logger.d('📭 PartnerHabitsProvider: No relationships found');
@@ -78,24 +82,26 @@ final partnerHabitsProvider = StreamProvider.autoDispose<List<Habit>>((ref) asyn
     if (firstRelationship.partnerId != null) {
       try {
         if (kDebugMode) {
-          logger.d('🔍 PartnerHabitsProvider: Fetching habits for ${firstRelationship.partnerUsername}...');
+          logger.d(
+              '🔍 PartnerHabitsProvider: Fetching habits for ${firstRelationship.partnerUsername}...');
         }
-        
+
         final partnerHabits = await repository
             .partnerHabits(firstRelationship.partnerId!)
             .first
             .timeout(const Duration(seconds: 3));
-        
+
         if (kDebugMode) {
-          logger.d('📋 PartnerHabitsProvider: Found ${partnerHabits.length} habits');
+          logger.d(
+              '📋 PartnerHabitsProvider: Found ${partnerHabits.length} habits');
         }
-        
+
         // Yield the actual habits
         yield partnerHabits;
         if (kDebugMode) {
-          logger.d('✅ PartnerHabitsProvider: Successfully yielded ${partnerHabits.length} habits');
+          logger.d(
+              '✅ PartnerHabitsProvider: Successfully yielded ${partnerHabits.length} habits');
         }
-        
       } catch (e) {
         if (kDebugMode) {
           logger.e('❌ PartnerHabitsProvider: Failed to get habits: $e');
@@ -133,14 +139,14 @@ class HabitsNotifier extends StateNotifier<AsyncValue<void>> {
     state = const AsyncValue.loading();
     try {
       final error = await _repository.addHabit(habit);
-      
+
       // Invalidate providers to refresh UI
       _ref.invalidate(ownHabitsProvider);
       _ref.invalidate(partnerHabitsProvider);
       if (kDebugMode) {
         _logger.d('Invalidated habits providers after adding habit');
       }
-      
+
       state = const AsyncValue.data(null);
       return error;
     } catch (e, stackTrace) {
@@ -153,14 +159,14 @@ class HabitsNotifier extends StateNotifier<AsyncValue<void>> {
     state = const AsyncValue.loading();
     try {
       final error = await _repository.updateHabit(habit);
-      
+
       // Invalidate providers to refresh UI
       _ref.invalidate(ownHabitsProvider);
       _ref.invalidate(partnerHabitsProvider);
       if (kDebugMode) {
         _logger.d('Invalidated habits providers after updating habit');
       }
-      
+
       state = const AsyncValue.data(null);
       return error;
     } catch (e, stackTrace) {
@@ -173,14 +179,14 @@ class HabitsNotifier extends StateNotifier<AsyncValue<void>> {
     state = const AsyncValue.loading();
     try {
       final error = await _repository.removeHabit(habitId);
-      
+
       // Invalidate providers to refresh UI
       _ref.invalidate(ownHabitsProvider);
       _ref.invalidate(partnerHabitsProvider);
       if (kDebugMode) {
         _logger.d('Invalidated habits providers after removing habit');
       }
-      
+
       state = const AsyncValue.data(null);
       return error;
     } catch (e, stackTrace) {
@@ -224,7 +230,8 @@ class HabitsNotifier extends StateNotifier<AsyncValue<void>> {
       _ref.invalidate(ownHabitsProvider);
       _ref.invalidate(partnerHabitsProvider);
       if (kDebugMode) {
-        _logger.d('Invalidated own habits and partner habits providers after habit completion');
+        _logger.d(
+            'Invalidated own habits and partner habits providers after habit completion');
       }
 
       state = const AsyncValue.data(null);

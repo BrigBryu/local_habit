@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:domain/domain.dart';
 import '../../../core/theme/flexible_theme_system.dart';
+import '../../../core/services/stack_progress_service.dart';
 
 class PartnerStackHabitTile extends ConsumerWidget {
   final Habit habit;
@@ -15,22 +16,14 @@ class PartnerStackHabitTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final stackSteps =
-        allHabits.where((h) => h.stackedOnHabitId == habit.id).toList();
-
-    final completedCount =
-        stackSteps.where((h) => _isHabitCompletedToday(h)).length;
-    final totalCount = stackSteps.length;
-    final isCompleted = completedCount == totalCount && totalCount > 0;
-    final progressPercentage = totalCount > 0 ? completedCount / totalCount : 0.0;
+    final stackService = StackProgressService();
+    final progress = stackService.getStackProgress(habit, allHabits);
+    final isCompleted = stackService.isStackComplete(habit, allHabits);
+    final currentChild = stackService.getCurrentChild(habit, allHabits);
+    final children = stackService.getStackChildren(habit, allHabits);
+    final progressPercentage =
+        progress.total > 0 ? progress.completed / progress.total : 0.0;
     final colors = ref.watchColors;
-    
-    // Get the current step to display (same logic as user's stack)
-    final currentStepIndex = completedCount;
-    final currentStep = currentStepIndex < stackSteps.length ? stackSteps[currentStepIndex] : null;
-    
-    // If completed, show the stack name, otherwise show current step
-    final displayHabit = isCompleted ? habit : (currentStep ?? habit);
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -40,10 +33,10 @@ class PartnerStackHabitTile extends ConsumerWidget {
           colors: [
             isCompleted
                 ? colors.completedBackground.withOpacity(0.6)
-                : colors.stackHabit.withOpacity(0.15),
+                : colors.draculaCurrentLine.withOpacity(0.4),
             isCompleted
                 ? colors.completedBackground.withOpacity(0.3)
-                : colors.stackHabit.withOpacity(0.08),
+                : colors.draculaCurrentLine.withOpacity(0.2),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -51,174 +44,468 @@ class PartnerStackHabitTile extends ConsumerWidget {
         border: Border.all(
           color: isCompleted
               ? colors.completedBorder.withOpacity(0.6)
-              : colors.stackHabit.withOpacity(0.4),
+              : colors.stackHabit.withOpacity(0.3),
           width: 2,
         ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.03),
             blurRadius: 6,
-            offset: const Offset(0, 1),
+            offset: const Offset(0, 2),
           ),
         ],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(10),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                isCompleted
-                    ? colors.draculaGreen.withOpacity(0.12)
-                    : colors.stackHabit.withOpacity(0.08),
-                isCompleted
-                    ? colors.draculaGreen.withOpacity(0.06)
-                    : colors.stackHabit.withOpacity(0.04),
-              ],
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-            ),
-          ),
-          child: Row(
-            children: [
-              // Progress Ring showing sequence progress
-              _buildProgressRing(completedCount, totalCount, isCompleted, progressPercentage, context, ref),
-              const SizedBox(width: 16),
-              // Current Step Info
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Partner indicator
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.people,
-                          size: 12,
-                          color: colors.draculaComment.withOpacity(0.7),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Partner\'s Stack',
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: colors.draculaComment.withOpacity(0.7),
-                            fontWeight: FontWeight.w500,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(10),
+          onTap: () => _showStackDetails(context, ref),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                // Partner indicator + progress visualization
+                _buildPartnerProgressIndicator(
+                    context, ref, progress, progressPercentage, isCompleted),
+                const SizedBox(width: 16),
+                // Stack info
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.person,
+                            size: 16,
+                            color: colors.draculaComment,
                           ),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              habit.name,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                decoration: isCompleted
+                                    ? TextDecoration.lineThrough
+                                    : null,
+                                color: isCompleted
+                                    ? colors.completedTextOnGreen
+                                    : colors.draculaPurple,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        _buildPartnerSubtitleText(
+                            progress, currentChild, isCompleted),
+                        style: TextStyle(
+                          color: isCompleted
+                              ? colors.completedTextOnGreen
+                              : colors.stackHabit,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      if (habit.description.isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          habit.description,
+                          style: TextStyle(
+                            color: colors.draculaComment,
+                            fontSize: 11,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
-                    ),
-                    const SizedBox(height: 2),
-                    // Show step indicator if not completed
-                    if (!isCompleted && currentStepIndex < totalCount) ...[
-                      Text(
-                        'Step ${currentStepIndex + 1} of $totalCount',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: colors.stackHabit.withOpacity(0.8),
-                        ),
-                      ),
-                      const SizedBox(height: 2),
+                      // Show mini step indicator for partner
+                      if (children.isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        _buildPartnerMiniStepIndicator(
+                            context, ref, children, progress),
+                      ],
                     ],
-                    Text(
-                      isCompleted ? '${habit.name} (Complete)' : (displayHabit.name),
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        decoration: isCompleted ? TextDecoration.lineThrough : null,
-                        color: isCompleted
-                            ? colors.draculaGreen.withOpacity(0.9)
-                            : colors.stackHabit.withOpacity(0.9),
-                      ),
-                    ),
-                    if (displayHabit.description.isNotEmpty) ...[
-                      const SizedBox(height: 2),
-                      Text(
-                        displayHabit.description,
-                        style: TextStyle(
-                          color: colors.draculaCyan.withOpacity(0.8),
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ],
+                  ),
                 ),
-              ),
-              // No complete button - this is read-only for partner habits
-            ],
+                // Partner status indicator
+                _buildPartnerStatusIndicator(context, ref, isCompleted),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildProgressRing(
-      int completedCount,
-      int totalCount,
-      bool isCompleted,
-      double progressPercentage,
-      BuildContext context,
-      WidgetRef ref) {
+  Widget _buildPartnerProgressIndicator(
+    BuildContext context,
+    WidgetRef ref,
+    StackProgress progress,
+    double progressPercentage,
+    bool isCompleted,
+  ) {
     final colors = ref.watchColors;
 
-    return Tooltip(
-      message: 'Partner stack progress: $completedCount/$totalCount steps completed',
-      child: SizedBox(
-        width: 56,
-        height: 56,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            CircularProgressIndicator(
-              value: progressPercentage,
-              backgroundColor: colors.draculaComment.withOpacity(0.2),
-              valueColor: AlwaysStoppedAnimation(
-                isCompleted ? colors.draculaGreen.withOpacity(0.8) : colors.stackHabit.withOpacity(0.8),
-              ),
-              strokeWidth: 5,
+    return Container(
+      width: 48,
+      height: 48,
+      decoration: BoxDecoration(
+        color: colors.stackHabit.withOpacity(0.1),
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: colors.stackHabit.withOpacity(0.2),
+          width: 2,
+        ),
+      ),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Progress ring - slightly dimmed for partner view
+          CircularProgressIndicator(
+            value: progressPercentage,
+            backgroundColor: colors.draculaComment.withOpacity(0.2),
+            valueColor: AlwaysStoppedAnimation(
+              isCompleted
+                  ? colors.draculaGreen.withOpacity(0.7)
+                  : colors.stackHabit.withOpacity(0.7),
             ),
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: Theme.of(context)
-                    .colorScheme
-                    .surfaceContainerHighest
-                    .withOpacity(0.15),
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 4,
-                    offset: const Offset(0, 1),
-                  ),
-                ],
+            strokeWidth: 3,
+          ),
+          // Layers icon with progress text
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.layers,
+                color: colors.stackHabit.withOpacity(0.8),
+                size: 16,
               ),
-              child: Center(
-                child: Text(
-                  '$completedCount/$totalCount',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: isCompleted ? colors.draculaGreen.withOpacity(0.9) : colors.stackHabit.withOpacity(0.9),
-                  ),
+              Text(
+                '${progress.completed}/${progress.total}',
+                style: TextStyle(
+                  fontSize: 8,
+                  fontWeight: FontWeight.bold,
+                  color: isCompleted
+                      ? colors.draculaGreen.withOpacity(0.8)
+                      : colors.stackHabit.withOpacity(0.8),
                 ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPartnerMiniStepIndicator(
+    BuildContext context,
+    WidgetRef ref,
+    List<Habit> steps,
+    StackProgress progress,
+  ) {
+    final colors = ref.watchColors;
+    final maxStepsToShow = 5;
+    final stepsToShow = steps.take(maxStepsToShow).toList();
+
+    return Row(
+      children: [
+        ...stepsToShow.asMap().entries.map((entry) {
+          final index = entry.key;
+          final step = entry.value;
+          final isCompleted = isHabitCompletedToday(step);
+          final isCurrent = index == progress.currentIndex && !isCompleted;
+
+          return Container(
+            margin: const EdgeInsets.only(right: 4),
+            child: Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(
+                color: isCompleted
+                    ? colors.draculaGreen.withOpacity(0.8)
+                    : isCurrent
+                        ? colors.stackHabit.withOpacity(0.8)
+                        : colors.draculaComment.withOpacity(0.2),
+                shape: BoxShape.circle,
+                border: isCurrent
+                    ? Border.all(
+                        color: colors.stackHabit.withOpacity(0.8), width: 1)
+                    : null,
+              ),
+            ),
+          );
+        }).toList(),
+        if (steps.length > maxStepsToShow) ...[
+          const SizedBox(width: 4),
+          Text(
+            '+${steps.length - maxStepsToShow}',
+            style: TextStyle(
+              fontSize: 10,
+              color: colors.draculaComment.withOpacity(0.8),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  String _buildPartnerSubtitleText(
+      StackProgress progress, Habit? currentChild, bool isCompleted) {
+    if (isCompleted) {
+      return 'Partner\'s Stack Complete! ✅';
+    }
+
+    if (progress.total == 0) {
+      return 'Partner\'s empty stack';
+    }
+
+    if (currentChild != null) {
+      return 'Partner working on: ${currentChild.name}';
+    }
+
+    return 'Partner\'s Stack · ${progress.completed}/${progress.total} steps';
+  }
+
+  Widget _buildPartnerStatusIndicator(
+      BuildContext context, WidgetRef ref, bool isCompleted) {
+    final colors = ref.watchColors;
+
+    if (isCompleted) {
+      return Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: colors.completed.withOpacity(0.8),
+          boxShadow: [
+            BoxShadow(
+              color: colors.completed.withOpacity(0.2),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: const Icon(
+          Icons.check,
+          color: Colors.white,
+          size: 20,
+        ),
+      );
+    }
+
+    return Container(
+      width: 32,
+      height: 32,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: colors.draculaComment.withOpacity(0.1),
+        border: Border.all(
+          color: colors.draculaComment.withOpacity(0.3),
+          width: 2,
+        ),
+      ),
+      child: Icon(
+        Icons.visibility,
+        color: colors.draculaComment.withOpacity(0.8),
+        size: 16,
+      ),
+    );
+  }
+
+  void _showStackDetails(BuildContext context, WidgetRef ref) {
+    final colors = ref.read(flexibleColorsProvider);
+    final stackService = StackProgressService();
+    final children = stackService.getStackChildren(habit, allHabits);
+    final progress = stackService.getStackProgress(habit, allHabits);
+    final currentChild = stackService.getCurrentChild(habit, allHabits);
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: colors.draculaCurrentLine,
+        title: Row(
+          children: [
+            Icon(Icons.person, color: colors.draculaComment),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Partner\'s ${habit.name}',
+                style: TextStyle(color: colors.draculaPurple),
               ),
             ),
           ],
         ),
+        content: SizedBox(
+          width: double.maxFinite,
+          height: 300,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Progress summary
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  color: colors.stackHabit.withOpacity(0.1),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.layers,
+                      color: colors.stackHabit,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        stackService.getStackStatus(habit, allHabits),
+                        style: TextStyle(
+                          color: colors.stackHabit,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      '${progress.completed}/${progress.total}',
+                      style: TextStyle(
+                        color: colors.stackHabit,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              if (children.isNotEmpty) ...[
+                Text(
+                  'Stack Steps:',
+                  style: TextStyle(
+                    color: colors.draculaCyan,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: children.length,
+                    itemBuilder: (context, index) {
+                      final child = children[index];
+                      final isCompleted = isHabitCompletedToday(child);
+                      final isCurrent = index == progress.currentIndex;
+
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 4),
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(6),
+                          color: isCurrent
+                              ? colors.stackHabit.withOpacity(0.1)
+                              : Colors.transparent,
+                          border: isCurrent
+                              ? Border.all(
+                                  color: colors.stackHabit.withOpacity(0.3),
+                                  width: 1,
+                                )
+                              : null,
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 20,
+                              height: 20,
+                              decoration: BoxDecoration(
+                                color: isCompleted
+                                    ? colors.draculaGreen
+                                    : isCurrent
+                                        ? colors.stackHabit
+                                        : colors.draculaComment
+                                            .withOpacity(0.3),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Center(
+                                child: isCompleted
+                                    ? const Icon(
+                                        Icons.check,
+                                        color: Colors.white,
+                                        size: 12,
+                                      )
+                                    : Text(
+                                        '${index + 1}',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                child.name,
+                                style: TextStyle(
+                                  color: isCompleted
+                                      ? colors.draculaGreen
+                                      : isCurrent
+                                          ? colors.stackHabit
+                                          : colors.draculaPurple,
+                                  fontWeight: FontWeight.w500,
+                                  decoration: isCompleted
+                                      ? TextDecoration.lineThrough
+                                      : null,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ] else ...[
+                Center(
+                  child: Text(
+                    'No steps in this stack yet',
+                    style: TextStyle(
+                      color: colors.draculaComment,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(
+              'Close',
+              style: TextStyle(color: colors.draculaComment),
+            ),
+          ),
+        ],
       ),
     );
   }
+}
 
-  bool _isHabitCompletedToday(Habit habit) {
-    if (habit.lastCompleted == null) return false;
-    final now = DateTime.now();
-    final lastCompleted = habit.lastCompleted!;
-    return now.year == lastCompleted.year &&
-        now.month == lastCompleted.month &&
-        now.day == lastCompleted.day;
-  }
+/// Helper function to check if habit was completed today
+bool isHabitCompletedToday(Habit habit) {
+  if (habit.lastCompleted == null) return false;
+
+  final now = DateTime.now();
+  final lastCompleted = habit.lastCompleted!;
+  return now.year == lastCompleted.year &&
+      now.month == lastCompleted.month &&
+      now.day == lastCompleted.day;
 }

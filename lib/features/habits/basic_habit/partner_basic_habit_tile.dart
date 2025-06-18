@@ -60,8 +60,8 @@ class PartnerBasicHabitTile extends ConsumerWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: colors.basicHabit
-                      .withOpacity(0.1), // Dimmer for partner
+                  color:
+                      colors.basicHabit.withOpacity(0.1), // Dimmer for partner
                   shape: BoxShape.circle,
                   border: Border.all(
                     color: colors.basicHabit
@@ -71,8 +71,8 @@ class PartnerBasicHabitTile extends ConsumerWidget {
                 ),
                 child: Icon(
                   Icons.check_circle_outline,
-                  color: colors.basicHabit
-                      .withOpacity(0.8), // Dimmer for partner
+                  color:
+                      colors.basicHabit.withOpacity(0.8), // Dimmer for partner
                   size: 24,
                 ),
               ),
@@ -175,7 +175,8 @@ class PartnerBasicHabitTile extends ConsumerWidget {
   }
 
   String _buildSubtitleText() {
-    final count = _isHabitCompletedToday(habit) ? habit.dailyCompletionCount : 0;
+    final count =
+        _isHabitCompletedToday(habit) ? habit.dailyCompletionCount : 0;
     if (count > 0) {
       return 'Basic Habit · $count completed today';
     }

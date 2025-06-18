@@ -15,7 +15,7 @@ class PartnerAvoidanceHabitTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = ref.watchColors;
-    
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
@@ -141,7 +141,7 @@ class PartnerAvoidanceHabitTile extends ConsumerWidget {
                           size: 16,
                           color: Colors.orange[600]?.withOpacity(0.8),
                         ),
-                        const SizedBox(width: 4),                        
+                        const SizedBox(width: 4),
                         Text(
                           '${habit.currentStreak} day streak',
                           style: TextStyle(
@@ -171,7 +171,9 @@ class PartnerAvoidanceHabitTile extends ConsumerWidget {
                   ),
                 ),
                 child: Icon(
-                  habit.avoidanceSuccessToday ? Icons.check : Icons.radio_button_unchecked,
+                  habit.avoidanceSuccessToday
+                      ? Icons.check
+                      : Icons.radio_button_unchecked,
                   color: habit.avoidanceSuccessToday
                       ? Colors.white
                       : colors.draculaComment.withOpacity(0.6),

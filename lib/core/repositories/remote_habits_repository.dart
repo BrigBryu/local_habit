@@ -75,21 +75,25 @@ class RemoteHabitsRepository implements HabitsRepository {
   Stream<List<Habit>> ownHabits() {
     try {
       // Skip auth check for dev users
-      _logger.d('🏠 [RemoteRepo] Streaming own habits for user: $_currentUserId');
+      _logger
+          .d('🏠 [RemoteRepo] Streaming own habits for user: $_currentUserId');
 
       return supabase
           .from('habits')
           .stream(primaryKey: ['id'])
           .eq('user_id', _currentUserId)
           .map((data) {
-            _logger.d('🔄 [RemoteRepo] Own habits raw data: ${data.length} records for $_currentUserId');
+            _logger.d(
+                '🔄 [RemoteRepo] Own habits raw data: ${data.length} records for $_currentUserId');
             data.forEach((record) {
-              _logger.d('📋 [RemoteRepo] Own habit record: id=${record['id']}, name=${record['name']}, user_id=${record['user_id']}');
+              _logger.d(
+                  '📋 [RemoteRepo] Own habit record: id=${record['id']}, name=${record['name']}, user_id=${record['user_id']}');
             });
-            
+
             final habits = data.toHabitDomainList();
-            _logger.d('✅ [RemoteRepo] Own habits converted: ${habits.length} domain habits');
-            
+            _logger.d(
+                '✅ [RemoteRepo] Own habits converted: ${habits.length} domain habits');
+
             return habits;
           })
           .handleError((error, stackTrace) {
@@ -116,22 +120,28 @@ class RemoteHabitsRepository implements HabitsRepository {
           .stream(primaryKey: ['id'])
           .eq('user_id', partnerId)
           .map((data) {
-            _logger.d('🔄 [RemoteRepo] Raw Supabase data received: ${data.length} records');
+            _logger.d(
+                '🔄 [RemoteRepo] Raw Supabase data received: ${data.length} records');
             data.forEach((record) {
-              _logger.d('📋 [RemoteRepo] Habit record: id=${record['id']}, name=${record['name']}, user_id=${record['user_id']}');
+              _logger.d(
+                  '📋 [RemoteRepo] Habit record: id=${record['id']}, name=${record['name']}, user_id=${record['user_id']}');
             });
-            
+
             final habits = data.toHabitDomainList();
-            _logger.d('✅ [RemoteRepo] Converted to ${habits.length} domain habits for partner $partnerId');
+            _logger.d(
+                '✅ [RemoteRepo] Converted to ${habits.length} domain habits for partner $partnerId');
             habits.forEach((habit) {
-              _logger.d('📝 [RemoteRepo] Domain habit: ${habit.name} (${habit.type})');
+              _logger.d(
+                  '📝 [RemoteRepo] Domain habit: ${habit.name} (${habit.type})');
             });
-            
+
             return habits;
           })
           .handleError((error, stackTrace) {
-            _logger.e('❌ [RemoteRepo] Error streaming partner habits from Supabase',
-                error: error, stackTrace: stackTrace);
+            _logger.e(
+                '❌ [RemoteRepo] Error streaming partner habits from Supabase',
+                error: error,
+                stackTrace: stackTrace);
             // Return empty stream on error
             return Stream.value(<Habit>[]);
           });
