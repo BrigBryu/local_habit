@@ -35,7 +35,7 @@ class _AddAvoidanceHabitScreenState
       true; // Enable dropdown to select habit types
 
   @override
-  Widget buildCustomContent(BuildContext context) {
+  Widget buildCustomContent(BuildContext context, WidgetRef ref) {
     final colors = ref.watchColors;
     return Card(
       color: colors.draculaRed.withOpacity(0.1),

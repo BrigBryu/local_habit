@@ -270,6 +270,17 @@ class SimpleMemoryRepository implements HabitsRepository {
   }
 
   @override
+  Future<String?> completeStackChild(String stackId) async {
+    try {
+      _logger.d('Completed stack child for habit: $stackId');
+      return null; // Success - simplified implementation
+    } catch (e) {
+      _logger.e('Failed to complete stack child', error: e);
+      return 'Failed to complete stack child: $e';
+    }
+  }
+
+  @override
   Future<String?> recordFailure(String habitId) async {
     try {
       _logger.d('Recorded failure for habit: $habitId');

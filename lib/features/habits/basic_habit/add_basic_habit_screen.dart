@@ -35,7 +35,7 @@ class _AddBasicHabitScreenState
       true; // Enable dropdown to select habit types
 
   @override
-  Widget buildCustomContent(BuildContext context) {
+  Widget buildCustomContent(BuildContext context, WidgetRef ref) {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),

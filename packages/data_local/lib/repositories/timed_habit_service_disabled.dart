@@ -59,5 +59,4 @@ class TimedHabitService {
       };
 }
 
-// Helper function - disabled
-bool isHabitCompletedToday(Habit habit) => false;
+// Helper function - disabled (use function from domain package instead)

@@ -4,9 +4,6 @@ import 'package:domain/domain.dart';
 import '../../../providers/habits_provider.dart';
 import '../../../core/services/stack_progress_service.dart';
 import '../shared/base_add_habit_screen.dart';
-import '../basic_habit/add_basic_habit_screen.dart';
-import '../avoidance_habit/add_avoidance_habit_screen.dart';
-import '../bundle_habit/add_bundle_habit_screen.dart';
 import '../../../core/theme/flexible_theme_system.dart';
 
 class AddStackHabitScreen extends BaseAddHabitScreen {
@@ -103,7 +100,7 @@ class _AddStackHabitScreenState
       true; // Enable dropdown to select habit types
 
   @override
-  Widget buildCustomFields(BuildContext context, WidgetRef ref) {
+  Widget buildCustomContent(BuildContext context, WidgetRef ref) {
     final colors = ref.watchColors;
 
     return Column(
@@ -454,34 +451,48 @@ class _AddStackHabitScreenState
   }
 
   @override
-  String? validateCustomFields() {
+  bool canSave() {
+    return nameController.text.trim().isNotEmpty &&
+        _selectedHabitIds.isNotEmpty &&
+        _selectedHabitIds.length <= 10;
+  }
+
+  @override
+  Future<void> performSave() async {
     if (_selectedHabitIds.isEmpty) {
-      return 'Please select at least one habit for the stack';
+      throw Exception('Please select at least one habit for the stack');
     }
 
     if (_selectedHabitIds.length > 10) {
-      return 'Stacks cannot have more than 10 steps';
+      throw Exception('Stacks cannot have more than 10 steps');
     }
 
     // Validate using the stack service
     final allHabits = (ref.read(habitsProvider).value ?? []);
-    return _stackService.validateStackCreation(_selectedHabitIds, allHabits);
-  }
+    final validationError = _stackService.validateStackCreation(_selectedHabitIds, allHabits);
+    if (validationError != null) {
+      throw Exception(validationError);
+    }
 
-  @override
-  Future<String?> saveHabit(Habit habit) async {
+    final name = nameController.text.trim();
+    final description = descriptionController.text.trim();
     final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
 
     // Create the stack with child IDs
     final stackHabit = Habit.create(
-      name: habit.name,
-      description: habit.description,
+      name: name,
+      description: description,
       type: HabitType.stack,
       stackChildIds: List.from(_selectedHabitIds),
       currentChildIndex: 0,
     );
 
-    return await habitsNotifier.addHabit(stackHabit);
+    await habitsNotifier.addHabit(stackHabit);
+  }
+
+  @override
+  String getSuccessMessage() {
+    return 'Stack "${nameController.text.trim()}" created with ${_selectedHabitIds.length} steps!';
   }
 
   Color _getHabitTypeColor(HabitType type, FlexibleColors colors) {
@@ -508,16 +519,5 @@ class _AddStackHabitScreenState
       case HabitType.stack:
         return Icons.layers;
     }
-  }
-}
-
-/// Extension to get first matching element or null
-extension FirstWhereOrNullExtension<T> on Iterable<T> {
-  T? get firstOrNull {
-    final iterator = this.iterator;
-    if (iterator.moveNext()) {
-      return iterator.current;
-    }
-    return null;
   }
 }

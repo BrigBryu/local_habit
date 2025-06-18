@@ -374,6 +374,34 @@ class RemoteHabitsRepository implements HabitsRepository {
   }
 
   @override
+  Future<String?> completeStackChild(String stackId) async {
+    try {
+      if (!UsernameAuthService.instance.isAuthenticated) {
+        _logger.d('Not authenticated, using local fallback for stack child completion');
+        _logger.d('Proceeding with operation for dev user: $_currentUserId');
+        return null;
+      }
+
+      _logger.d('Completing stack child for stack: $stackId');
+      
+      // For now, delegate to complete habit since stack completion logic
+      // is handled by the stack service
+      return await completeHabit(stackId, xpAwarded: 1);
+
+    } catch (e, stackTrace) {
+      _logger.e(
+          'Failed to complete stack child remotely, using local fallback and enqueuing for retry',
+          error: e,
+          stackTrace: stackTrace);
+
+      // Enqueue for later sync
+      await SyncQueue.instance.enqueue(SyncOp.completeHabit(stackId, 1));
+
+      return "Network error occurred";
+    }
+  }
+
+  @override
   Future<void> dispose() async {
     await _ownHabitsController.close();
     await _partnerHabitsController.close();

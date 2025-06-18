@@ -278,12 +278,6 @@ class BundleProgress {
 }
 
 /// Check if a habit should show as completed today
-bool isHabitCompletedToday(Habit habit) {
-  if (habit.lastCompleted == null) return false;
-
-  final timeService = TimeService();
-  return timeService.isSameDay(habit.lastCompleted!, timeService.now());
-}
 
 /// Result of completing a bundle with combo bonus
 class BundleCompletionResult {

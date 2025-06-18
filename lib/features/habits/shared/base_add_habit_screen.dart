@@ -73,7 +73,7 @@ abstract class BaseAddHabitScreenState<T extends BaseAddHabitScreen>
   bool get showHabitTypeSelector => true;
 
   /// Override this to provide custom content between name/description and save button
-  Widget buildCustomContent(BuildContext context) {
+  Widget buildCustomContent(BuildContext context, WidgetRef ref) {
     return const SizedBox.shrink();
   }
 
@@ -351,7 +351,7 @@ abstract class BaseAddHabitScreenState<T extends BaseAddHabitScreen>
                       const SizedBox(height: 32),
 
                       // Custom content (for specific habit types)
-                      buildCustomContent(context),
+                      buildCustomContent(context, ref),
 
                       const SizedBox(height: 24),
 

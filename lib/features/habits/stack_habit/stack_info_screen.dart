@@ -542,13 +542,3 @@ class _StackInfoScreenState extends ConsumerState<StackInfoScreen> {
   }
 }
 
-/// Helper function to check if habit was completed today
-bool isHabitCompletedToday(Habit habit) {
-  if (habit.lastCompleted == null) return false;
-
-  final now = DateTime.now();
-  final lastCompleted = habit.lastCompleted!;
-  return now.year == lastCompleted.year &&
-      now.month == lastCompleted.month &&
-      now.day == lastCompleted.day;
-}

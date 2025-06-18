@@ -1,0 +1,8 @@
+Changing current working directory to: /Users/bridger/Documents/programming_projects/habit/habit_level_up
+Building com.example.habitlevelup.habitLevelUp for simulator (ios)...
+Running Xcode build...                                          
+Xcode build done.                                           10.4s
+Failed to build iOS app
+Error (Xcode): lib/features/habits/stack_habit/add_stack_habit_screen.dart:20:7: Error: The non-abstract class '_AddStackHabitScreenState' is missing implementations for these members:
+
+Encountered error while building for simulator.

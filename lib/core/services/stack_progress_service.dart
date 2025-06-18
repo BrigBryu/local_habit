@@ -316,16 +316,6 @@ class StackCompletionResult {
   int get totalXP => childXP + stackBonusXP;
 }
 
-/// Helper function to check if habit was completed today
-bool isHabitCompletedToday(Habit habit) {
-  if (habit.lastCompleted == null) return false;
-
-  final now = DateTime.now();
-  final lastCompleted = habit.lastCompleted!;
-  return now.year == lastCompleted.year &&
-      now.month == lastCompleted.month &&
-      now.day == lastCompleted.day;
-}
 
 /// Extension to get first matching element or null
 extension FirstWhereOrNullExtension<T> on Iterable<T> {

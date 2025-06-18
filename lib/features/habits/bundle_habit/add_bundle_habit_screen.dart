@@ -78,7 +78,7 @@ class _AddBundleHabitScreenState
       true; // Enable dropdown to select habit types
 
   @override
-  Widget buildCustomContent(BuildContext context) {
+  Widget buildCustomContent(BuildContext context, WidgetRef ref) {
     final availableHabits = _availableHabits;
     final selectedHabits = _selectedHabits;
     final unselectedHabits = _unselectedHabits;
