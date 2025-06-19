@@ -659,6 +659,10 @@ class _ExpandableBundleTile extends ConsumerWidget {
         return Icons.folder_special;
       case HabitType.stack:
         return Icons.layers;
+      case HabitType.interval:
+        return Icons.schedule;
+      case HabitType.weekly:
+        return Icons.date_range;
     }
   }
 
@@ -672,6 +676,10 @@ class _ExpandableBundleTile extends ConsumerWidget {
         return AppColors.bundleHabit;
       case HabitType.stack:
         return AppColors.stackHabit;
+      case HabitType.interval:
+        return AppColors.basicHabit; // Use same color as basic for now
+      case HabitType.weekly:
+        return AppColors.basicHabit; // Use same color as basic for now
     }
   }
 

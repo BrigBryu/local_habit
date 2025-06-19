@@ -558,6 +558,10 @@ class _BundleInfoScreenState extends ConsumerState<BundleInfoScreen> {
         return Icons.folder;
       case HabitType.stack:
         return Icons.layers;
+      case HabitType.interval:
+        return Icons.schedule;
+      case HabitType.weekly:
+        return Icons.date_range;
     }
   }
 
@@ -571,6 +575,10 @@ class _BundleInfoScreenState extends ConsumerState<BundleInfoScreen> {
         return AppColors.bundleHabit;
       case HabitType.stack:
         return AppColors.stackHabit;
+      case HabitType.interval:
+        return AppColors.basicHabit;
+      case HabitType.weekly:
+        return AppColors.basicHabit;
     }
   }
 
@@ -585,6 +593,10 @@ class _BundleInfoScreenState extends ConsumerState<BundleInfoScreen> {
         return colors.bundleHabit; // Uses theme-aware purple
       case HabitType.stack:
         return colors.stackHabit; // Uses theme-aware orange
+      case HabitType.interval:
+        return colors.basicHabit; // Use same as basic for now
+      case HabitType.weekly:
+        return colors.basicHabit; // Use same as basic for now
     }
   }
 

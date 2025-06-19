@@ -365,8 +365,10 @@ class HabitsNotifier extends StateNotifier<AsyncValue<void>> {
         return 25;
       case HabitType.stack:
         return 20;
-      default:
-        return 10;
+      case HabitType.interval:
+        return 12; // Slightly more than basic for time-based habits
+      case HabitType.weekly:
+        return 15; // Same as avoidance since it's weekly goal
     }
   }
 

@@ -490,7 +490,7 @@ class WeeklyHabitInfoScreen extends ConsumerWidget {
     );
 
     if (result == true) {
-      ref.read(habitsNotifierProvider.notifier).deleteHabit(habit.id);
+      ref.read(habitsNotifierProvider.notifier).removeHabit(habit.id);
       Navigator.of(context).pop();
     }
   }

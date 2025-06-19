@@ -500,6 +500,10 @@ class _AddStackHabitScreenState
         return colors.bundleHabit;
       case HabitType.stack:
         return colors.stackHabit;
+      case HabitType.interval:
+        return colors.basicHabit; // Use same color as basic for now
+      case HabitType.weekly:
+        return colors.basicHabit; // Use same color as basic for now
     }
   }
 
@@ -513,6 +517,10 @@ class _AddStackHabitScreenState
         return Icons.folder_special;
       case HabitType.stack:
         return Icons.layers;
+      case HabitType.interval:
+        return Icons.schedule; // Clock icon for interval habits
+      case HabitType.weekly:
+        return Icons.date_range; // Calendar icon for weekly habits
     }
   }
 }

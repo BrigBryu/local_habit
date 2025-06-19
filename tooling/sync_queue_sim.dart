@@ -5,15 +5,16 @@ import 'package:logger/logger.dart';
 
 import 'package:habit_level_up/core/sync/sync_queue.dart';
 import 'package:habit_level_up/core/repositories/remote_habits_repository.dart';
-import 'package:habit_level_up/core/repositories/local_habits_repository.dart';
+import 'package:habit_level_up/core/repositories/simple_memory_repository.dart';
 
 /// Simulates offline/online conditions to test SyncQueue functionality
 class SyncQueueSimulator {
   final Logger _logger = Logger();
   final RemoteHabitsRepository _remoteRepo = RemoteHabitsRepository();
-  final LocalHabitsRepository _localRepo = LocalHabitsRepository();
+  final SimpleMemoryRepository _localRepo = SimpleMemoryRepository();
   late Timer _networkToggleTimer;
   bool _simulationRunning = false;
+  bool _isOnline = true;
 
   /// Run the full sync queue simulation
   Future<void> runSimulation() async {

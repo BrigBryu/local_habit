@@ -153,6 +153,11 @@ class ValidationService {
     return false;
   }
 
+  /// Reset rate limiting state (for testing only)
+  void resetRateLimit() {
+    _lastWrite = null;
+  }
+
   /// Check for duplicate username collision
   ValidationResult checkUsernameDuplicate(
       String username, List<String> existingUsernames) {
