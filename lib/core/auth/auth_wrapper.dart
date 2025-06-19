@@ -15,7 +15,7 @@ final authStateProvider = StateProvider<bool>((ref) {
   return isAuth;
 });
 
-/// Notifier that watches for auth changes and updates the provider
+/// Notifier that watches for auth changes via stream and updates the provider
 class AuthStateNotifier extends StateNotifier<bool> {
   AuthStateNotifier() : super(UsernameAuthService.instance.isAuthenticated) {
     final logger = Logger();
@@ -23,15 +23,17 @@ class AuthStateNotifier extends StateNotifier<bool> {
     _startWatching();
   }
 
-  Timer? _timer;
+  StreamSubscription<bool>? _subscription;
 
   void _startWatching() {
     final logger = Logger();
-    _timer = Timer.periodic(const Duration(milliseconds: 200), (timer) {
-      final currentState = UsernameAuthService.instance.isAuthenticated;
-      if (currentState != state) {
-        logger.i('[AuthStateNotifier] State changed: $state → $currentState');
-        state = currentState;
+    logger.i('[AuthStateNotifier] Setting up auth state stream listener');
+    
+    // Listen to the auth state stream instead of polling
+    _subscription = UsernameAuthService.instance.authStateStream.listen((newState) {
+      if (newState != state) {
+        logger.i('[AuthStateNotifier] Stream state changed: $state → $newState');
+        state = newState;
       }
     });
   }
@@ -40,7 +42,7 @@ class AuthStateNotifier extends StateNotifier<bool> {
   void dispose() {
     final logger = Logger();
     logger.i('[AuthStateNotifier] Disposing');
-    _timer?.cancel();
+    _subscription?.cancel();
     super.dispose();
   }
 
@@ -49,12 +51,12 @@ class AuthStateNotifier extends StateNotifier<bool> {
     final logger = Logger();
     logger.i('[AuthStateNotifier] Force refresh requested');
 
-    // Give the service a moment to update its state
-    await Future.delayed(const Duration(milliseconds: 50));
-
+    // Get current state directly instead of waiting
     final currentState = UsernameAuthService.instance.isAuthenticated;
     logger.i('[AuthStateNotifier] Force refresh: $state → $currentState');
-    state = currentState;
+    if (currentState != state) {
+      state = currentState;
+    }
   }
 }
 

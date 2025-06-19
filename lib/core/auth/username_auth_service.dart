@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 import 'package:crypto/crypto.dart';
@@ -19,6 +20,24 @@ class UsernameAuthService {
 
   String? _currentUserId;
   String? _currentUsername;
+  
+  // Stream controller for auth state changes
+  final _authStateController = StreamController<bool>.broadcast();
+  
+  /// Stream of authentication state changes
+  Stream<bool> get authStateStream => _authStateController.stream;
+  
+  /// Notify listeners of auth state change
+  void _notifyAuthStateChange() {
+    final newState = isAuthenticated;
+    _logger.d('[_notifyAuthStateChange] Emitting auth state: $newState');
+    _authStateController.add(newState);
+  }
+  
+  /// Dispose of resources
+  void dispose() {
+    _authStateController.close();
+  }
 
   /// Register new user with username and password
   Future<AuthResult> signUp(String username, String password) async {
@@ -63,6 +82,9 @@ class UsernameAuthService {
 
       // Persist to storage
       await _saveCurrentUser();
+      
+      // Notify auth state change
+      _notifyAuthStateChange();
 
       _logger.i('User registered and signed in: $normalizedUsername');
       return AuthResult.success();
@@ -133,6 +155,9 @@ class UsernameAuthService {
       // Persist to storage
       await _saveCurrentUser();
       _logger.i('[signIn] User data saved to storage');
+      
+      // Notify auth state change
+      _notifyAuthStateChange();
 
       // Check isAuthenticated after setting data
       final authStatus = isAuthenticated;
@@ -193,6 +218,9 @@ class UsernameAuthService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('current_user_id');
       await prefs.remove('current_username');
+      
+      // Notify auth state change
+      _notifyAuthStateChange();
 
       _logger.i('User signed out');
     } catch (e) {
@@ -210,6 +238,9 @@ class UsernameAuthService {
       if (_currentUserId != null && _currentUsername != null) {
         _logger.i('Session restored for user: $_currentUsername');
       }
+      
+      // Notify initial auth state
+      _notifyAuthStateChange();
     } catch (e) {
       _logger.e('Failed to restore session', error: e);
     }

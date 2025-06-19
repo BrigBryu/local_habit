@@ -97,7 +97,7 @@ class FlavorConfig {
   String get supabaseUrl {
     switch (_flavor) {
       case AppFlavor.dev:
-        return 'http://127.0.0.1:54321'; // Local Supabase
+        return 'https://ffemtzuqmgqkitbyfvrn.supabase.co'; // Production Supabase for dev testing
       case AppFlavor.prod:
         return 'https://ffemtzuqmgqkitbyfvrn.supabase.co'; // Production Supabase
     }
