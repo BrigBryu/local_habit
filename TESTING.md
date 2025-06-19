@@ -122,7 +122,7 @@ flutter test integration_test/partner_flow_test.dart \
 1. **Database Tests** - SQL unit tests and schema validation
 2. **Flutter Tests** - Unit tests, formatting, and analysis
 3. **Integration Tests** - End-to-end partner flow on Android emulator
-4. **Build Tests** - Android APK and Web builds
+4. **Build Tests** - Android APK builds
 5. **Security Checks** - Dependency scanning and secret detection
 
 **Triggers:**

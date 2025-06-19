@@ -86,7 +86,19 @@ cd ../../app
 flutter pub get
 ```
 
-### 📱 Running with Android Studio
+### 📱 Supported Platforms
+
+**✅ Supported Platforms:**
+- Android (Primary target)
+- iOS (Primary target)
+- macOS (Desktop)
+- Linux (Desktop)
+- Windows (Desktop)
+
+**❌ Intentionally Unsupported:**
+- Web - Not supported due to secure local storage requirements for sensitive habit data
+
+## 📱 Running with Android Studio
 
 #### **Option 1: Android Studio IDE (Recommended)**
 
