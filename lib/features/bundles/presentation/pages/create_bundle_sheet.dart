@@ -338,6 +338,10 @@ class _CreateBundleSheetState extends ConsumerState<CreateBundleSheet> {
         return Icons.layers;
       case HabitType.bundle:
         return Icons.folder;
+      case HabitType.interval:
+        return Icons.schedule;
+      case HabitType.weekly:
+        return Icons.event_repeat;
       // TODO: Re-enable when time-based habits are ready
       // case HabitType.alarmHabit:
       //   return Icons.alarm;

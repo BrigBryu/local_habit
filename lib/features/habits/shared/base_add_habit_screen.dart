@@ -179,7 +179,8 @@ abstract class BaseAddHabitScreenState<T extends BaseAddHabitScreen>
       const DropdownMenuItem(value: '/add-stack-habit', child: Text('Stack')),
       const DropdownMenuItem(
           value: '/add-avoidance-habit', child: Text('Avoidance')),
-      // 🚧 add more here when new types arrive
+      const DropdownMenuItem(value: '/add-interval-habit', child: Text('Interval')),
+      const DropdownMenuItem(value: '/add-weekly-habit', child: Text('Weekly')),
     ];
 
     return DropdownButtonFormField<String>(

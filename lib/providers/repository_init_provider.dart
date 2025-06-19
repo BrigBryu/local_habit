@@ -2,8 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
 
 import '../core/repositories/habits_repository.dart';
-// import '../core/repositories/simple_memory_repository.dart';
-import '../core/repositories/remote_habits_repository.dart';
+import '../core/repositories/simple_memory_repository.dart';
+// import '../core/repositories/remote_habits_repository.dart';
 import '../core/auth/username_auth_service.dart';
 import '../screens/partner_settings_screen.dart';
 
@@ -11,8 +11,8 @@ final _logger = Logger();
 
 /// Provider that creates and manages the repository with user context
 final repositoryProvider = FutureProvider<HabitsRepository>((ref) async {
-  _logger.i('Using RemoteHabitsRepository for real-time sync');
-  final repository = RemoteHabitsRepository();
+  _logger.i('Using SimpleMemoryRepository for testing Stack fixes');
+  final repository = SimpleMemoryRepository();
 
   // Initialize with async dependencies
   await repository.initialize();
@@ -31,7 +31,7 @@ final repositoryProvider = FutureProvider<HabitsRepository>((ref) async {
     _logger.w('Could not set user ID in repository: $e');
   }
 
-  _logger.i('RemoteHabitsRepository initialized successfully');
+  _logger.i('SimpleMemoryRepository initialized successfully');
   return repository;
 });
 
@@ -64,6 +64,6 @@ final userAwareRepositoryProvider =
 
 /// Provider for checking if we're using remote or local repository
 final isUsingRemoteRepositoryProvider = Provider<bool>((ref) {
-  // Using local Isar database but with Supabase sync capability
-  return true;
+  // Using pure SimpleMemoryRepository for testing Stack fixes
+  return false;
 });

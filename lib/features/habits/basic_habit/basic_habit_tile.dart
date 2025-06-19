@@ -178,6 +178,21 @@ class HabitTile extends ConsumerWidget {
 
       case HabitType.stack:
         return 'Habit Stack';
+      
+      case HabitType.interval:
+        final count = isHabitCompletedToday(habit) ? habit.dailyCompletionCount : 0;
+        final intervalDays = habit.intervalDays ?? 1;
+        if (count > 0) {
+          return 'Interval ($intervalDays days) · Completed today';
+        }
+        return habit.description.isNotEmpty ? habit.description : 'Interval Habit';
+      
+      case HabitType.weekly:
+        final count = isHabitCompletedToday(habit) ? habit.dailyCompletionCount : 0;
+        if (count > 0) {
+          return 'Weekly · Completed today';
+        }
+        return habit.description.isNotEmpty ? habit.description : 'Weekly Habit';
     }
   }
 
@@ -195,6 +210,10 @@ class HabitTile extends ConsumerWidget {
         return colors.bundleHabit;
       case HabitType.stack:
         return colors.stackHabit;
+      case HabitType.interval:
+        return colors.gruvboxYellow;
+      case HabitType.weekly:
+        return colors.gruvboxBlue;
     }
   }
 
@@ -208,6 +227,10 @@ class HabitTile extends ConsumerWidget {
         return Icons.folder_special;
       case HabitType.stack:
         return Icons.layers;
+      case HabitType.interval:
+        return Icons.schedule;
+      case HabitType.weekly:
+        return Icons.event_repeat;
     }
   }
 

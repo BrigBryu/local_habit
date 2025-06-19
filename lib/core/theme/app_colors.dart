@@ -41,6 +41,15 @@ class AppColors {
   static const Color avoidanceHabit = draculaRed;
   static const Color bundleHabit = draculaPurple;
   static const Color stackHabit = draculaOrange;
+  
+  // Gruvbox colors for occasional habits
+  static const Color gruvboxYellow = Color(0xFFD79921);
+  static const Color gruvboxBlue = Color(0xFF458588);
+  static const Color gruvboxRed = Color(0xFFCC241D);
+  static const Color gruvboxGreen = Color(0xFF98971A);
+  static const Color gruvboxFg = Color(0xFFEBDBB2);
+  static const Color gruvboxBg = Color(0xFF282828);
+  static const Color gruvboxBg2 = Color(0xFF3C3836);
 
   // UI colors - Dracula theme with high contrast
   static const Color backgroundLight = draculaForeground;

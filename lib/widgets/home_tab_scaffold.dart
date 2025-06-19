@@ -3,11 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../pages/daily_habits_page.dart';
 import '../pages/partner_habits_page.dart';
-import '../screens/partner_settings_screen.dart';
 import '../screens/settings_screen.dart';
-import '../screens/level_page.dart';
-import '../features/home/presentation/widgets/level_bar.dart';
-import '../core/theme/app_colors.dart';
 import '../core/theme/flexible_theme_system.dart';
 import '../providers/repository_init_provider.dart';
 
@@ -137,26 +133,6 @@ class _HomeTabScaffoldState extends ConsumerState<HomeTabScaffold>
                     ),
                   ],
                 ),
-                // Always visible level bar
-                SliverPersistentHeader(
-                  pinned: true,
-                  delegate: _LevelBarHeaderDelegate(
-                    colors: colors,
-                    child: Container(
-                      color: colors.draculaBackground,
-                      padding: EdgeInsets.only(
-                        left: 8,
-                        right: 8,
-                        top: MediaQuery.of(context).size.width < 600
-                            ? MediaQuery.of(context).padding.top +
-                                8 // Use status bar height + extra padding
-                            : 2,
-                        bottom: 2,
-                      ),
-                      child: const AnimatedLevelBarWrapper(),
-                    ),
-                  ),
-                ),
                 // Tab bar
                 SliverPersistentHeader(
                   pinned: true,
@@ -203,49 +179,6 @@ class PartnerHabitsTab extends ConsumerWidget {
       padding: EdgeInsets.only(bottom: 8),
       child: PartnerHabitsPage(),
     );
-  }
-}
-
-class AnimatedLevelBarWrapper extends ConsumerWidget {
-  const AnimatedLevelBarWrapper({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return AnimatedLevelBar(
-      onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => const LevelPage(),
-          ),
-        );
-      },
-    );
-  }
-}
-
-// Custom delegate for level bar header
-class _LevelBarHeaderDelegate extends SliverPersistentHeaderDelegate {
-  final Widget child;
-  final FlexibleColors colors;
-
-  _LevelBarHeaderDelegate({required this.child, required this.colors});
-
-  @override
-  double get minExtent => 90; // Much larger to accommodate status bar clearance
-
-  @override
-  double get maxExtent => 90;
-
-  @override
-  Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return child;
-  }
-
-  @override
-  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) {
-    return oldDelegate is _LevelBarHeaderDelegate &&
-        oldDelegate.colors != colors;
   }
 }
 

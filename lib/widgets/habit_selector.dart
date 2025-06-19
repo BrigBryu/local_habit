@@ -313,6 +313,10 @@ class _HabitSelectorState extends ConsumerState<HabitSelector> {
         return Icon(Icons.layers, color: AppColors.stackHabit, size: 20);
       case HabitType.bundle:
         return Icon(Icons.folder, color: AppColors.bundleHabit, size: 20);
+      case HabitType.interval:
+        return Icon(Icons.schedule, color: AppColors.gruvboxYellow, size: 20);
+      case HabitType.weekly:
+        return Icon(Icons.event_repeat, color: AppColors.gruvboxBlue, size: 20);
       default:
         final colors = ref.watchColors;
         return Icon(Icons.circle, color: colors.draculaComment, size: 20);

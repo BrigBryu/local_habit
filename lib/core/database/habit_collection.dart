@@ -49,6 +49,11 @@ class HabitCollection {
   // Streaks
   int currentStreak = 0;
 
+  // Occasional habit fields
+  int? intervalDays;
+  int? weekdayMask;
+  DateTime? lastCompletionDate;
+
   HabitCollection();
 
   factory HabitCollection.fromDomain(Habit habit, String userId) {
@@ -77,7 +82,10 @@ class HabitCollection {
       ..dailyFailureCount = habit.dailyFailureCount
       ..lastFailureCountReset = habit.lastFailureCountReset
       ..avoidanceSuccessToday = habit.avoidanceSuccessToday
-      ..currentStreak = habit.currentStreak;
+      ..currentStreak = habit.currentStreak
+      ..intervalDays = habit.intervalDays
+      ..weekdayMask = habit.weekdayMask
+      ..lastCompletionDate = habit.lastCompletionDate;
   }
 
   Habit toDomain() {
@@ -106,6 +114,9 @@ class HabitCollection {
       lastFailureCountReset: lastFailureCountReset,
       avoidanceSuccessToday: avoidanceSuccessToday,
       currentStreak: currentStreak,
+      intervalDays: intervalDays,
+      weekdayMask: weekdayMask,
+      lastCompletionDate: lastCompletionDate,
     );
   }
 }

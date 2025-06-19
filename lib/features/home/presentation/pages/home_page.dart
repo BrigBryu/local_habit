@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:domain/domain.dart';
-import '../widgets/level_bar.dart';
 import '../providers.dart';
 import '../../../habits/basic_habit/index.dart';
 import '../../../habits/basic_habit/basic_habit_info_screen.dart';
 import '../../../habits/bundle_habit/bundle_habit_tile.dart';
 import '../../../../providers/habits_provider.dart';
-import '../../../../screens/level_page.dart';
 import '../../../../screens/theme_settings_screen.dart';
 import '../../../../screens/partner_settings_screen.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -58,13 +56,6 @@ class HomePage extends ConsumerWidget {
           child: Column(
             children: [
               const SizedBox(height: 16),
-
-              // Level bar at top
-              LevelBar(
-                onTap: () => _navigateToLevels(context, routeAvailability),
-              ),
-
-              const SizedBox(height: 24),
 
               // Habits section header
               Row(
@@ -187,22 +178,6 @@ class HomePage extends ConsumerWidget {
     }
   }
 
-  void _navigateToLevels(
-      BuildContext context, Map<String, bool> routeAvailability) {
-    if (routeAvailability['levels'] == true) {
-      try {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => const LevelPage(),
-          ),
-        );
-      } catch (e) {
-        _showPlaceholder(context, 'XP Detail (TODO)', 'Feature coming soon');
-      }
-    } else {
-      _showPlaceholder(context, 'XP Detail (TODO)', 'Feature coming soon');
-    }
-  }
 
   void _navigateToViewHabit(BuildContext context, Habit habit) {
     Navigator.of(context).push(

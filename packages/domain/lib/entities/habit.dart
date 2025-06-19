@@ -7,7 +7,9 @@ enum HabitType {
   basic('Basic Habit'),
   avoidance('Avoidance Habit'),
   stack('Habit Stack'),
-  bundle('Bundle Habit');
+  bundle('Bundle Habit'),
+  interval('Interval Habit'),
+  weekly('Weekly Habit');
   // TODO(bridger): Re-enable when time-based habits are ready
   // alarmHabit('Alarm Habit'),
   // timedSession('Timed Session'),
@@ -60,6 +62,11 @@ class Habit {
   final bool
       avoidanceSuccessToday; // For avoidance habits - if successfully avoided today
   final int currentStreak;
+  
+  // Occasional habit fields
+  final int? intervalDays; // For interval habits - days between completions
+  final int? weekdayMask; // For weekly habits - 7-bit mask (bit 0=Sunday, bit 1=Monday, etc.)
+  final DateTime? lastCompletionDate; // For interval/weekly habits - date of last completion
 
   const Habit({
     required this.id,
@@ -90,6 +97,9 @@ class Habit {
     this.lastFailureCountReset,
     this.avoidanceSuccessToday = false,
     this.currentStreak = 0,
+    this.intervalDays,
+    this.weekdayMask,
+    this.lastCompletionDate,
   });
 
   /// Factory for creating new habit
@@ -109,6 +119,8 @@ class Habit {
     // TimeOfDay? windowStartTime,
     // TimeOfDay? windowEndTime,
     List<int>? availableDays,
+    int? intervalDays,
+    int? weekdayMask,
   }) {
     return Habit(
       id: _generateId(),
@@ -127,6 +139,8 @@ class Habit {
       // windowStartTime: windowStartTime,
       // windowEndTime: windowEndTime,
       availableDays: availableDays,
+      intervalDays: intervalDays,
+      weekdayMask: weekdayMask,
       createdAt: TimeService().now(),
     );
   }
@@ -203,6 +217,10 @@ class Habit {
           _shouldResetFailureCount(now) ? now : lastFailureCountReset,
       avoidanceSuccessToday: newAvoidanceSuccess,
       currentStreak: newStreak,
+      intervalDays: intervalDays,
+      weekdayMask: weekdayMask,
+      lastCompletionDate: (type == HabitType.interval || type == HabitType.weekly) 
+          ? DateTime(now.year, now.month, now.day) : lastCompletionDate,
     );
   }
 
@@ -265,6 +283,9 @@ class Habit {
           _shouldResetFailureCount(now) ? now : lastFailureCountReset,
       avoidanceSuccessToday: false, // Failed today
       currentStreak: newStreak,
+      intervalDays: intervalDays,
+      weekdayMask: weekdayMask,
+      lastCompletionDate: lastCompletionDate,
     );
   }
 
@@ -292,6 +313,10 @@ class Habit {
 
       case HabitType.bundle:
         return 0; // Bundle itself gives no XP, children give XP individually + combo bonus
+
+      case HabitType.interval:
+      case HabitType.weekly:
+        return baseXP; // Same as basic habits - 1 XP per completion
 
       // TODO(bridger): Disabled time-based habit types
       // case HabitType.timedSession:
@@ -470,6 +495,10 @@ class Habit {
       return '$name 📦'; // Bundle emoji
     } else if (type == HabitType.avoidance) {
       return '$name 🚫'; // Avoidance emoji
+    } else if (type == HabitType.interval) {
+      return '$name ⟳'; // Interval rotation emoji
+    } else if (type == HabitType.weekly) {
+      return '$name 📅'; // Weekly calendar emoji
     }
     // TODO(bridger): Time-based display names disabled
     // else if (type == HabitType.alarmHabit) {
@@ -515,6 +544,9 @@ class Habit {
         'lastFailureCountReset': lastFailureCountReset?.toIso8601String(),
         'avoidanceSuccessToday': avoidanceSuccessToday,
         'currentStreak': currentStreak,
+        'intervalDays': intervalDays,
+        'weekdayMask': weekdayMask,
+        'lastCompletionDate': lastCompletionDate?.toIso8601String(),
       };
 
   /// Create habit from JSON for sync queue
@@ -556,6 +588,11 @@ class Habit {
             : null,
         avoidanceSuccessToday: json['avoidanceSuccessToday'] as bool? ?? false,
         currentStreak: json['currentStreak'] as int? ?? 0,
+        intervalDays: json['intervalDays'] as int?,
+        weekdayMask: json['weekdayMask'] as int?,
+        lastCompletionDate: json['lastCompletionDate'] != null
+            ? DateTime.parse(json['lastCompletionDate'] as String)
+            : null,
       );
 
   @override

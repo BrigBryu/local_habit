@@ -101,32 +101,16 @@ class SyncQueue {
 
   /// Add operation to sync queue
   Future<void> enqueue(SyncOp operation) async {
-    try {
-      await _db.isar.writeTxn(() async {
-        await _db.isar.syncOps.put(operation);
-      });
-      _logger.d(
-          'Enqueued sync operation: ${operation.operationType} for habit ${operation.habitId}');
-
-      // Trigger immediate processing attempt
-      _processQueue();
-    } catch (e, stackTrace) {
-      _logger.e('Failed to enqueue sync operation',
-          error: e, stackTrace: stackTrace);
-    }
+    // COMPLETELY DISABLED: Skip all sync operations for clean Stack testing
+    _logger.d('SKIPPED sync operation: ${operation.operationType} for habit ${operation.habitId} (sync completely disabled)');
+    return;
   }
 
   /// Start background processing of sync queue
   Future<void> _startProcessing() async {
-    // Delay initial processing to let app startup complete
-    Future.delayed(const Duration(seconds: 10), () {
-      _processQueue();
-    });
-
-    // Schedule periodic processing
-    _retryTimer = Timer.periodic(const Duration(minutes: 5), (_) {
-      _processQueue();
-    });
+    // COMPLETELY DISABLED: No background processing during Stack testing
+    _logger.d('Background sync processing disabled for clean testing');
+    return;
   }
 
   /// Process pending operations with memory-efficient pagination

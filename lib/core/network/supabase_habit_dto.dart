@@ -28,6 +28,9 @@ class SupabaseHabitDto {
   final DateTime? lastFailureCountReset;
   final bool avoidanceSuccessToday;
   final int currentStreak;
+  final int? intervalDays;
+  final int? weekdayMask;
+  final DateTime? lastCompletionDate;
 
   const SupabaseHabitDto({
     required this.id,
@@ -55,6 +58,9 @@ class SupabaseHabitDto {
     this.lastFailureCountReset,
     this.avoidanceSuccessToday = false,
     this.currentStreak = 0,
+    this.intervalDays,
+    this.weekdayMask,
+    this.lastCompletionDate,
   });
 
   /// Create DTO from Supabase JSON response (complete schema)
@@ -103,6 +109,11 @@ class SupabaseHabitDto {
           : null,
       avoidanceSuccessToday: json['avoidance_success_today'] as bool? ?? false,
       currentStreak: json['current_streak'] as int? ?? 0,
+      intervalDays: json['interval_days'] as int?,
+      weekdayMask: json['weekday_mask'] as int?,
+      lastCompletionDate: json['last_completion_date'] != null
+          ? DateTime.parse(json['last_completion_date'] as String)
+          : null,
     );
   }
 
@@ -141,6 +152,9 @@ class SupabaseHabitDto {
       'last_completion_count_reset':
           lastCompletionCountReset?.toIso8601String(),
       'last_failure_count_reset': lastFailureCountReset?.toIso8601String(),
+      'interval_days': intervalDays,
+      'weekday_mask': weekdayMask,
+      'last_completion_date': lastCompletionDate?.toIso8601String(),
     };
   }
 
@@ -184,6 +198,9 @@ class SupabaseHabitDto {
       lastFailureCountReset: lastFailureCountReset,
       avoidanceSuccessToday: avoidanceSuccessToday,
       currentStreak: currentStreak,
+      intervalDays: intervalDays,
+      weekdayMask: weekdayMask,
+      lastCompletionDate: lastCompletionDate,
     );
   }
 
@@ -215,6 +232,9 @@ class SupabaseHabitDto {
       lastFailureCountReset: habit.lastFailureCountReset,
       avoidanceSuccessToday: habit.avoidanceSuccessToday,
       currentStreak: habit.currentStreak,
+      intervalDays: habit.intervalDays,
+      weekdayMask: habit.weekdayMask,
+      lastCompletionDate: habit.lastCompletionDate,
     );
   }
 
@@ -228,6 +248,10 @@ class SupabaseHabitDto {
         return HabitType.bundle;
       case 'stack':
         return HabitType.stack;
+      case 'interval':
+        return HabitType.interval;
+      case 'weekly':
+        return HabitType.weekly;
       default:
         return HabitType.basic; // Default fallback
     }

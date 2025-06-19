@@ -394,6 +394,15 @@ class FlexibleColors {
         return draculaForeground; // White text on dark themes
     }
   }
+  
+  // Gruvbox colors from AppColors for compatibility
+  Color get gruvboxYellow => AppColors.gruvboxYellow;
+  Color get gruvboxBlue => AppColors.gruvboxBlue;
+  Color get gruvboxRed => AppColors.gruvboxRed;
+  Color get gruvboxGreen => AppColors.gruvboxGreen;
+  Color get gruvboxFg => AppColors.gruvboxFg;
+  Color get gruvboxBg => AppColors.gruvboxBg;
+  Color get gruvboxBg2 => AppColors.gruvboxBg2;
 
   // Completion background colors - lighter in light mode for better visibility
   Color get completedBackground {

@@ -6,6 +6,8 @@ import '../shared/base_add_habit_screen.dart';
 import '../avoidance_habit/add_avoidance_habit_screen.dart';
 import '../bundle_habit/add_bundle_habit_screen.dart';
 import '../stack_habit/add_stack_habit_screen.dart';
+import '../interval_habit/add_interval_habit_screen.dart';
+import '../weekly_habit/add_weekly_habit_screen.dart';
 import '../../../core/theme/app_colors.dart';
 
 class AddBasicHabitScreen extends BaseAddHabitScreen {
@@ -122,6 +124,12 @@ class _AddBasicHabitScreenState
         break;
       case '/add-stack-habit':
         targetScreen = const AddStackHabitScreen();
+        break;
+      case '/add-interval-habit':
+        targetScreen = const AddIntervalHabitScreen();
+        break;
+      case '/add-weekly-habit':
+        targetScreen = const AddWeeklyHabitScreen();
         break;
       default:
         super.navigateToHabitType(route);
