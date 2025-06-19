@@ -180,7 +180,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        target: [android, web]
+        target: [android]
     
     steps:
       - name: Checkout code
@@ -211,9 +211,6 @@ jobs:
         if: matrix.target == 'android'
         run: flutter build apk --release --dart-define=DEV=false
 
-      - name: Build for Web
-        if: matrix.target == 'web'
-        run: flutter build web --release --dart-define=DEV=false
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v3
@@ -221,7 +218,6 @@ jobs:
           name: build-${{ matrix.target }}
           path: |
             build/app/outputs/flutter-apk/*.apk
-            build/web/
           retention-days: 7
 
   # ====================================================================
