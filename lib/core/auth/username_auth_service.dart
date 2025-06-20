@@ -27,11 +27,18 @@ class UsernameAuthService {
   /// Stream of authentication state changes
   Stream<bool> get authStateStream => _authStateController.stream;
   
+  bool? _lastEmittedState;
+  
   /// Notify listeners of auth state change
   void _notifyAuthStateChange() {
     final newState = isAuthenticated;
-    _logger.d('[_notifyAuthStateChange] Emitting auth state: $newState');
-    _authStateController.add(newState);
+    
+    // Only emit if state has actually changed
+    if (_lastEmittedState != newState) {
+      _logger.d('[_notifyAuthStateChange] Emitting auth state change: $_lastEmittedState → $newState');
+      _lastEmittedState = newState;
+      _authStateController.add(newState);
+    }
   }
   
   /// Dispose of resources

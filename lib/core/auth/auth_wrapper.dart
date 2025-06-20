@@ -27,10 +27,16 @@ class AuthStateNotifier extends StateNotifier<bool> {
 
   void _startWatching() {
     final logger = Logger();
+    
+    // Cancel any existing subscription before creating a new one
+    _subscription?.cancel();
+    
     logger.i('[AuthStateNotifier] Setting up auth state stream listener');
     
-    // Listen to the auth state stream instead of polling
-    _subscription = UsernameAuthService.instance.authStateStream.listen((newState) {
+    // Listen to the auth state stream with distinct() to prevent duplicate emissions
+    _subscription = UsernameAuthService.instance.authStateStream
+        .distinct() // Prevent duplicate state emissions
+        .listen((newState) {
       if (newState != state) {
         logger.i('[AuthStateNotifier] Stream state changed: $state → $newState');
         state = newState;
@@ -75,9 +81,7 @@ class AuthWrapper extends ConsumerWidget {
     final isAuthenticated = ref.watch(authStateNotifierProvider);
     final logger = Logger();
 
-    logger.d('AuthWrapper building - isAuthenticated: $isAuthenticated');
-    logger.d(
-        'Current user ID: ${UsernameAuthService.instance.getCurrentUserId()}');
+    logger.d('AuthWrapper rebuild: $isAuthenticated');
 
     if (isAuthenticated) {
       logger.i('Showing main app (HomeTabScaffold)');

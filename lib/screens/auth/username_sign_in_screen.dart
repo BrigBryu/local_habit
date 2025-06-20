@@ -48,6 +48,8 @@ class _UsernameSignInScreenState extends ConsumerState<UsernameSignInScreen> {
       final result =
           await UsernameAuthService.instance.signIn(username, password);
 
+      if (!mounted) return;
+      
       if (result.isSuccess) {
         final currentUserId = UsernameAuthService.instance.getCurrentUserId();
         final isAuthenticated = UsernameAuthService.instance.isAuthenticated;
@@ -56,18 +58,24 @@ class _UsernameSignInScreenState extends ConsumerState<UsernameSignInScreen> {
             'Sign in successful for $username (ID: $currentUserId, authenticated: $isAuthenticated)');
 
         // Clear any existing snackbars and show success
-        ScaffoldMessenger.of(context).clearSnackBars();
-        _showSnackBar('Signed in successfully!', Colors.green);
+        if (mounted) {
+          ScaffoldMessenger.of(context).clearSnackBars();
+          _showSnackBar('Signed in successfully!', Colors.green);
+        }
 
         // Force refresh auth state to trigger navigation
         ref.read(authStateNotifierProvider.notifier).refresh();
       } else {
         _logger.e('Sign in failed for $username: ${result.error}');
-        _showSnackBar(result.error ?? 'Please try again', Colors.red);
+        if (mounted) {
+          _showSnackBar(result.error ?? 'Please try again', Colors.red);
+        }
       }
     } catch (e) {
       _logger.e('Sign in error', error: e);
-      _showSnackBar('Please try again', Colors.red);
+      if (mounted) {
+        _showSnackBar('Please try again', Colors.red);
+      }
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
