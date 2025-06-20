@@ -5,6 +5,7 @@ import 'package:mockito/annotations.dart';
 import 'package:habit_level_up/core/network/partner_service.dart';
 import 'package:habit_level_up/core/auth/username_auth_service.dart';
 
+// We'll test the partner service logic without actual network calls
 // Generate mocks
 @GenerateMocks([UsernameAuthService])
 import 'partner_service_test.mocks.dart';

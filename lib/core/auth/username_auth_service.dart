@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../network/supabase_client.dart';
 
 /// Supabase-backed username/password authentication service
@@ -17,6 +18,9 @@ class UsernameAuthService {
   final _logger = Logger();
 
   String? _currentUsername;
+  
+  /// Get Supabase client instance
+  SupabaseClient get supabase => SupabaseClientService.instance.supabase;
   
   // Stream controller for auth state changes
   final _authStateController = StreamController<bool>.broadcast();
@@ -53,7 +57,7 @@ class UsernameAuthService {
 
   /// Convert username to fake email for Supabase auth
   String _usernameToEmail(String username) {
-    return '${username.toLowerCase().trim()}@app.local';
+    return '${username.toLowerCase().trim()}@test.com';
   }
 
   /// Register new user with username and password
@@ -116,24 +120,40 @@ class UsernameAuthService {
     } catch (e) {
       _logger.e('Registration failed', error: e);
 
-      // Parse specific error messages
-      final errorMessage = e.toString().toLowerCase();
-
-      if (errorMessage.contains('already registered') || 
-          errorMessage.contains('user already exists')) {
-        return AuthResult.error(
-            'This username is already taken. Please choose a different one.');
-      } else if (errorMessage.contains('network') ||
-          errorMessage.contains('connection')) {
-        return AuthResult.error(
-            'Network error. Please check your internet connection and try again.');
-      } else if (errorMessage.contains('timeout')) {
-        return AuthResult.error('Connection timeout. Please try again.');
-      } else if (errorMessage.contains('invalid')) {
-        return AuthResult.error('Invalid username or password format.');
+      // Handle specific Supabase exceptions
+      if (e is AuthException) {
+        final message = e.message.toLowerCase();
+        _logger.e('Supabase AuthException: ${e.message}', error: e);
+        
+        if (message.contains('email') && message.contains('invalid')) {
+          return AuthResult.error('Invalid email format. Please contact support.');
+        } else if (message.contains('already') || message.contains('exist')) {
+          return AuthResult.error('This username is already taken. Please choose a different one.');
+        } else if (message.contains('weak') || message.contains('password')) {
+          return AuthResult.error('Password must be at least 6 characters long.');
+        } else {
+          return AuthResult.error('Sign-up failed: ${e.message}');
+        }
+      } else if (e is PostgrestException) {
+        _logger.e('Supabase PostgrestException: ${e.message}', error: e);
+        if (e.message.toLowerCase().contains('duplicate') || 
+            e.message.toLowerCase().contains('unique')) {
+          return AuthResult.error('This username is already taken. Please choose a different one.');
+        } else {
+          return AuthResult.error('Database error: ${e.message}');
+        }
       } else {
-        return AuthResult.error(
-            'Account creation failed. Please try again later.');
+        // Parse generic error messages
+        final errorMessage = e.toString().toLowerCase();
+        _logger.e('Generic error during registration: $errorMessage', error: e);
+
+        if (errorMessage.contains('network') || errorMessage.contains('connection')) {
+          return AuthResult.error('Network error. Please check your internet connection and try again.');
+        } else if (errorMessage.contains('timeout')) {
+          return AuthResult.error('Connection timeout. Please try again.');
+        } else {
+          return AuthResult.error('Account creation failed: ${e.toString()}');
+        }
       }
     }
   }

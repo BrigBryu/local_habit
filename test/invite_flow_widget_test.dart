@@ -42,7 +42,7 @@ void main() {
       testWidgets('should validate username input',
           (WidgetTester tester) async {
         // Arrange
-        when(mockValidationService.validateUsername(any)).thenReturn(
+        when(mockValidationService.validateUsername(anyThat(isA<String>()))).thenReturn(
           ValidationResult.error('Username must be 1-32 characters'),
         );
 
