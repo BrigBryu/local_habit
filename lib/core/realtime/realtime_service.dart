@@ -6,7 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../network/supabase_client.dart';
 import '../network/supabase_habit_dto.dart';
-import '../auth/auth_service.dart';
+import '../auth/username_auth_service.dart';
 
 /// Service for managing realtime subscriptions to habits and completions
 class RealtimeService {
@@ -41,7 +41,7 @@ class RealtimeService {
         return;
       }
 
-      if (!AuthService.instance.isAuthenticated) {
+      if (!UsernameAuthService.instance.isAuthenticated) {
         _logger.d('Not authenticated, skipping realtime initialization');
         return;
       }
@@ -58,7 +58,7 @@ class RealtimeService {
 
   /// Subscribe to habits table changes
   Future<void> _subscribeToHabits() async {
-    final currentUserId = AuthService.instance.getCurrentUserId();
+    final currentUserId = UsernameAuthService.instance.getCurrentUserId();
     if (currentUserId == null) return;
 
     try {
@@ -93,7 +93,7 @@ class RealtimeService {
 
   /// Subscribe to completions table changes
   Future<void> _subscribeToCompletions() async {
-    final currentUserId = AuthService.instance.getCurrentUserId();
+    final currentUserId = UsernameAuthService.instance.getCurrentUserId();
     if (currentUserId == null) return;
 
     try {
