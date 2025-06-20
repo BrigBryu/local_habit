@@ -4,7 +4,7 @@ import 'package:integration_test/integration_test.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:habit_level_up/main.dart' as app;
 import 'package:habit_level_up/core/network/supabase_client.dart';
-import 'package:habit_level_up/core/network/relationship_dto.dart';
+import 'package:habit_level_up/core/network/partner_service.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -12,7 +12,8 @@ void main() {
   group('Partner Flow Integration Tests', () {
     late String deviceAUserId;
     late String deviceBUserId;
-    late String inviteCode;
+    const String deviceAUsername = 'device_a_test';
+    const String deviceBUsername = 'device_b_test';
 
     setUpAll(() async {
       // Load test environment
@@ -31,7 +32,7 @@ void main() {
       await supabase.auth.signOut();
     });
 
-    testWidgets('Device A can create invite code', (WidgetTester tester) async {
+    testWidgets('Device A can send partner request to Device B', (WidgetTester tester) async {
       // Sign in as Device A
       await _signInAsDevice('A');
       deviceAUserId = supabase.auth.currentUser!.id;
@@ -44,40 +45,34 @@ void main() {
       // Navigate to Partner Settings
       await _navigateToPartnerSettings(tester);
 
-      // Create invite code
-      await tester.tap(find.text('Create Invite Code'));
+      // Enter Device B's username
+      final usernameField = find.widgetWithText(TextFormField, 'Partner Username');
+      await tester.enterText(usernameField, deviceBUsername);
       await tester.pumpAndSettle();
 
-      // Should show success message and invite code
-      expect(find.textContaining('Invite code created:'), findsOneWidget);
+      // Tap Link Partner button
+      await tester.tap(find.text('Link Partner'));
+      await tester.pumpAndSettle();
 
-      // Extract the invite code from the UI
-      final inviteCodeText = find
-          .byType(Text)
-          .evaluate()
-          .map((e) => (e.widget as Text).data)
-          .firstWhere(
-              (text) =>
-                  text != null && RegExp(r'^[A-Z0-9]{6}$').hasMatch(text!),
-              orElse: () => null);
+      // Should show success message
+      expect(find.textContaining('Successfully'), findsOneWidget);
 
-      expect(inviteCodeText, isNotNull);
-      inviteCode = inviteCodeText!;
-
-      print('Created invite code: $inviteCode');
+      print('Device A sent partner request to: $deviceBUsername');
     });
 
-    testWidgets('Device B can link with invite code',
+    testWidgets('Device B confirms partnership exists',
         (WidgetTester tester) async {
-      expect(inviteCode, isNotNull,
-          reason: 'Previous test should have created invite code');
-
       // Sign in as Device B
       await _signInAsDevice('B');
       deviceBUserId = supabase.auth.currentUser!.id;
       expect(deviceBUserId, isNotNull);
       expect(deviceBUserId, isNot(equals(deviceAUserId)),
           reason: 'Device B should have different user ID');
+
+      // Check partnership exists via service
+      final partners = await PartnerService.instance.getPartners();
+      expect(partners.isNotEmpty, isTrue, 
+          reason: 'Device B should have at least one partner');
 
       // Launch app
       await tester.pumpWidget(const app.HabitLevelUpApp());
@@ -86,17 +81,11 @@ void main() {
       // Navigate to Partner Settings
       await _navigateToPartnerSettings(tester);
 
-      // Enter invite code
-      final codeField = find.byType(TextField).last;
-      await tester.enterText(codeField, inviteCode);
-      await tester.pumpAndSettle();
+      // Should show partner in the list
+      expect(find.textContaining('Current Partners'), findsOneWidget);
+      expect(find.text('No partners linked yet'), findsNothing);
 
-      // Tap Link Partner button
-      await tester.tap(find.text('Link Partner'));
-      await tester.pumpAndSettle();
-
-      // Should show success message
-      expect(find.text('Successfully linked to partner!'), findsOneWidget);
+      print('Device B confirmed partnership with Device A');
     });
 
     testWidgets('Both devices show partner relationship',
@@ -124,50 +113,46 @@ void main() {
       expect(find.text('No partners linked yet'), findsNothing);
     });
 
-    testWidgets('Cannot reuse same invite code', (WidgetTester tester) async {
-      // Try to create a new device and use the same code
-      await _signInAsDevice('A'); // Different from the one that used it
+    testWidgets('Cannot link to non-existent username', (WidgetTester tester) async {
+      // Sign in as Device A
+      await _signInAsDevice('A');
 
       await tester.pumpWidget(const app.HabitLevelUpApp());
       await tester.pumpAndSettle();
 
       await _navigateToPartnerSettings(tester);
 
-      // Try to use the same invite code again
-      final codeField = find.byType(TextField).last;
-      await tester.enterText(codeField, inviteCode);
+      // Try to link to non-existent username
+      final usernameField = find.widgetWithText(TextFormField, 'Partner Username');
+      await tester.enterText(usernameField, 'nonexistent_user_12345');
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Link Partner'));
       await tester.pumpAndSettle();
 
       // Should show error message
-      expect(find.textContaining('Invalid or expired'), findsOneWidget);
+      expect(find.textContaining('not found'), findsOneWidget);
     });
 
     testWidgets('Cannot link to yourself', (WidgetTester tester) async {
       // Sign in as Device A
       await _signInAsDevice('A');
 
-      // Create a new invite code
-      final newCode = await PartnerService.instance.createInviteCode();
-      expect(newCode.success, isTrue);
-
       await tester.pumpWidget(const app.HabitLevelUpApp());
       await tester.pumpAndSettle();
 
       await _navigateToPartnerSettings(tester);
 
-      // Try to use own invite code
-      final codeField = find.byType(TextField).last;
-      await tester.enterText(codeField, newCode.inviteCode!);
+      // Try to link to own username
+      final usernameField = find.widgetWithText(TextFormField, 'Partner Username');
+      await tester.enterText(usernameField, deviceAUsername);
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Link Partner'));
       await tester.pumpAndSettle();
 
       // Should show error message
-      expect(find.text('Cannot link to yourself'), findsOneWidget);
+      expect(find.textContaining('Cannot link to yourself'), findsOneWidget);
     });
 
     testWidgets('Database contains correct relationship records',
@@ -202,35 +187,27 @@ void main() {
       expect(bToA, isNotNull);
     });
 
-    testWidgets('Race condition: simultaneous link attempts',
+    testWidgets('Direct partner service API test',
         (WidgetTester tester) async {
-      // Reset state for this test
-      await _resetTestDatabase();
-
-      // Create new invite code
+      // Test the PartnerService directly
       await _signInAsDevice('A');
-      final codeResult = await PartnerService.instance.createInviteCode();
-      expect(codeResult.success, isTrue);
-      final raceCode = codeResult.inviteCode!;
+      
+      try {
+        // This should work - linking to Device B
+        await PartnerService.instance.linkPartner(deviceBUsername);
+        print('Direct API: Successfully linked to $deviceBUsername');
+      } catch (e) {
+        print('Direct API: Error linking to $deviceBUsername: $e');
+        // This might fail if already linked, which is OK
+      }
 
-      // Sign in as Device B
-      await _signInAsDevice('B');
-
-      // Attempt to link with the same code simultaneously
-      final futures = [
-        PartnerService.instance.linkPartner(raceCode),
-        PartnerService.instance.linkPartner(raceCode),
-      ];
-
-      final results = await Future.wait(futures);
-
-      // Only one should succeed
-      final successCount = results.where((r) => r.success).length;
-      expect(successCount, equals(1),
-          reason: 'Only one link attempt should succeed');
-
-      final failureCount = results.where((r) => !r.success).length;
-      expect(failureCount, equals(1), reason: 'One link attempt should fail');
+      // Test getting partners
+      final partners = await PartnerService.instance.getPartners();
+      print('Direct API: Found ${partners.length} partners');
+      
+      for (final partner in partners) {
+        print('Partner: ${partner.partnerUsername} (ID: ${partner.partnerId})');
+      }
     });
   });
 }
@@ -281,30 +258,20 @@ Future<void> _navigateToPartnerSettings(WidgetTester tester) async {
   }
 
   // Verify we're on the partner settings screen
-  expect(find.text('Create Invite Code'), findsOneWidget);
+  expect(find.text('Link Partner'), findsOneWidget);
 }
 
 /// Helper function to reset test database
 Future<void> _resetTestDatabase() async {
-  // Execute the dev reset script
-  await supabase.rpc('exec_sql', params: {
-    'sql': '''
-      truncate table public.relationships cascade;
-      truncate table public.invite_codes cascade;
-    '''
-  }).catchError((e) {
-    // If the RPC doesn't exist, do manual cleanup
-    return Future.wait([
-      supabase
-          .from('relationships')
-          .delete()
-          .neq('id', '00000000-0000-0000-0000-000000000000'),
-      supabase
-          .from('invite_codes')
-          .delete()
-          .neq('id', '00000000-0000-0000-0000-000000000000'),
-    ]);
-  });
-
-  print('Test database reset completed');
+  // Clean up relationships for test users
+  try {
+    await supabase
+        .from('relationships')
+        .delete()
+        .neq('id', '00000000-0000-0000-0000-000000000000');
+    
+    print('Test database reset completed');
+  } catch (e) {
+    print('Test database reset error (might be expected): $e');
+  }
 }

@@ -6,20 +6,20 @@ import 'package:mockito/annotations.dart';
 
 import 'package:habit_level_up/screens/auth/username_setup_screen.dart';
 import 'package:habit_level_up/screens/partner_settings_screen.dart';
-import 'package:habit_level_up/core/auth/auth_service.dart';
+import 'package:habit_level_up/core/auth/username_auth_service.dart';
 import 'package:habit_level_up/core/validation/validation_service.dart';
 
 // Generate mocks
-@GenerateMocks([AuthService, ValidationService])
+@GenerateMocks([UsernameAuthService, ValidationService])
 import 'invite_flow_widget_test.mocks.dart';
 
 void main() {
-  group('Invite Flow Widget Tests', () {
-    late MockAuthService mockAuthService;
+  group('Partner Flow Widget Tests', () {
+    late MockUsernameAuthService mockAuthService;
     late MockValidationService mockValidationService;
 
     setUp(() {
-      mockAuthService = MockAuthService();
+      mockAuthService = MockUsernameAuthService();
       mockValidationService = MockValidationService();
     });
 
