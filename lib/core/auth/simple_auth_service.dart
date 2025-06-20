@@ -126,18 +126,7 @@ class SimpleAuthService {
 
   /// Check if user is authenticated
   bool get isAuthenticated {
-    try {
-      // Check Supabase first
-      if (supabase.auth.currentSession != null) {
-        return true;
-      }
-
-      // Check local storage (synchronous check)
-      // This is a simplified check - in practice you'd want to validate the session
-      return true; // For testing, assume authenticated if we got this far
-    } catch (e) {
-      return false;
-    }
+    return supabase.auth.currentSession != null;
   }
 
   /// Sign out

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 import 'package:domain/domain.dart';
+import 'package:flutter/foundation.dart';
 import 'package:isar/isar.dart';
 import 'package:logger/logger.dart';
 
@@ -101,16 +102,37 @@ class SyncQueue {
 
   /// Add operation to sync queue
   Future<void> enqueue(SyncOp operation) async {
-    // COMPLETELY DISABLED: Skip all sync operations for clean Stack testing
-    _logger.d('SKIPPED sync operation: ${operation.operationType} for habit ${operation.habitId} (sync completely disabled)');
-    return;
+    if (kDebugMode) {
+      // Skip sync operations in debug mode for clean testing
+      _logger.d('SKIPPED sync operation: ${operation.operationType} for habit ${operation.habitId} (debug mode)');
+      return;
+    }
+
+    try {
+      await _db.isar.writeTxn(() async {
+        await _db.isar.syncOps.put(operation);
+      });
+      _logger.d('Enqueued sync operation: ${operation.operationType} for habit ${operation.habitId}');
+    } catch (e, stackTrace) {
+      _logger.e('Failed to enqueue sync operation', error: e, stackTrace: stackTrace);
+    }
   }
 
   /// Start background processing of sync queue
   Future<void> _startProcessing() async {
-    // COMPLETELY DISABLED: No background processing during Stack testing
-    _logger.d('Background sync processing disabled for clean testing');
-    return;
+    if (kDebugMode) {
+      // No background processing during debug testing
+      _logger.d('Background sync processing disabled for debug mode');
+      return;
+    }
+
+    // Start timer for periodic processing
+    _retryTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
+      _processQueue();
+    });
+
+    // Process immediately
+    await _processQueue();
   }
 
   /// Process pending operations with memory-efficient pagination

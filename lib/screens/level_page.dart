@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:domain/domain.dart';
 
@@ -6,6 +7,26 @@ class LevelPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (!kDebugMode) {
+      // XP system disabled in production
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Level & Progress'),
+          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        ),
+        body: const Center(
+          child: Padding(
+            padding: EdgeInsets.all(24.0),
+            child: Text(
+              'Level system temporarily disabled.\nComing back soon!',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 18),
+            ),
+          ),
+        ),
+      );
+    }
+
     final levelService = LevelService();
     final stats = levelService.getDetailedStats();
 
@@ -151,7 +172,7 @@ class LevelPage extends StatelessWidget {
             const Spacer(),
 
             // Debug section (temporary)
-            if (stats['currentLevel'] < 5) // Only show for low levels
+            if (kDebugMode && stats['currentLevel'] < 5) // Only show for low levels in debug mode
               OutlinedButton(
                 onPressed: () {
                   levelService.addXP(10, source: 'debug');

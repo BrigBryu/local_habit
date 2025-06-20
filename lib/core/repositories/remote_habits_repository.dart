@@ -41,7 +41,7 @@ class RemoteHabitsRepository implements HabitsRepository {
       if (authUserId != null) {
         _currentUserId = authUserId;
       } else {
-        _currentUserId = 'default_user'; // Fallback for development
+        throw Exception('Authentication required: no valid user ID available');
       }
 
       // Initialize sync queue (with timeout)
@@ -74,25 +74,20 @@ class RemoteHabitsRepository implements HabitsRepository {
   @override
   Stream<List<Habit>> ownHabits() {
     try {
-      // Skip auth check for dev users
-      _logger
-          .d('🏠 [RemoteRepo] Streaming own habits for user: $_currentUserId');
+      _logger.d('🏠 [RemoteRepo] Streaming own habits using RLS (no user_id filter)');
 
+      // Use RLS instead of user_id filter - auth.uid() will handle filtering
       return supabase
           .from('habits')
           .stream(primaryKey: ['id'])
-          .eq('user_id', _currentUserId)
           .map((data) {
-            _logger.d(
-                '🔄 [RemoteRepo] Own habits raw data: ${data.length} records for $_currentUserId');
+            _logger.d('🔄 [RemoteRepo] Own habits raw data: ${data.length} records (RLS filtered)');
             data.forEach((record) {
-              _logger.d(
-                  '📋 [RemoteRepo] Own habit record: id=${record['id']}, name=${record['name']}, user_id=${record['user_id']}');
+              _logger.d('📋 [RemoteRepo] Own habit record: id=${record['id']}, name=${record['name']}, user_id=${record['user_id']}');
             });
 
             final habits = data.toHabitDomainList();
-            _logger.d(
-                '✅ [RemoteRepo] Own habits converted: ${habits.length} domain habits');
+            _logger.d('✅ [RemoteRepo] Own habits converted: ${habits.length} domain habits');
 
             return habits;
           })
@@ -168,9 +163,12 @@ class RemoteHabitsRepository implements HabitsRepository {
         throw Exception('No valid user ID available');
       }
 
-      // Create DTO and insert to Supabase
+      // Create DTO - user_id will be set by RLS/auth.uid()
       final dto = SupabaseHabitDto.fromDomain(habit, _currentUserId);
       final habitJson = dto.toJson();
+      
+      // Override user_id to use auth.uid() for proper RLS
+      habitJson['user_id'] = supabase.auth.currentUser?.id ?? _currentUserId;
 
       _logger.d('Inserting habit data: $habitJson');
 
@@ -199,7 +197,7 @@ class RemoteHabitsRepository implements HabitsRepository {
         return null;
       }
 
-      // Create DTO and update in Supabase
+      // Create DTO and update in Supabase - user_id will be validated by RLS
       final dto = SupabaseHabitDto.fromDomain(habit, _currentUserId);
 
       await supabase

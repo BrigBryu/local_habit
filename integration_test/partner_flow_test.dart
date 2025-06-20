@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:habit_level_up/main.dart' as app;
-import 'package:habit_level_up/core/auth/test_sign_in.dart';
 import 'package:habit_level_up/core/network/supabase_client.dart';
 import 'package:habit_level_up/core/network/relationship_dto.dart';
 
@@ -22,8 +21,6 @@ void main() {
       // Initialize Supabase
       await SupabaseClientService.instance.initialize();
 
-      // Ensure test users exist
-      await TestSignIn.ensureTestUsersExist();
 
       // Reset database state
       await _resetTestDatabase();
@@ -31,13 +28,13 @@ void main() {
 
     setUp(() async {
       // Sign out any existing sessions
-      await TestSignIn.signOut();
+      await supabase.auth.signOut();
     });
 
     testWidgets('Device A can create invite code', (WidgetTester tester) async {
       // Sign in as Device A
       await _signInAsDevice('A');
-      deviceAUserId = TestSignIn.getCurrentUserId()!;
+      deviceAUserId = supabase.auth.currentUser!.id;
       expect(deviceAUserId, isNotNull);
 
       // Launch app
@@ -77,7 +74,7 @@ void main() {
 
       // Sign in as Device B
       await _signInAsDevice('B');
-      deviceBUserId = TestSignIn.getCurrentUserId()!;
+      deviceBUserId = supabase.auth.currentUser!.id;
       expect(deviceBUserId, isNotNull);
       expect(deviceBUserId, isNot(equals(deviceAUserId)),
           reason: 'Device B should have different user ID');
@@ -240,7 +237,7 @@ void main() {
 
 /// Helper function to sign in as a specific device
 Future<void> _signInAsDevice(String device) async {
-  await TestSignIn.signOut();
+  await supabase.auth.signOut();
 
   final email =
       device == 'B' ? dotenv.env['TEST_EMAIL_B'] : dotenv.env['TEST_EMAIL_A'];
