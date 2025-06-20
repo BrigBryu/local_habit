@@ -1,0 +1,7 @@
+ schemaname |   tablename   |                      policyname                       | permissive |  roles   | cmd |          qual          | with_check 
+------------+---------------+-------------------------------------------------------+------------+----------+-----+------------------------+------------
+ public     | habits        | Allow all operations on habits for development        | PERMISSIVE | {public} | ALL | true                   | 
+ public     | relationships | Allow all operations on relationships for development | PERMISSIVE | {public} | ALL | true                   | 
+ public     | habits        | Users can access their own habits                     | PERMISSIVE | {public} | ALL | (auth.uid() = user_id) | 
+(3 rows)
+

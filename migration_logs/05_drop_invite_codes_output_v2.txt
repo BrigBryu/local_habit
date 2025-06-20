@@ -1,0 +1,21 @@
+BEGIN
+psql:supabase/sql_snippets/05_drop_invite_codes.sql:45: NOTICE:  Invite codes table does not exist - skipping cleanup
+DO
+psql:supabase/sql_snippets/05_drop_invite_codes.sql:48: NOTICE:  function public.generate_invite_code() does not exist, skipping
+DROP FUNCTION
+psql:supabase/sql_snippets/05_drop_invite_codes.sql:49: NOTICE:  function public.cleanup_expired_invite_codes() does not exist, skipping
+DROP FUNCTION
+psql:supabase/sql_snippets/05_drop_invite_codes.sql:50: NOTICE:  function public.validate_invite_code(text) does not exist, skipping
+DROP FUNCTION
+psql:supabase/sql_snippets/05_drop_invite_codes.sql:53: ERROR:  syntax error at or near "RAISE"
+LINE 1: RAISE NOTICE 'Invite codes system cleanup complete';
+        ^
+psql:supabase/sql_snippets/05_drop_invite_codes.sql:54: ERROR:  syntax error at or near "RAISE"
+LINE 1: RAISE NOTICE 'Partner relationships will now use direct user...
+        ^
+ROLLBACK
+BEGIN
+psql:supabase/sql_snippets/05_drop_invite_codes.sql:67: NOTICE:  Invite codes system rollback not supported - system deprecated for security
+psql:supabase/sql_snippets/05_drop_invite_codes.sql:67: NOTICE:  Use new username-based partner system instead
+DO
+COMMIT

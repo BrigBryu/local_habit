@@ -1,0 +1,56 @@
+BEGIN
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:17: NOTICE:  policy "Users can access their own habits" for relation "public.habits" does not exist, skipping
+DROP POLICY
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:18: NOTICE:  policy "Enable read access for authenticated users" for relation "public.habits" does not exist, skipping
+DROP POLICY
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:19: NOTICE:  policy "Enable insert for authenticated users" for relation "public.habits" does not exist, skipping
+DROP POLICY
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:20: NOTICE:  policy "Enable update for users based on user_id" for relation "public.habits" does not exist, skipping
+DROP POLICY
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:21: NOTICE:  policy "Enable delete for users based on user_id" for relation "public.habits" does not exist, skipping
+DROP POLICY
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:25: ERROR:  operator does not exist: uuid = text
+HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:30: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:31: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:32: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:36: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:41: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:42: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:43: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:44: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:45: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:51: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:56: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:58: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:62: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:65: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:67: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:70: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:105: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+ROLLBACK
+BEGIN
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:114: ERROR:  syntax error at or near "RAISE"
+LINE 1: RAISE NOTICE 'Rolling back to previous RLS policies';
+        ^
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:117: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:118: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:119: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:120: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:121: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:122: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:123: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:127: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:130: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:133: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:136: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:139: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:142: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:145: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:147: ERROR:  syntax error at or near "RAISE"
+LINE 1: RAISE NOTICE 'Restored basic RLS policies - security level r...
+        ^
+ROLLBACK

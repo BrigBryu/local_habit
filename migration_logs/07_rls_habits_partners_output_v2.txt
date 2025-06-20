@@ -1,0 +1,55 @@
+BEGIN
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+DROP POLICY
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:18: NOTICE:  policy "Enable read access for authenticated users" for relation "public.habits" does not exist, skipping
+DROP POLICY
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:19: NOTICE:  policy "Enable insert for authenticated users" for relation "public.habits" does not exist, skipping
+DROP POLICY
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:20: NOTICE:  policy "Enable update for users based on user_id" for relation "public.habits" does not exist, skipping
+DROP POLICY
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:21: NOTICE:  policy "Enable delete for users based on user_id" for relation "public.habits" does not exist, skipping
+DROP POLICY
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:33: ERROR:  operator does not exist: text = uuid
+HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:38: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:39: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:40: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:51: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:56: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:57: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:58: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:59: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:60: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:78: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:83: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:85: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:89: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:92: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:94: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:97: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:132: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+ROLLBACK
+BEGIN
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:144: NOTICE:  Rolling back to previous RLS policies
+DO
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:147: NOTICE:  policy "Users can access own habits" for relation "public.habits" does not exist, skipping
+DROP POLICY
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:148: NOTICE:  policy "Users can access own habit completions" for relation "public.habit_completions" does not exist, skipping
+DROP POLICY
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:149: NOTICE:  policy "Users can access own relationships" for relation "public.relationships" does not exist, skipping
+DROP POLICY
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:150: ERROR:  relation "public.profiles" does not exist
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:151: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:152: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:153: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:157: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:160: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:163: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:166: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:169: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:172: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:175: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/07_rls_habits_partners.sql:180: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+ROLLBACK

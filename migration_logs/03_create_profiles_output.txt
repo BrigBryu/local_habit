@@ -1,0 +1,19 @@
+BEGIN
+CREATE TABLE
+ALTER TABLE
+CREATE POLICY
+CREATE FUNCTION
+CREATE TRIGGER
+INSERT 0 0
+CREATE INDEX
+CREATE INDEX
+COMMIT
+BEGIN
+DROP TRIGGER
+psql:supabase/sql_snippets/03_create_profiles.sql:91: ERROR:  cannot drop function update_updated_at_column() because other objects depend on it
+DETAIL:  trigger update_accounts_updated_at on table accounts depends on function update_updated_at_column()
+trigger update_habits_updated_at on table habits depends on function update_updated_at_column()
+trigger update_relationships_updated_at on table relationships depends on function update_updated_at_column()
+HINT:  Use DROP ... CASCADE to drop the dependent objects too.
+psql:supabase/sql_snippets/03_create_profiles.sql:92: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+ROLLBACK

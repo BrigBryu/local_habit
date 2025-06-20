@@ -1,0 +1,3 @@
+ERROR:  relation "profiles" does not exist
+LINE 1: select * from profiles limit 5;
+                      ^

@@ -1,0 +1,10 @@
+    table_name     
+-------------------
+ accounts
+ habit_completions
+ habits
+ levels
+ relationships
+ xp_events
+(6 rows)
+

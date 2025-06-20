@@ -1,0 +1,47 @@
+BEGIN
+psql:supabase/sql_snippets/06_drop_xp_system.sql:52: NOTICE:  xp_events table does not exist - skipping
+psql:supabase/sql_snippets/06_drop_xp_system.sql:52: NOTICE:  levels table does not exist - skipping
+DO
+psql:supabase/sql_snippets/06_drop_xp_system.sql:55: NOTICE:  trigger "trigger_award_xp_on_habit_completion" for relation "public.habit_completions" does not exist, skipping
+DROP TRIGGER
+psql:supabase/sql_snippets/06_drop_xp_system.sql:56: ERROR:  relation "public.xp_events" does not exist
+psql:supabase/sql_snippets/06_drop_xp_system.sql:57: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:58: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:61: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:62: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:63: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:64: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:65: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:66: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:67: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:70: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:71: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:72: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:75: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:76: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:77: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:78: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:79: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:82: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:83: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:84: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:95: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:116: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+ROLLBACK
+BEGIN
+psql:supabase/sql_snippets/06_drop_xp_system.sql:129: NOTICE:  Recreating minimal XP system structure for rollback
+psql:supabase/sql_snippets/06_drop_xp_system.sql:129: WARNING:  Business logic and triggers not restored - manual recreation required
+DO
+CREATE TABLE
+INSERT 0 5
+CREATE TABLE
+ALTER TABLE
+ALTER TABLE
+CREATE POLICY
+CREATE POLICY
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+psql:supabase/sql_snippets/06_drop_xp_system.sql:177: NOTICE:  column "xp_awarded" of relation "habit_completions" already exists, skipping
+ALTER TABLE
+COMMIT

@@ -1,0 +1,20 @@
+BEGIN
+psql:supabase/sql_snippets/03_create_profiles.sql:15: NOTICE:  relation "profiles" already exists, skipping
+CREATE TABLE
+ALTER TABLE
+psql:supabase/sql_snippets/03_create_profiles.sql:22: ERROR:  policy "Users can access their own profile" for table "profiles" already exists
+psql:supabase/sql_snippets/03_create_profiles.sql:31: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/03_create_profiles.sql:35: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/03_create_profiles.sql:77: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/03_create_profiles.sql:80: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/03_create_profiles.sql:81: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+ROLLBACK
+BEGIN
+DROP TRIGGER
+psql:supabase/sql_snippets/03_create_profiles.sql:91: NOTICE:  drop cascades to 3 other objects
+DETAIL:  drop cascades to trigger update_accounts_updated_at on table accounts
+drop cascades to trigger update_habits_updated_at on table habits
+drop cascades to trigger update_relationships_updated_at on table relationships
+DROP FUNCTION
+DROP TABLE
+COMMIT

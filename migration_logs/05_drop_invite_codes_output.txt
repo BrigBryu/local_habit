@@ -1,0 +1,30 @@
+BEGIN
+psql:supabase/sql_snippets/05_drop_invite_codes.sql:10: ERROR:  relation "public.invite_codes" does not exist
+psql:supabase/sql_snippets/05_drop_invite_codes.sql:11: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/05_drop_invite_codes.sql:12: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/05_drop_invite_codes.sql:13: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/05_drop_invite_codes.sql:14: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/05_drop_invite_codes.sql:15: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/05_drop_invite_codes.sql:16: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/05_drop_invite_codes.sql:19: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/05_drop_invite_codes.sql:22: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/05_drop_invite_codes.sql:23: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/05_drop_invite_codes.sql:24: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/05_drop_invite_codes.sql:27: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/05_drop_invite_codes.sql:28: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/05_drop_invite_codes.sql:29: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/05_drop_invite_codes.sql:30: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/05_drop_invite_codes.sql:34: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/05_drop_invite_codes.sql:37: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/05_drop_invite_codes.sql:41: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/05_drop_invite_codes.sql:42: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/05_drop_invite_codes.sql:49: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+ROLLBACK
+BEGIN
+psql:supabase/sql_snippets/05_drop_invite_codes.sql:62: ERROR:  syntax error at or near "RAISE"
+LINE 1: RAISE NOTICE 'Invite codes system rollback not supported - s...
+        ^
+psql:supabase/sql_snippets/05_drop_invite_codes.sql:63: ERROR:  syntax error at or near "RAISE"
+LINE 1: RAISE NOTICE 'Use new username-based partner system instead'...
+        ^
+ROLLBACK

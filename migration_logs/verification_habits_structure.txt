@@ -1,0 +1,65 @@
+                                                                  Table "public.habits"
+           Column            |           Type           | Collation | Nullable |      Default      | Storage  | Compression | Stats target | Description 
+-----------------------------+--------------------------+-----------+----------+-------------------+----------+-------------+--------------+-------------
+ id                          | uuid                     |           | not null | gen_random_uuid() | plain    |             |              | 
+ user_id                     | uuid                     |           | not null |                   | plain    |             |              | 
+ name                        | text                     |           | not null |                   | extended |             |              | 
+ description                 | text                     |           |          |                   | extended |             |              | 
+ type                        | text                     |           | not null | 'basic'::text     | extended |             |              | 
+ frequency_type              | text                     |           |          | 'daily'::text     | extended |             |              | 
+ frequency_count             | integer                  |           |          | 1                 | plain    |             |              | 
+ category                    | text                     |           |          |                   | extended |             |              | 
+ is_active                   | boolean                  |           |          | true              | plain    |             |              | 
+ current_streak              | integer                  |           |          | 0                 | plain    |             |              | 
+ daily_completion_count      | integer                  |           |          | 0                 | plain    |             |              | 
+ session_completed_today     | boolean                  |           |          | false             | plain    |             |              | 
+ avoidance_success_today     | boolean                  |           |          | true              | plain    |             |              | 
+ daily_failure_count         | integer                  |           |          | 0                 | plain    |             |              | 
+ timeout_minutes             | integer                  |           |          | 30                | plain    |             |              | 
+ available_days              | text[]                   |           |          |                   | extended |             |              | 
+ stacked_on_habit_id         | uuid                     |           |          |                   | plain    |             |              | 
+ bundle_child_ids            | uuid[]                   |           |          |                   | extended |             |              | 
+ parent_bundle_id            | uuid                     |           |          |                   | plain    |             |              | 
+ created_at                  | timestamp with time zone |           | not null | now()             | plain    |             |              | 
+ updated_at                  | timestamp with time zone |           | not null | now()             | plain    |             |              | 
+ last_completed              | timestamp with time zone |           |          |                   | plain    |             |              | 
+ last_alarm_triggered        | timestamp with time zone |           |          |                   | plain    |             |              | 
+ session_start_time          | timestamp with time zone |           |          |                   | plain    |             |              | 
+ last_session_started        | timestamp with time zone |           |          |                   | plain    |             |              | 
+ last_completion_count_reset | timestamp with time zone |           |          |                   | plain    |             |              | 
+ last_failure_count_reset    | timestamp with time zone |           |          |                   | plain    |             |              | 
+ current_child_index         | integer                  |           |          | 0                 | plain    |             |              | 
+ last_completion_date        | timestamp with time zone |           |          |                   | plain    |             |              | 
+ interval_days               | integer                  |           |          |                   | plain    |             |              | 
+ weekday_mask                | integer                  |           |          |                   | plain    |             |              | 
+ parent_stack_id             | uuid                     |           |          |                   | plain    |             |              | 
+ stack_child_ids             | text[]                   |           |          |                   | extended |             |              | 
+ display_order               | integer                  |           |          | 999999            | plain    |             |              | 
+ old_user_id                 | text                     |           |          |                   | extended |             |              | 
+Indexes:
+    "habits_pkey" PRIMARY KEY, btree (id)
+    "idx_habits_created_at" btree (created_at)
+    "idx_habits_display_order" btree (user_id, display_order)
+    "idx_habits_is_active" btree (is_active)
+    "idx_habits_type" btree (type)
+    "idx_habits_user_id" btree (user_id)
+Check constraints:
+    "habits_frequency_type_check" CHECK (frequency_type = ANY (ARRAY['daily'::text, 'weekly'::text, 'monthly'::text]))
+Foreign-key constraints:
+    "habits_parent_bundle_id_fkey" FOREIGN KEY (parent_bundle_id) REFERENCES habits(id)
+    "habits_stacked_on_habit_id_fkey" FOREIGN KEY (stacked_on_habit_id) REFERENCES habits(id)
+    "habits_user_id_fkey" FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE
+Referenced by:
+    TABLE "habit_completions" CONSTRAINT "habit_completions_habit_id_fkey" FOREIGN KEY (habit_id) REFERENCES habits(id) ON DELETE CASCADE
+    TABLE "habits" CONSTRAINT "habits_parent_bundle_id_fkey" FOREIGN KEY (parent_bundle_id) REFERENCES habits(id)
+    TABLE "habits" CONSTRAINT "habits_stacked_on_habit_id_fkey" FOREIGN KEY (stacked_on_habit_id) REFERENCES habits(id)
+    TABLE "xp_events" CONSTRAINT "xp_events_habit_id_fkey" FOREIGN KEY (habit_id) REFERENCES habits(id) ON DELETE SET NULL
+Policies:
+    POLICY "Allow all operations on habits for development"
+      USING (true)
+    POLICY "Users can access their own habits"
+      USING ((auth.uid() = user_id))
+Triggers:
+    trigger_assign_display_order BEFORE INSERT ON habits FOR EACH ROW EXECUTE FUNCTION assign_display_order()
+Access method: heap
+

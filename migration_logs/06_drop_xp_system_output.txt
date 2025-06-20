@@ -1,0 +1,63 @@
+BEGIN
+psql:supabase/sql_snippets/06_drop_xp_system.sql:10: ERROR:  relation "public.xp_events" does not exist
+psql:supabase/sql_snippets/06_drop_xp_system.sql:11: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:12: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:13: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:14: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:16: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:17: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:18: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:19: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:22: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:23: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:24: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:25: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:28: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:29: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:30: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:31: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:32: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:33: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:34: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:37: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:38: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:39: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:40: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:41: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:42: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:45: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:46: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:47: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:50: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:51: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:52: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:53: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:54: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:57: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:58: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:59: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:64: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:85: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+ROLLBACK
+BEGIN
+psql:supabase/sql_snippets/06_drop_xp_system.sql:96: ERROR:  syntax error at or near "RAISE"
+LINE 1: RAISE NOTICE 'Recreating minimal XP system structure for rol...
+        ^
+psql:supabase/sql_snippets/06_drop_xp_system.sql:107: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:116: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:127: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:130: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:131: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:134: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:136: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:139: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:140: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:141: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:144: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/06_drop_xp_system.sql:146: ERROR:  syntax error at or near "RAISE"
+LINE 1: RAISE NOTICE 'Minimal XP system structure recreated';
+        ^
+psql:supabase/sql_snippets/06_drop_xp_system.sql:147: ERROR:  syntax error at or near "RAISE"
+LINE 1: RAISE WARNING 'Business logic and triggers not restored - ma...
+        ^
+ROLLBACK

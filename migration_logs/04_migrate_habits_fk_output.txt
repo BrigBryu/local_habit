@@ -1,0 +1,22 @@
+BEGIN
+psql:supabase/sql_snippets/04_migrate_habits_fk.sql:34: NOTICE:  Found 0 habits with invalid user_id references
+DO
+ALTER TABLE
+UPDATE 0
+psql:supabase/sql_snippets/04_migrate_habits_fk.sql:46: ERROR:  column "user_id" is of type uuid but expression is of type text
+LINE 2: SET user_id = u.id::TEXT
+                      ^
+HINT:  You will need to rewrite or cast the expression.
+psql:supabase/sql_snippets/04_migrate_habits_fk.sql:49: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/04_migrate_habits_fk.sql:50: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/04_migrate_habits_fk.sql:55: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/04_migrate_habits_fk.sql:60: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/04_migrate_habits_fk.sql:63: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/04_migrate_habits_fk.sql:66: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+psql:supabase/sql_snippets/04_migrate_habits_fk.sql:68: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+ROLLBACK
+BEGIN
+ALTER TABLE
+psql:supabase/sql_snippets/04_migrate_habits_fk.sql:110: NOTICE:  Reverted habits.user_id to TEXT type
+DO
+COMMIT

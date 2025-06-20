@@ -1,0 +1,26 @@
+BEGIN
+psql:supabase/sql_snippets/04_migrate_habits_fk.sql:34: NOTICE:  Found 0 habits with invalid user_id references
+DO
+ALTER TABLE
+UPDATE 0
+UPDATE 0
+psql:supabase/sql_snippets/04_migrate_habits_fk.sql:56: NOTICE:  constraint "habits_user_id_fkey" of relation "habits" does not exist, skipping
+ALTER TABLE
+psql:supabase/sql_snippets/04_migrate_habits_fk.sql:57: NOTICE:  constraint "fk_habits_user_id" of relation "habits" does not exist, skipping
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+psql:supabase/sql_snippets/04_migrate_habits_fk.sql:70: NOTICE:  relation "idx_habits_user_id" already exists, skipping
+CREATE INDEX
+psql:supabase/sql_snippets/04_migrate_habits_fk.sql:73: NOTICE:  policy "Users can access their own habits" for relation "public.habits" does not exist, skipping
+DROP POLICY
+CREATE POLICY
+COMMIT
+BEGIN
+psql:supabase/sql_snippets/04_migrate_habits_fk.sql:89: NOTICE:  column "old_user_id" of relation "habits" already exists, skipping
+ALTER TABLE
+psql:supabase/sql_snippets/04_migrate_habits_fk.sql:117: ERROR:  cannot alter type of a column used in a policy definition
+DETAIL:  policy Users can access their own habits on table habits depends on column "user_id"
+CONTEXT:  SQL statement "ALTER TABLE public.habits ALTER COLUMN user_id TYPE TEXT"
+PL/pgSQL function inline_code_block line 17 at SQL statement
+ROLLBACK
