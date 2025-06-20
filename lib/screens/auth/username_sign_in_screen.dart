@@ -5,6 +5,8 @@ import 'package:logger/logger.dart';
 import '../../core/auth/username_auth_service.dart';
 import '../../core/auth/auth_wrapper.dart';
 import '../../core/theme/flexible_theme_system.dart';
+import '../../providers/repository_init_provider.dart';
+import '../../providers/habits_provider.dart';
 import 'username_sign_up_screen.dart';
 
 class UsernameSignInScreen extends ConsumerStatefulWidget {
@@ -63,7 +65,15 @@ class _UsernameSignInScreenState extends ConsumerState<UsernameSignInScreen> {
           _showSnackBar('Signed in successfully!', Colors.green);
         }
 
-        // Force refresh auth state to trigger navigation
+        // Reset stream listener and force refresh auth state to trigger navigation
+        ref.read(authStateNotifierProvider.notifier).resetStreamListener();
+        
+        // Invalidate repository providers to refresh for new user context
+        ref.invalidate(repositoryProvider);
+        ref.invalidate(ownHabitsProvider);
+        
+        // Add a small delay and refresh again to ensure state propagation
+        await Future.delayed(const Duration(milliseconds: 200));
         ref.read(authStateNotifierProvider.notifier).refresh();
       } else {
         _logger.e('Sign in failed for $username: ${result.error}');

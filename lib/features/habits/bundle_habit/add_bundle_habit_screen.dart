@@ -433,13 +433,16 @@ class _AddBundleHabitScreenState
   @override
   Future<void> performSave() async {
     final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
-    habitsNotifier.addBundle(
+    final error = await habitsNotifier.addBundle(
       nameController.text.trim(),
       descriptionController.text.trim().isEmpty
           ? 'Bundle with ${_selectedHabitIds.length} habits'
           : descriptionController.text.trim(),
       _selectedHabitIds,
     );
+    if (error != null) {
+      throw Exception(error);
+    }
   }
 
   @override

@@ -427,6 +427,21 @@ class FlexibleColors {
         return draculaGreen; // Original green for dark themes
     }
   }
+
+  // Success background color for completed states
+  Color get successBg => completedBackground;
+
+  // Success foreground color for text/icons on success backgrounds
+  Color get successFg {
+    switch (variant) {
+      case ThemeVariant.draculaLight:
+        return const Color(0xFF065F46); // Dark green text for light backgrounds
+      case ThemeVariant.gruvboxLight:
+        return const Color(0xFF427B58); // Gruvbox dark green for light theme
+      default:
+        return draculaGreen; // Original green for dark themes
+    }
+  }
 }
 
 /// Theme state management

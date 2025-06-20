@@ -510,6 +510,58 @@ class HabitsNotifier extends StateNotifier<AsyncValue<void>> {
     }
   }
 
+  Future<String?> updateHabitOrder(List<Habit> reorderedHabits) async {
+    state = const AsyncValue.loading();
+    try {
+      // Update display order for each habit based on its new position
+      for (int i = 0; i < reorderedHabits.length; i++) {
+        final habit = reorderedHabits[i];
+        final newOrder = i * 1000; // Space out order values
+        
+        if (habit.displayOrder != newOrder) {
+          final updatedHabit = Habit(
+            id: habit.id,
+            name: habit.name,
+            description: habit.description,
+            type: habit.type,
+            stackedOnHabitId: habit.stackedOnHabitId,
+            bundleChildIds: habit.bundleChildIds,
+            parentBundleId: habit.parentBundleId,
+            parentStackId: habit.parentStackId,
+            stackChildIds: habit.stackChildIds,
+            currentChildIndex: habit.currentChildIndex,
+            timeoutMinutes: habit.timeoutMinutes,
+            availableDays: habit.availableDays,
+            createdAt: habit.createdAt,
+            lastCompleted: habit.lastCompleted,
+            lastAlarmTriggered: habit.lastAlarmTriggered,
+            sessionStartTime: habit.sessionStartTime,
+            lastSessionStarted: habit.lastSessionStarted,
+            sessionCompletedToday: habit.sessionCompletedToday,
+            dailyCompletionCount: habit.dailyCompletionCount,
+            lastCompletionCountReset: habit.lastCompletionCountReset,
+            dailyFailureCount: habit.dailyFailureCount,
+            lastFailureCountReset: habit.lastFailureCountReset,
+            avoidanceSuccessToday: habit.avoidanceSuccessToday,
+            currentStreak: habit.currentStreak,
+            intervalDays: habit.intervalDays,
+            weekdayMask: habit.weekdayMask,
+            lastCompletionDate: habit.lastCompletionDate,
+            displayOrder: newOrder,
+          );
+          
+          await updateHabit(updatedHabit);
+        }
+      }
+
+      state = const AsyncValue.data(null);
+      return null; // Success
+    } catch (e, stackTrace) {
+      state = AsyncValue.error(e, stackTrace);
+      return 'Failed to update habit order: $e';
+    }
+  }
+
   Future<String?> addHabitToBundle(String bundleId, String habitId) async {
     state = const AsyncValue.loading();
     try {

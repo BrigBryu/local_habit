@@ -67,6 +67,9 @@ class Habit {
   final int? intervalDays; // For interval habits - days between completions
   final int? weekdayMask; // For weekly habits - 7-bit mask (bit 0=Sunday, bit 1=Monday, etc.)
   final DateTime? lastCompletionDate; // For interval/weekly habits - date of last completion
+  
+  // UI display fields
+  final int displayOrder; // For drag-to-reorder functionality
 
   const Habit({
     required this.id,
@@ -100,6 +103,7 @@ class Habit {
     this.intervalDays,
     this.weekdayMask,
     this.lastCompletionDate,
+    this.displayOrder = 999999,
   });
 
   /// Factory for creating new habit
@@ -121,6 +125,7 @@ class Habit {
     List<int>? availableDays,
     int? intervalDays,
     int? weekdayMask,
+    int displayOrder = 999999,
   }) {
     return Habit(
       id: _generateId(),
@@ -141,6 +146,7 @@ class Habit {
       availableDays: availableDays,
       intervalDays: intervalDays,
       weekdayMask: weekdayMask,
+      displayOrder: displayOrder,
       createdAt: TimeService().now(),
     );
   }
@@ -221,6 +227,7 @@ class Habit {
       weekdayMask: weekdayMask,
       lastCompletionDate: (type == HabitType.interval || type == HabitType.weekly) 
           ? DateTime(now.year, now.month, now.day) : lastCompletionDate,
+      displayOrder: displayOrder,
     );
   }
 
@@ -286,6 +293,7 @@ class Habit {
       intervalDays: intervalDays,
       weekdayMask: weekdayMask,
       lastCompletionDate: lastCompletionDate,
+      displayOrder: displayOrder,
     );
   }
 
@@ -547,6 +555,7 @@ class Habit {
         'intervalDays': intervalDays,
         'weekdayMask': weekdayMask,
         'lastCompletionDate': lastCompletionDate?.toIso8601String(),
+        'displayOrder': displayOrder,
       };
 
   /// Create habit from JSON for sync queue
@@ -593,6 +602,7 @@ class Habit {
         lastCompletionDate: json['lastCompletionDate'] != null
             ? DateTime.parse(json['lastCompletionDate'] as String)
             : null,
+        displayOrder: json['displayOrder'] as int? ?? 999999,
       );
 
   @override

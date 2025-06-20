@@ -4,27 +4,60 @@ A professional Flutter habit tracking app built with clean architecture, future-
 
 ## 🏗️ Professional Architecture
 
-**Clean Architecture with Sealed Class Hierarchy:**
+**Clean Architecture with Supabase Auth Integration:**
 
 ```
 habit_level_up/
-├─ packages/
-│   ├─ domain/           ← Pure Dart: Sealed Habit entities, use cases
-│   ├─ data_local/       ← Isar persistence with discriminator pattern
-│   ├─ data_remote/      ← Future: Firebase/Supabase sync
-│   └─ features/         ← Future: Modular features
-├─ app/                  ← Flutter UI entry point
-├─ melos.yaml           ← Workspace management
-└─ .fvm/                ← Flutter version pinning
+├─ lib/
+│   ├─ core/
+│   │   ├─ auth/              ← Username-only auth with Supabase backend
+│   │   ├─ repositories/      ← Data layer with RLS security
+│   │   └─ network/           ← Supabase client configuration
+│   ├─ providers/             ← Riverpod state management
+│   ├─ screens/               ← UI components
+│   └─ main.dart              ← Flutter entry point
+├─ sql_snippets/              ← Database schema and migrations
+└─ .fvm/                      ← Flutter version pinning
 ```
 
 **Key Benefits:**
-- ✅ **Version pinned** with FVM + locked dependencies
-- ✅ **Domain separated** from framework (pure Dart)
-- ✅ **Sealed classes** for compiler-safe polymorphism
-- ✅ **Future-proof** habit variants (basic → timed → scored)
-- ✅ **Local-first** with sync queue ready
-- ✅ **Automated tooling** (melos scripts)
+- ✅ **Username-only auth** with Supabase backend integration
+- ✅ **Row Level Security** for data isolation and privacy
+- ✅ **Real-time sync** with offline-first architecture
+- ✅ **Clean separation** between auth, data, and UI layers
+- ✅ **Type-safe** with Riverpod state management
+- ✅ **Production-ready** with proper error handling
+
+## 🔐 Authentication Model
+
+**Username-as-Email Strategy:**
+
+This app uses a unique authentication approach that provides username-only UX while leveraging Supabase's robust auth infrastructure:
+
+```
+User Flow:           Backend Implementation:
+-----------          ----------------------
+"bridger"      →     "bridger@app.local" 
+                     (stored in auth.users)
+                           ↓
+                     profiles.username = "bridger"
+                     (friendly display name)
+                           ↓
+                     habits.user_id = auth.uid()
+                     (secured by RLS)
+```
+
+**Key Features:**
+- 🎯 **Username-only UI** - No email required from users
+- 🔒 **Supabase Auth Backend** - Leverages battle-tested authentication
+- 🛡️ **Row Level Security** - Automatic data isolation per user
+- 🔄 **Session Management** - Automatic token refresh and persistence
+- 📱 **Offline Support** - Works without network connectivity
+
+**Database Schema:**
+- `auth.users` - Supabase managed (emails: `{username}@app.local`)
+- `profiles` - Username display mapping (`id` → `username`)
+- `habits` - User habits with RLS filtering (`user_id` = `auth.uid()`)
 
 ## 🚀 Getting Started with Android Studio
 

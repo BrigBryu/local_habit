@@ -1,12 +1,10 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:math';
-import 'package:crypto/crypto.dart';
 import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../network/supabase_client.dart';
 
 /// Supabase-backed username/password authentication service
+/// Uses native Supabase auth with username-as-email strategy
 class UsernameAuthService {
   static UsernameAuthService? _instance;
   static UsernameAuthService get instance {
@@ -18,7 +16,6 @@ class UsernameAuthService {
 
   final _logger = Logger();
 
-  String? _currentUserId;
   String? _currentUsername;
   
   // Stream controller for auth state changes
@@ -41,9 +38,22 @@ class UsernameAuthService {
     }
   }
   
+  /// Force notify auth state change (public method for external calls)
+  void forceNotifyAuthStateChange() {
+    final newState = isAuthenticated;
+    _logger.d('[forceNotifyAuthStateChange] Force emitting auth state: $newState');
+    _lastEmittedState = newState;
+    _authStateController.add(newState);
+  }
+  
   /// Dispose of resources
   void dispose() {
     _authStateController.close();
+  }
+
+  /// Convert username to fake email for Supabase auth
+  String _usernameToEmail(String username) {
+    return '${username.toLowerCase().trim()}@app.local';
   }
 
   /// Register new user with username and password
@@ -52,9 +62,6 @@ class UsernameAuthService {
       final normalizedUsername = username.toLowerCase().trim();
 
       _logger.i('Sign up attempt for username: $normalizedUsername');
-      _logger.i('Original username: \"$username\"');
-      _logger.i('Normalized username: \"$normalizedUsername\"');
-      _logger.i('Username length: ${normalizedUsername.length}');
 
       // Validate input
       if (normalizedUsername.isEmpty || normalizedUsername.length < 3) {
@@ -65,30 +72,41 @@ class UsernameAuthService {
         return AuthResult.error('Password must be at least 6 characters long');
       }
 
-      // Hash password using SHA-256 with salt
-      final salt = _generateSalt();
-      final hashedPassword = _hashPassword(password, salt);
+      // Convert username to fake email
+      final fakeEmail = _usernameToEmail(normalizedUsername);
+      
+      // Create Supabase auth user
+      final authResponse = await supabase.auth.signUp(
+        email: fakeEmail,
+        password: password,
+      );
 
-      // Create account via Supabase RPC
-      final response = await supabase.rpc(
-        'create_account',
-        params: {
-          'p_username': normalizedUsername,
-          'p_password_hash': hashedPassword,
-        },
-      ) as Map<String, dynamic>?;
-
-      if (response == null) {
+      if (authResponse.user == null) {
         return AuthResult.error('Failed to create account');
       }
 
-      // Extract user data from response
-      final userData = response as Map<String, dynamic>;
-      _currentUserId = userData['id'];
-      _currentUsername = userData['username'];
+      _logger.i('Supabase user created: ${authResponse.user!.id}');
 
-      // Persist to storage
-      await _saveCurrentUser();
+      // Store username mapping in profiles table
+      try {
+        await supabase.from('profiles').upsert({
+          'id': authResponse.user!.id,
+          'username': normalizedUsername,
+        });
+        _logger.i('Profile created for user: $normalizedUsername');
+      } catch (e) {
+        _logger.e('Failed to create profile', error: e);
+        // If profile creation fails due to duplicate username
+        if (e.toString().toLowerCase().contains('duplicate') || 
+            e.toString().toLowerCase().contains('unique')) {
+          return AuthResult.error('This username is already taken. Please choose a different one.');
+        }
+        return AuthResult.error('Failed to complete account setup');
+      }
+
+      // Set current username and save to storage
+      _currentUsername = normalizedUsername;
+      await _saveCurrentUsername();
       
       // Notify auth state change
       _notifyAuthStateChange();
@@ -101,7 +119,8 @@ class UsernameAuthService {
       // Parse specific error messages
       final errorMessage = e.toString().toLowerCase();
 
-      if (errorMessage.contains('username already exists')) {
+      if (errorMessage.contains('already registered') || 
+          errorMessage.contains('user already exists')) {
         return AuthResult.error(
             'This username is already taken. Please choose a different one.');
       } else if (errorMessage.contains('network') ||
@@ -112,9 +131,6 @@ class UsernameAuthService {
         return AuthResult.error('Connection timeout. Please try again.');
       } else if (errorMessage.contains('invalid')) {
         return AuthResult.error('Invalid username or password format.');
-      } else if (errorMessage.contains('p0001')) {
-        return AuthResult.error(
-            'Username validation failed. Please use only letters, numbers, and underscores.');
       } else {
         return AuthResult.error(
             'Account creation failed. Please try again later.');
@@ -129,48 +145,44 @@ class UsernameAuthService {
 
       _logger.i('[signIn] Attempt for username: $normalizedUsername');
 
-      // Get account from Supabase
-      final response = await supabase.rpc(
-        'login_account',
-        params: {
-          'p_username': normalizedUsername,
-        },
-      ) as Map<String, dynamic>?;
+      // Convert username to fake email
+      final fakeEmail = _usernameToEmail(normalizedUsername);
 
-      if (response == null) {
-        _logger.e('[signIn] RPC returned null - username not found');
-        return AuthResult.error('Username not found');
+      // Sign in with Supabase auth
+      final authResponse = await supabase.auth.signInWithPassword(
+        email: fakeEmail,
+        password: password,
+      );
+
+      if (authResponse.user == null) {
+        _logger.e('[signIn] Auth response returned null user');
+        return AuthResult.error('Invalid username or password');
       }
 
-      final userData = response as Map<String, dynamic>;
-      final storedPasswordHash = userData['password_hash'] as String;
+      _logger.i('[signIn] Supabase auth successful: ${authResponse.user!.id}');
 
-      // Verify password using SHA-256
-      final isValidPassword = _verifyPassword(password, storedPasswordHash);
+      // Get username from profiles table
+      try {
+        final profileResponse = await supabase
+            .from('profiles')
+            .select('username')
+            .eq('id', authResponse.user!.id)
+            .single();
 
-      if (!isValidPassword) {
-        _logger.e('[signIn] Password verification failed');
-        return AuthResult.error('Invalid password');
+        _currentUsername = profileResponse['username'] as String;
+        _logger.i('[signIn] Retrieved username from profile: $_currentUsername');
+      } catch (e) {
+        _logger.w('[signIn] Failed to get username from profile, using normalized: $e');
+        _currentUsername = normalizedUsername;
       }
 
-      // Set user data
-      _currentUserId = userData['id'];
-      _currentUsername = userData['username'];
-      _logger.i(
-          '[signIn] Set user data - ID: $_currentUserId, username: $_currentUsername');
-
-      // Persist to storage
-      await _saveCurrentUser();
-      _logger.i('[signIn] User data saved to storage');
+      // Save to storage
+      await _saveCurrentUsername();
       
       // Notify auth state change
       _notifyAuthStateChange();
 
-      // Check isAuthenticated after setting data
-      final authStatus = isAuthenticated;
-      _logger.i('[signIn] isAuthenticated status: $authStatus');
-
-      _logger.i('[signIn] SUCCESS for: $normalizedUsername');
+      _logger.i('[signIn] SUCCESS for: $_currentUsername');
       return AuthResult.success();
     } catch (e) {
       _logger.e('Sign in failed', error: e);
@@ -178,12 +190,9 @@ class UsernameAuthService {
       // Parse specific error messages
       final errorMessage = e.toString().toLowerCase();
 
-      if (errorMessage.contains('username not found') ||
-          errorMessage.contains('null')) {
-        return AuthResult.error(
-            'Username not found. Please check your username or create a new account.');
-      } else if (errorMessage.contains('invalid password')) {
-        return AuthResult.error('Incorrect password. Please try again.');
+      if (errorMessage.contains('invalid login credentials') ||
+          errorMessage.contains('invalid email or password')) {
+        return AuthResult.error('Invalid username or password');
       } else if (errorMessage.contains('network') ||
           errorMessage.contains('connection')) {
         return AuthResult.error(
@@ -197,9 +206,9 @@ class UsernameAuthService {
     }
   }
 
-  /// Get current user ID
+  /// Get current user ID from Supabase auth
   String? getCurrentUserId() {
-    return _currentUserId;
+    return supabase.auth.currentUser?.id;
   }
 
   /// Get current username
@@ -207,92 +216,101 @@ class UsernameAuthService {
     return _currentUsername;
   }
 
-  /// Check if user is authenticated
+  /// Check if user is authenticated using Supabase session
   bool get isAuthenticated {
-    final result = _currentUserId != null && _currentUsername != null;
-    _logger.d(
-        '[isAuthenticated] userID: $_currentUserId, username: $_currentUsername → $result');
-    return result;
+    final session = supabase.auth.currentSession;
+    final hasSession = session != null && !session.isExpired;
+    
+    _logger.d('[isAuthenticated] session exists: ${session != null}, expired: ${session?.isExpired}, result: $hasSession');
+    return hasSession;
   }
 
   /// Sign out current user
   Future<void> signOut() async {
     try {
-      _currentUserId = null;
+      _logger.i('[signOut] Starting sign out process...');
+      
+      // Sign out from Supabase auth
+      await supabase.auth.signOut();
+      
+      // Clear local data
       _currentUsername = null;
 
       // Clear from storage
       final prefs = await SharedPreferences.getInstance();
-      await prefs.remove('current_user_id');
       await prefs.remove('current_username');
       
-      // Notify auth state change
-      _notifyAuthStateChange();
-
-      _logger.i('User signed out');
+      _logger.i('[signOut] Cleared user data and storage');
+      
+      // Reset the last emitted state to ensure next auth change is detected
+      _lastEmittedState = null;
+      
+      // Force notify auth state change
+      forceNotifyAuthStateChange();
+      
+      _logger.i('[signOut] User signed out successfully');
     } catch (e) {
       _logger.e('Sign out failed', error: e);
+      // Even on error, try to force notify the state change
+      forceNotifyAuthStateChange();
     }
   }
 
   /// Initialize and restore session
   Future<void> initialize() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      _currentUserId = prefs.getString('current_user_id');
-      _currentUsername = prefs.getString('current_username');
+      // Check if we have a valid Supabase session
+      final session = supabase.auth.currentSession;
+      if (session != null && !session.isExpired) {
+        // Try to restore username from storage
+        final prefs = await SharedPreferences.getInstance();
+        _currentUsername = prefs.getString('current_username');
+        
+        // If no stored username, try to get it from profiles table
+        if (_currentUsername == null && session.user != null) {
+          try {
+            final profileResponse = await supabase
+                .from('profiles')
+                .select('username')
+                .eq('id', session.user!.id)
+                .single();
+                
+            _currentUsername = profileResponse['username'] as String;
+            await _saveCurrentUsername();
+            _logger.i('Username restored from profiles: $_currentUsername');
+          } catch (e) {
+            _logger.w('Failed to restore username from profiles: $e');
+          }
+        }
 
-      if (_currentUserId != null && _currentUsername != null) {
-        _logger.i('Session restored for user: $_currentUsername');
+        if (_currentUsername != null) {
+          _logger.i('Session restored for user: $_currentUsername');
+        }
       }
+      
+      // Set up auth state listener
+      supabase.auth.onAuthStateChange.listen((data) {
+        final session = data.session;
+        _logger.i('Auth state changed: ${session != null ? 'signed in' : 'signed out'}');
+        _notifyAuthStateChange();
+      });
       
       // Notify initial auth state
       _notifyAuthStateChange();
     } catch (e) {
-      _logger.e('Failed to restore session', error: e);
+      _logger.e('Failed to initialize auth service', error: e);
     }
   }
 
-  /// Save current user to storage
-  Future<void> _saveCurrentUser() async {
+  /// Save current username to storage
+  Future<void> _saveCurrentUsername() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      if (_currentUserId != null && _currentUsername != null) {
-        await prefs.setString('current_user_id', _currentUserId!);
+      if (_currentUsername != null) {
         await prefs.setString('current_username', _currentUsername!);
       }
     } catch (e) {
-      _logger.e('Failed to save user session', error: e);
-    }
-  }
-
-  /// Generate a random salt for password hashing
-  String _generateSalt() {
-    final random = Random.secure();
-    final bytes = List<int>.generate(32, (i) => random.nextInt(256));
-    return base64.encode(bytes);
-  }
-
-  /// Hash password with salt using SHA-256
-  String _hashPassword(String password, String salt) {
-    final combined = password + salt;
-    final bytes = utf8.encode(combined);
-    final digest = sha256.convert(bytes);
-    return '$salt:${digest.toString()}';
-  }
-
-  /// Verify password against stored hash
-  bool _verifyPassword(String password, String storedHash) {
-    try {
-      final parts = storedHash.split(':');
-      if (parts.length != 2) return false;
-
-      final salt = parts[0];
-      final expectedHash = _hashPassword(password, salt);
-      return expectedHash == storedHash;
-    } catch (e) {
-      _logger.e('Password verification failed', error: e);
-      return false;
+      _logger.e('Failed to save username to storage', error: e);
     }
   }
 }

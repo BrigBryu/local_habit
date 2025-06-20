@@ -37,11 +37,19 @@ class AuthStateNotifier extends StateNotifier<bool> {
     _subscription = UsernameAuthService.instance.authStateStream
         .distinct() // Prevent duplicate state emissions
         .listen((newState) {
+      logger.i('[AuthStateNotifier] Stream received: $newState, current state: $state');
       if (newState != state) {
         logger.i('[AuthStateNotifier] Stream state changed: $state → $newState');
         state = newState;
       }
     });
+    
+    // Also immediately check the current state in case we missed an update
+    final currentAuthState = UsernameAuthService.instance.isAuthenticated;
+    if (currentAuthState != state) {
+      logger.i('[AuthStateNotifier] Initial state sync: $state → $currentAuthState');
+      state = currentAuthState;
+    }
   }
 
   @override
@@ -53,16 +61,36 @@ class AuthStateNotifier extends StateNotifier<bool> {
   }
 
   /// Force refresh the auth state
-  void refresh() async {
+  void refresh() {
     final logger = Logger();
     logger.i('[AuthStateNotifier] Force refresh requested');
 
     // Get current state directly instead of waiting
     final currentState = UsernameAuthService.instance.isAuthenticated;
     logger.i('[AuthStateNotifier] Force refresh: $state → $currentState');
-    if (currentState != state) {
-      state = currentState;
-    }
+    
+    // Always update state to force a rebuild
+    state = currentState;
+    
+    // Also manually trigger the auth service to emit the current state
+    UsernameAuthService.instance.forceNotifyAuthStateChange();
+  }
+  
+  /// Reset and restart the stream listener (useful after sign-out)
+  void resetStreamListener() {
+    final logger = Logger();
+    logger.i('[AuthStateNotifier] Resetting stream listener');
+    
+    // Cancel existing subscription
+    _subscription?.cancel();
+    
+    // Get current auth state and update immediately
+    final currentState = UsernameAuthService.instance.isAuthenticated;
+    logger.i('[AuthStateNotifier] Reset: updating state to $currentState');
+    state = currentState;
+    
+    // Restart the stream listener
+    _startWatching();
   }
 }
 

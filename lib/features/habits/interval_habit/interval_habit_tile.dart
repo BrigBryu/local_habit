@@ -21,7 +21,7 @@ class IntervalHabitTile extends ConsumerWidget {
     final dueDateService = DueDateService();
     final today = DateTime.now();
     final isDue = dueDateService.isDue(habit, today);
-    final isCompleted = isHabitCompletedToday(habit);
+    final isCompleted = dueDateService.isCompletedToday(habit, today);
     final colors = ref.watchColors;
 
     return Container(
@@ -29,29 +29,29 @@ class IntervalHabitTile extends ConsumerWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         gradient: LinearGradient(
-          colors: isDue
-              ? isCompleted
+          colors: isCompleted
+              ? [
+                  colors.successBg.withOpacity(0.8),
+                  colors.successBg.withOpacity(0.4),
+                ]
+              : isDue
                   ? [
-                      colors.completedBackground.withOpacity(0.8),
-                      colors.completedBackground.withOpacity(0.4),
-                    ]
-                  : [
                       colors.gruvboxYellow.withOpacity(0.3),
                       colors.gruvboxYellow.withOpacity(0.1),
                     ]
-              : [
-                  colors.draculaComment.withOpacity(0.2),
-                  colors.draculaComment.withOpacity(0.1),
-                ],
+                  : [
+                      colors.draculaComment.withOpacity(0.2),
+                      colors.draculaComment.withOpacity(0.1),
+                    ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         border: Border.all(
-          color: isDue
-              ? isCompleted
-                  ? colors.completedBorder.withOpacity(0.8)
-                  : colors.gruvboxYellow.withOpacity(0.5)
-              : colors.draculaComment.withOpacity(0.3),
+          color: isCompleted
+              ? colors.successFg.withOpacity(0.6)
+              : isDue
+                  ? colors.gruvboxYellow.withOpacity(0.5)
+                  : colors.draculaComment.withOpacity(0.3),
           width: 2,
         ),
         boxShadow: [
@@ -66,7 +66,7 @@ class IntervalHabitTile extends ConsumerWidget {
         borderRadius: BorderRadius.circular(10),
         child: InkWell(
           borderRadius: BorderRadius.circular(10),
-          onTap: isDue ? (onTap ?? () => _navigateToHabitInfo(context)) : null,
+          onTap: (isDue && !isCompleted) ? (onTap ?? () => _navigateToHabitInfo(context)) : null,
           child: Container(
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -78,22 +78,28 @@ class IntervalHabitTile extends ConsumerWidget {
                       width: 48,
                       height: 48,
                       decoration: BoxDecoration(
-                        color: isDue
-                            ? colors.gruvboxYellow.withOpacity(0.15)
-                            : colors.draculaComment.withOpacity(0.1),
+                        color: isCompleted
+                            ? colors.successBg.withOpacity(0.3)
+                            : isDue
+                                ? colors.gruvboxYellow.withOpacity(0.15)
+                                : colors.draculaComment.withOpacity(0.1),
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: isDue
-                              ? colors.gruvboxYellow.withOpacity(0.3)
-                              : colors.draculaComment.withOpacity(0.2),
+                          color: isCompleted
+                              ? colors.successFg.withOpacity(0.5)
+                              : isDue
+                                  ? colors.gruvboxYellow.withOpacity(0.3)
+                                  : colors.draculaComment.withOpacity(0.2),
                           width: 2,
                         ),
                       ),
                       child: Icon(
                         Icons.schedule,
-                        color: isDue
-                            ? colors.gruvboxYellow
-                            : colors.draculaComment,
+                        color: isCompleted
+                            ? colors.successFg
+                            : isDue
+                                ? colors.gruvboxYellow
+                                : colors.draculaComment,
                         size: 24,
                       ),
                     ),
@@ -137,11 +143,11 @@ class IntervalHabitTile extends ConsumerWidget {
                           fontWeight: FontWeight.bold,
                           decoration:
                               isCompleted ? TextDecoration.lineThrough : null,
-                          color: isDue
-                              ? isCompleted
-                                  ? colors.completedTextOnGreen
-                                  : colors.gruvboxYellow
-                              : colors.draculaComment,
+                          color: isCompleted
+                              ? colors.successFg
+                              : isDue
+                                  ? colors.gruvboxYellow
+                                  : colors.draculaComment,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -150,11 +156,11 @@ class IntervalHabitTile extends ConsumerWidget {
                       Text(
                         _buildSubtitleText(dueDateService),
                         style: TextStyle(
-                          color: isDue
-                              ? isCompleted
-                                  ? colors.completedTextOnGreen
-                                  : colors.gruvboxFg
-                              : colors.draculaComment,
+                          color: isCompleted
+                              ? colors.successFg
+                              : isDue
+                                  ? colors.gruvboxFg
+                                  : colors.draculaComment,
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
                         ),
@@ -176,7 +182,7 @@ class IntervalHabitTile extends ConsumerWidget {
                     ],
                   ),
                 ),
-                // Completion button (only active when due)
+                // Completion button (only active when due and not completed)
                 if (isDue)
                   _buildTrailingWidget(context)
                 else
@@ -210,12 +216,12 @@ class IntervalHabitTile extends ConsumerWidget {
     final isDue = dueDateService.isDue(habit, today);
     final intervalDays = habit.intervalDays ?? 1;
 
-    if (isDue) {
-      if (isHabitCompletedToday(habit)) {
-        return 'Interval ($intervalDays days) · Completed today';
-      } else {
-        return 'Interval ($intervalDays days) · Due now';
-      }
+    final isCompleted = dueDateService.isCompletedToday(habit, today);
+    
+    if (isCompleted) {
+      return 'Interval ($intervalDays days) · Completed today';
+    } else if (isDue) {
+      return 'Interval ($intervalDays days) · Due now';
     } else {
       final nextDueDescription = dueDateService.getNextDueDescription(habit);
       return 'Interval ($intervalDays days) · $nextDueDescription';
@@ -242,7 +248,9 @@ class IntervalHabitCheckButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isCompleted = isHabitCompletedToday(habit);
+    final dueDateService = DueDateService();
+    final today = DateTime.now();
+    final isCompleted = dueDateService.isCompletedToday(habit, today);
     final colors = ref.watchColors;
 
     if (isCompleted) {
@@ -251,10 +259,10 @@ class IntervalHabitCheckButton extends ConsumerWidget {
         height: 40,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: colors.completed,
+          color: colors.successFg,
           boxShadow: [
             BoxShadow(
-              color: colors.completed.withOpacity(0.3),
+              color: colors.successFg.withOpacity(0.3),
               blurRadius: 4,
               offset: const Offset(0, 2),
             ),

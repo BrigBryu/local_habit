@@ -5,12 +5,20 @@ import '../core/repositories/habits_repository.dart';
 import '../core/repositories/simple_memory_repository.dart';
 import '../core/repositories/remote_habits_repository.dart';
 import '../core/auth/username_auth_service.dart';
+import '../core/auth/auth_wrapper.dart';
+import '../core/network/supabase_client.dart';
 import '../screens/partner_settings_screen.dart';
 
 final _logger = Logger();
 
 /// Provider that creates and manages the repository with user context
 final repositoryProvider = FutureProvider<HabitsRepository>((ref) async {
+  // Watch for auth state changes - this will cause repository to reinitialize when user changes
+  final authState = ref.watch(authStateNotifierProvider);
+  final currentUserId = UsernameAuthService.instance.getCurrentUserId();
+  
+  _logger.i('Repository provider initializing - authState: $authState, userID: $currentUserId');
+  
   try {
     _logger.i('Attempting to initialize RemoteHabitsRepository');
     final repository = RemoteHabitsRepository();
@@ -18,13 +26,13 @@ final repositoryProvider = FutureProvider<HabitsRepository>((ref) async {
     // Initialize with async dependencies
     await repository.initialize();
 
-    // Set the current user ID from username auth service
-    final currentUserId = UsernameAuthService.instance.getCurrentUserId();
-    if (currentUserId != null) {
-      await repository.setCurrentUserId(currentUserId);
-      _logger.i('Remote repository initialized for user: $currentUserId');
+    // Set the current user ID from Supabase auth (not username auth service)
+    final supabaseUserId = supabase.auth.currentUser?.id;
+    if (supabaseUserId != null) {
+      await repository.setCurrentUserId(supabaseUserId);
+      _logger.i('Remote repository initialized for Supabase user: $supabaseUserId');
     } else {
-      _logger.w('No authenticated user - repository initialized without user ID');
+      _logger.w('No authenticated Supabase user - repository initialized without user ID');
     }
 
     _logger.i('RemoteHabitsRepository initialized successfully');
@@ -36,14 +44,14 @@ final repositoryProvider = FutureProvider<HabitsRepository>((ref) async {
     final repository = SimpleMemoryRepository();
     await repository.initialize();
 
-    // Set the current user ID from username auth service
+    // Set the current user ID from Supabase auth (use same supabaseUserId from above)
     try {
-      final currentUserId = UsernameAuthService.instance.getCurrentUserId();
-      if (currentUserId != null) {
-        await repository.setCurrentUserId(currentUserId);
-        _logger.i('Fallback repository initialized for user: $currentUserId');
+      final supabaseUserId = supabase.auth.currentUser?.id;
+      if (supabaseUserId != null) {
+        await repository.setCurrentUserId(supabaseUserId);
+        _logger.i('Fallback repository initialized for Supabase user: $supabaseUserId');
       } else {
-        _logger.w('No authenticated user - fallback repository initialized without user ID');
+        _logger.w('No authenticated Supabase user - fallback repository initialized without user ID');
       }
     } catch (e) {
       _logger.w('Could not set user ID in fallback repository: $e');

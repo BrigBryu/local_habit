@@ -10,11 +10,43 @@ import '../features/habits/interval_habit/index.dart';
 import '../features/habits/weekly_habit/index.dart';
 import '../core/services/due_date_service.dart';
 import '../features/habits/basic_habit/add_basic_habit_screen.dart';
+import '../features/habits/common/deletable_habit_tile.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/flexible_theme_system.dart';
 
 class DailyHabitsPage extends ConsumerWidget {
   const DailyHabitsPage({super.key});
+
+  void _onReorder(BuildContext context, WidgetRef ref, List<Habit> habits, 
+      int oldIndex, int newIndex) async {
+    // Adjust newIndex if needed (standard ReorderableListView behavior)
+    if (oldIndex < newIndex) {
+      newIndex -= 1;
+    }
+
+    // Create a mutable copy of the list
+    final reorderedHabits = List<Habit>.from(habits);
+    
+    // Perform the reorder
+    final movedHabit = reorderedHabits.removeAt(oldIndex);
+    reorderedHabits.insert(newIndex, movedHabit);
+
+    // Update the display order in the provider
+    final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
+    final result = await habitsNotifier.updateHabitOrder(reorderedHabits);
+    
+    if (result != null && context.mounted) {
+      final colors = ref.read(flexibleColorsProvider);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to reorder habits: $result'),
+          backgroundColor: colors.error,
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -41,7 +73,8 @@ class DailyHabitsPage extends ConsumerWidget {
         final topLevelHabits = allHabits
             .where((habit) =>
                 habit.parentBundleId == null && habit.stackedOnHabitId == null)
-            .toList();
+            .toList()
+          ..sort((a, b) => a.displayOrder.compareTo(b.displayOrder));
 
         // Further filter occasional habits based on due dates
         final dueDateService = DueDateService();
@@ -51,7 +84,8 @@ class DailyHabitsPage extends ConsumerWidget {
             return dueDateService.isDue(habit, today);
           }
           return true; // Show all other habit types
-        }).toList();
+        }).toList()
+          ..sort((a, b) => a.displayOrder.compareTo(b.displayOrder));
 
         return _buildHabitsScaffold(context, ref, visibleHabits, allHabits, topLevelHabits);
       },
@@ -68,28 +102,42 @@ class DailyHabitsPage extends ConsumerWidget {
           ? _buildEmptyState(context, ref)
           : visibleHabits.isEmpty
               ? _buildNoHabitsDueToday(context, ref, topLevelHabits)
-              : ListView.builder(
+              : ReorderableListView.builder(
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   itemCount: visibleHabits.length,
+                  onReorder: (oldIndex, newIndex) => _onReorder(
+                    context, ref, visibleHabits, oldIndex, newIndex),
                   itemBuilder: (context, index) {
                     final habit = visibleHabits[index];
 
-                switch (habit.type) {
-                  case HabitType.bundle:
-                    return BundleHabitTile(habit: habit, allHabits: allHabits);
-                  case HabitType.stack:
-                    return StackHabitTile(habit: habit, allHabits: allHabits);
-                  case HabitType.avoidance:
-                    return AvoidanceHabitTile(habit: habit);
-                  case HabitType.interval:
-                    return IntervalHabitTile(habit: habit);
-                  case HabitType.weekly:
-                    return WeeklyHabitTile(habit: habit);
-                  case HabitType.basic:
-                  default:
-                    return HabitTile(
-                        habit: habit); // Use the proper HabitTile from features
-                }
+                    Widget habitTile;
+                    switch (habit.type) {
+                      case HabitType.bundle:
+                        habitTile = BundleHabitTile(habit: habit, allHabits: allHabits);
+                        break;
+                      case HabitType.stack:
+                        habitTile = StackHabitTile(habit: habit, allHabits: allHabits);
+                        break;
+                      case HabitType.avoidance:
+                        habitTile = AvoidanceHabitTile(habit: habit);
+                        break;
+                      case HabitType.interval:
+                        habitTile = IntervalHabitTile(habit: habit);
+                        break;
+                      case HabitType.weekly:
+                        habitTile = WeeklyHabitTile(habit: habit);
+                        break;
+                      case HabitType.basic:
+                      default:
+                        habitTile = HabitTile(habit: habit);
+                        break;
+                    }
+                    
+                    return DeletableHabitTile(
+                      key: Key('habit_${habit.id}'),
+                      habit: habit,
+                      child: habitTile,
+                    );
                   },
                 ),
       floatingActionButton: FloatingActionButton(

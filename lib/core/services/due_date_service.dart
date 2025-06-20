@@ -144,4 +144,23 @@ class DueDateService {
     }
     return result;
   }
+
+  /// Check if an interval or weekly habit was completed today
+  bool isCompletedToday(Habit habit, DateTime today) {
+    if (habit.type != HabitType.interval && habit.type != HabitType.weekly) {
+      return false; // Only applies to occasional habits
+    }
+    
+    final lastCompletion = habit.lastCompletionDate;
+    if (lastCompletion == null) return false;
+    
+    final todayNormalized = DateTime(today.year, today.month, today.day);
+    final lastCompletionNormalized = DateTime(
+      lastCompletion.year, 
+      lastCompletion.month, 
+      lastCompletion.day
+    );
+    
+    return todayNormalized.isAtSameMomentAs(lastCompletionNormalized);
+  }
 }

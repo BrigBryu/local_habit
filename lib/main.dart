@@ -15,38 +15,28 @@ void main() async {
   final envFile = isDev ? '.env.dev' : '.env';
   await dotenv.load(fileName: envFile);
 
+  // Initialize Supabase FIRST since auth service depends on it
+  await SupabaseClientService.instance.initialize();
+  debugPrint('Supabase initialized before auth service');
+
+  // Initialize auth service AFTER Supabase is ready
+  await UsernameAuthService.instance.initialize();
+  debugPrint('Auth service initialized after Supabase');
+
   debugPrint('App Startup Completed - launching UI');
 
-  // Launch app immediately, initialize services in background
+  // Launch app with both services already initialized
   runApp(const ProviderScope(child: HabitLevelUpApp()));
 
-  // Initialize services asynchronously after UI starts
-  _initializeServicesInBackground();
+  // Check initial session status
+  _checkInitialSession();
 }
 
-/// Initialize heavy services in background after UI launches
-void _initializeServicesInBackground() async {
-  // Initialize Supabase in background
-  SupabaseClientService.instance
-      .initialize()
-      .timeout(const Duration(seconds: 15))
-      .then((_) {
-    debugPrint('Supabase initialization completed');
-
-    // Check initial Supabase session
-    final session = SupabaseClientService.instance.supabase.auth.currentSession;
-    debugPrint('Initial Supabase session: $session');
-  }).catchError((e) {
-    debugPrint(
-        'Supabase initialization failed or timed out: $e - continuing in offline mode');
-  });
-
-  // Initialize username authentication service in background
-  UsernameAuthService.instance.initialize().then((_) {
-    debugPrint('Username authentication service initialized');
-  }).catchError((e) {
-    debugPrint('Username auth initialization failed: $e');
-  });
+/// Check initial session and handle test user override
+void _checkInitialSession() async {
+  // Check initial Supabase session
+  final session = SupabaseClientService.instance.supabase.auth.currentSession;
+  debugPrint('Initial Supabase session: $session');
 
   // Handle TEST_USER_OVERRIDE for automated testing
   final testUserOverride = Platform.environment['TEST_USER_OVERRIDE'];

@@ -126,7 +126,10 @@ class _AddAvoidanceHabitScreenState
     );
 
     // Add to Riverpod state
-    ref.read(habitsNotifierProvider.notifier).addHabit(habit);
+    final error = await ref.read(habitsNotifierProvider.notifier).addHabit(habit);
+    if (error != null) {
+      throw Exception(error);
+    }
   }
 
   @override

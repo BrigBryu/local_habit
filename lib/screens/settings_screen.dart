@@ -315,7 +315,11 @@ class SettingsScreen extends ConsumerWidget {
             await UsernameAuthService.instance.signOut();
             logger.i('Username auth service signed out');
 
-            // Force refresh auth state to trigger navigation
+            // Reset the stream listener and force refresh auth state
+            ref.read(authStateNotifierProvider.notifier).resetStreamListener();
+            
+            // Add a small delay and refresh again to ensure state propagation
+            await Future.delayed(const Duration(milliseconds: 100));
             ref.read(authStateNotifierProvider.notifier).refresh();
 
             // Invalidate all providers to clear user data

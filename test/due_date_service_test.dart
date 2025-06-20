@@ -275,6 +275,104 @@ void main() {
         expect(service.isDue(habit, sunday), isTrue);
       });
     });
+
+    group('isCompletedToday', () {
+      test('should return false for basic habits', () {
+        final habit = Habit.create(
+          name: 'Test Basic',
+          description: 'Test',
+          type: HabitType.basic,
+        );
+
+        final today = DateTime(2023, 6, 15);
+        expect(service.isCompletedToday(habit, today), isFalse);
+      });
+
+      test('should return false for interval habit with no completion date', () {
+        final habit = Habit.create(
+          name: 'Test Interval',
+          description: 'Test',
+          type: HabitType.interval,
+          intervalDays: 3,
+        );
+
+        final today = DateTime(2023, 6, 15);
+        expect(service.isCompletedToday(habit, today), isFalse);
+      });
+
+      test('should return true for interval habit completed today', () {
+        final today = DateTime(2023, 6, 15);
+        final habit = Habit.create(
+          name: 'Test Interval',
+          description: 'Test',
+          type: HabitType.interval,
+          intervalDays: 3,
+        ).copyWith(
+          lastCompletionDate: today, // Completed today
+        );
+
+        expect(service.isCompletedToday(habit, today), isTrue);
+      });
+
+      test('should return false for interval habit completed yesterday', () {
+        final today = DateTime(2023, 6, 15);
+        final yesterday = DateTime(2023, 6, 14);
+        final habit = Habit.create(
+          name: 'Test Interval',
+          description: 'Test',
+          type: HabitType.interval,
+          intervalDays: 3,
+        ).copyWith(
+          lastCompletionDate: yesterday, // Completed yesterday
+        );
+
+        expect(service.isCompletedToday(habit, today), isFalse);
+      });
+
+      test('should return true for weekly habit completed today', () {
+        final today = DateTime(2023, 6, 19); // A Monday
+        final habit = Habit.create(
+          name: 'Test Weekly',
+          description: 'Test',
+          type: HabitType.weekly,
+          weekdayMask: 1 << 1, // Monday bit set
+        ).copyWith(
+          lastCompletionDate: today, // Completed today
+        );
+
+        expect(service.isCompletedToday(habit, today), isTrue);
+      });
+
+      test('should return false for weekly habit completed on different day', () {
+        final today = DateTime(2023, 6, 19); // A Monday
+        final lastWeek = DateTime(2023, 6, 12); // Previous Monday
+        final habit = Habit.create(
+          name: 'Test Weekly',
+          description: 'Test',
+          type: HabitType.weekly,
+          weekdayMask: 1 << 1, // Monday bit set
+        ).copyWith(
+          lastCompletionDate: lastWeek, // Completed last week
+        );
+
+        expect(service.isCompletedToday(habit, today), isFalse);
+      });
+
+      test('should handle time-only differences correctly', () {
+        final today = DateTime(2023, 6, 15, 14, 30); // 2:30 PM
+        final todayMorning = DateTime(2023, 6, 15, 8, 0); // 8:00 AM same day
+        final habit = Habit.create(
+          name: 'Test Interval',
+          description: 'Test',
+          type: HabitType.interval,
+          intervalDays: 1,
+        ).copyWith(
+          lastCompletionDate: todayMorning, // Completed this morning
+        );
+
+        expect(service.isCompletedToday(habit, today), isTrue);
+      });
+    });
   });
 }
 
@@ -282,6 +380,7 @@ void main() {
 extension HabitTestHelpers on Habit {
   Habit copyWith({
     DateTime? lastCompletionDate,
+    int? displayOrder,
   }) {
     return Habit(
       id: id,
@@ -311,6 +410,7 @@ extension HabitTestHelpers on Habit {
       intervalDays: intervalDays,
       weekdayMask: weekdayMask,
       lastCompletionDate: lastCompletionDate ?? this.lastCompletionDate,
+      displayOrder: displayOrder ?? this.displayOrder,
     );
   }
 }
