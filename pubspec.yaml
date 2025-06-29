@@ -22,13 +22,9 @@ dependencies:
   json_annotation: ^4.8.1
   logger: ^2.0.2+1
   
-  # Backend & Environment
-  supabase_flutter: ^2.8.0
-  flutter_dotenv: ^5.1.0
+  # Local SQLite Database
+  sqflite: ^2.3.0
   uuid: ^4.4.0
-  
-  # Error handling & monitoring
-  sentry_flutter: ^8.0.0
   
   # State management & async
   rxdart: ^0.27.7
@@ -45,8 +41,6 @@ dependencies:
   # Local packages
   domain:
     path: packages/domain
-  data_local:
-    path: packages/data_local
 
 dev_dependencies:
   flutter_test:
@@ -63,6 +57,7 @@ dev_dependencies:
   
   # Testing
   mockito: ^5.4.4
+  sqflite_common_ffi: ^2.3.0
   
   # Workspace management
   melos: ^6.0.0
@@ -71,6 +66,4 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   
-  assets:
-    - .env
-    - .env.dev
+  # No assets needed for offline app

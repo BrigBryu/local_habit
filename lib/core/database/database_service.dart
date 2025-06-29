@@ -4,7 +4,6 @@ import 'package:logger/logger.dart';
 
 import 'habit_collection.dart';
 import 'completion_collection.dart';
-import 'relationship_collection.dart';
 
 class DatabaseService {
   static DatabaseService? _instance;
@@ -38,7 +37,6 @@ class DatabaseService {
         [
           HabitCollectionSchema,
           CompletionCollectionSchema,
-          RelationshipCollectionSchema,
         ],
         directory: dir.path,
         name: 'habit_level_up',

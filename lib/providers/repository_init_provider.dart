@@ -2,63 +2,30 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
 
 import '../core/repositories/habits_repository.dart';
-import '../core/repositories/simple_memory_repository.dart';
-import '../core/repositories/remote_habits_repository.dart';
-import '../core/auth/username_auth_service.dart';
-import '../core/auth/auth_wrapper.dart';
-import '../core/network/supabase_client.dart';
-import '../screens/partner_settings_screen.dart';
+import '../core/repositories/local_habits_repository.dart';
 
 final _logger = Logger();
 
-/// Provider that creates and manages the repository with user context
+/// Provider that creates and manages the local repository
 final repositoryProvider = FutureProvider<HabitsRepository>((ref) async {
-  // Watch for auth state changes - this will cause repository to reinitialize when user changes
-  final authState = ref.watch(authStateNotifierProvider);
-  final currentUserId = UsernameAuthService.instance.getCurrentUserId();
-  
-  _logger.i('Repository provider initializing - authState: $authState, userID: $currentUserId');
+  _logger.i('Repository provider initializing - Local SQLite mode');
   
   try {
-    _logger.i('Attempting to initialize RemoteHabitsRepository');
-    final repository = RemoteHabitsRepository();
+    _logger.i('Initializing LocalHabitsRepository');
+    final repository = LocalHabitsRepository();
 
-    // Initialize with async dependencies
+    // Initialize with local database
     await repository.initialize();
 
-    // Set the current user ID from Supabase auth (not username auth service)
-    final supabaseUserId = supabase.auth.currentUser?.id;
-    if (supabaseUserId != null) {
-      await repository.setCurrentUserId(supabaseUserId);
-      _logger.i('Remote repository initialized for Supabase user: $supabaseUserId');
-    } else {
-      _logger.w('No authenticated Supabase user - repository initialized without user ID');
-    }
+    // Set the current user ID to default local user
+    await repository.setCurrentUserId('local_user');
+    _logger.i('Local repository initialized for local user');
 
-    _logger.i('RemoteHabitsRepository initialized successfully');
+    _logger.i('LocalHabitsRepository initialized successfully');
     return repository;
   } catch (e) {
-    _logger.w('Failed to initialize RemoteHabitsRepository: $e. Falling back to SimpleMemoryRepository');
-    
-    // Fallback to SimpleMemoryRepository
-    final repository = SimpleMemoryRepository();
-    await repository.initialize();
-
-    // Set the current user ID from Supabase auth (use same supabaseUserId from above)
-    try {
-      final supabaseUserId = supabase.auth.currentUser?.id;
-      if (supabaseUserId != null) {
-        await repository.setCurrentUserId(supabaseUserId);
-        _logger.i('Fallback repository initialized for Supabase user: $supabaseUserId');
-      } else {
-        _logger.w('No authenticated Supabase user - fallback repository initialized without user ID');
-      }
-    } catch (e) {
-      _logger.w('Could not set user ID in fallback repository: $e');
-    }
-
-    _logger.i('SimpleMemoryRepository fallback initialized successfully');
-    return repository;
+    _logger.e('Failed to initialize LocalHabitsRepository: $e');
+    throw RepositoryException('Failed to initialize local repository: $e');
   }
 });
 
@@ -79,23 +46,15 @@ final habitsRepositoryProvider = Provider<HabitsRepository>((ref) {
   );
 });
 
-/// Provider that watches for username changes and updates repository
+/// Provider that returns the same repository (no user changes in offline mode)
 final userAwareRepositoryProvider =
     Provider<AsyncValue<HabitsRepository>>((ref) {
-  // Watch for username changes
-  ref.watch(currentUsernameProvider);
-
-  // Return the repository which will reinitialize when username changes
+  // In offline mode, just return the local repository
   return ref.watch(repositoryProvider);
 });
 
 /// Provider for checking if we're using remote or local repository
 final isUsingRemoteRepositoryProvider = Provider<bool>((ref) {
-  final repositoryAsync = ref.watch(repositoryProvider);
-  
-  return repositoryAsync.when(
-    data: (repository) => repository is RemoteHabitsRepository,
-    loading: () => false, // Assume false while loading
-    error: (error, stackTrace) => false, // Assume false on error
-  );
+  // Always false in offline mode
+  return false;
 });
