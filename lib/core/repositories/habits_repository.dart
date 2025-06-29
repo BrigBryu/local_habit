@@ -6,10 +6,6 @@ abstract class HabitsRepository {
   /// Stream of habits owned by the current user
   Stream<List<Habit>> ownHabits();
 
-  /// Stream of habits owned by a specific partner
-  /// Returns empty list if partnerId is invalid or no access granted
-  Stream<List<Habit>> partnerHabits(String partnerId);
-
   /// Add a new habit for the current user
   Future<String?> addHabit(Habit habit);
 
@@ -19,7 +15,7 @@ abstract class HabitsRepository {
   /// Remove a habit by ID
   Future<String?> removeHabit(String habitId);
 
-  /// Complete a habit and award XP
+  /// Complete a habit
   Future<String?> completeHabit(String habitId, {int xpAwarded = 0});
 
   /// Complete the current child in a stack habit

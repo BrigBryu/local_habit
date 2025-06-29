@@ -10,7 +10,6 @@ class CompletionCollection {
   late String habitId;
   late String userId;
   late DateTime completedAt;
-  int xpAwarded = 0;
   int completionCount = 1; // For multiple completions in one record
   String? notes;
 
@@ -20,7 +19,6 @@ class CompletionCollection {
     required String habitId,
     required String userId,
     required DateTime completedAt,
-    int xpAwarded = 0,
     int completionCount = 1,
     String? notes,
   }) {
@@ -30,7 +28,6 @@ class CompletionCollection {
       ..habitId = habitId
       ..userId = userId
       ..completedAt = completedAt
-      ..xpAwarded = xpAwarded
       ..completionCount = completionCount
       ..notes = notes;
   }

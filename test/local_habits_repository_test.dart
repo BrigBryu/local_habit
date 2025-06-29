@@ -117,7 +117,7 @@ void main() {
       await repository.addHabit(habit);
 
       // Act
-      final result = await repository.completeHabit(habit.id, xpAwarded: 10);
+      final result = await repository.completeHabit(habit.id);
 
       // Assert
       expect(result, isNull); // null means success

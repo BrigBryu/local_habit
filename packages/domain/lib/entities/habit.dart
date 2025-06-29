@@ -297,47 +297,6 @@ class Habit {
     );
   }
 
-  /// Calculate XP reward based on completion count and habit type
-  int calculateXPReward() {
-    const baseXP = 1;
-
-    switch (type) {
-      case HabitType.basic:
-        // Diminishing returns: 1st = 1 XP, 2nd = 0.5 XP, 3rd+ = 0.25 XP
-        if (dailyCompletionCount == 0) return baseXP; // First completion
-        if (dailyCompletionCount == 1)
-          return (baseXP * 0.5).round(); // Second completion
-        return (baseXP * 0.25).round(); // Third+ completions
-
-      case HabitType.avoidance:
-        // Reward for successfully avoiding, more XP for clean days
-        if (dailyFailureCount == 0 && !avoidanceSuccessToday) {
-          return baseXP; // First successful avoidance of the day
-        }
-        return 0; // No XP for marking already successful day or after failures
-
-      case HabitType.stack:
-        return baseXP * 3; // Higher reward for habit stacks
-
-      case HabitType.bundle:
-        return 0; // Bundle itself gives no XP, children give XP individually + combo bonus
-
-      case HabitType.interval:
-      case HabitType.weekly:
-        return baseXP; // Same as basic habits - 1 XP per completion
-
-      // TODO(bridger): Disabled time-based habit types
-      // case HabitType.timedSession:
-      //   return baseXP * 2; // Reward for completing timed sessions
-      //
-      // case HabitType.alarmHabit:
-      //   return baseXP * 2; // Reward for meeting alarm deadlines
-      //
-      // case HabitType.timeWindow:
-      // case HabitType.dailyTimeWindow:
-      //   return baseXP; // Standard reward for time window habits
-    }
-  }
 
   /// Get completion count for today
   int get todayCompletionCount => dailyCompletionCount;

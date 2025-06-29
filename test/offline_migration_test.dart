@@ -107,30 +107,6 @@ void main() {
       expect(bundleHabit.bundleChildIds, contains(childHabit2.id));
     });
 
-    test('should calculate XP rewards correctly', () {
-      final basicHabit = Habit.create(
-        name: 'Basic Habit',
-        description: 'A basic habit',
-        type: HabitType.basic,
-      );
-
-      final avoidanceHabit = Habit.create(
-        name: 'Avoidance Habit',
-        description: 'An avoidance habit',
-        type: HabitType.avoidance,
-      );
-
-      final stackHabit = Habit.create(
-        name: 'Stack Habit',
-        description: 'A stack habit',
-        type: HabitType.stack,
-      );
-
-      // XP calculations should work without network
-      expect(basicHabit.calculateXPReward(), equals(1)); // Base XP for first completion
-      expect(avoidanceHabit.calculateXPReward(), equals(1)); // Base XP for successful avoidance
-      expect(stackHabit.calculateXPReward(), equals(3)); // Higher XP for stacks
-    });
 
     test('should serialize and deserialize habits to/from JSON', () {
       final originalHabit = Habit.create(

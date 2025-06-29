@@ -17,7 +17,6 @@ export 'entities/habit.dart';
 
 // Services
 export 'services/time_service.dart';
-export 'services/level_service.dart';
 
 // Use Cases
 export 'use_cases/habit_use_cases.dart';

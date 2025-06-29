@@ -18,12 +18,6 @@ class LocalHabitsRepository implements HabitsRepository {
   }
 
   @override
-  Stream<List<Habit>> partnerHabits(String partnerId) {
-    // In offline mode, return empty stream as there are no partners
-    return Stream.value([]);
-  }
-
-  @override
   Future<String?> addHabit(Habit habit) async {
     try {
       await _database.insertHabit(habit);
@@ -74,7 +68,6 @@ class LocalHabitsRepository implements HabitsRepository {
       await _database.insertCompletion(
         habitId: habitId,
         completedAt: DateTime.now(),
-        xpAwarded: xpAwarded,
         userId: _currentUserId,
       );
       
@@ -309,7 +302,6 @@ class LocalHabitsRepository implements HabitsRepository {
           await _database.insertCompletion(
             habitId: completion['habit_id'] as String,
             completedAt: DateTime.parse(completion['completed_at'] as String),
-            xpAwarded: completion['xp_awarded'] as int? ?? 0,
             completionCount: completion['completion_count'] as int? ?? 1,
             notes: completion['notes'] as String?,
             userId: completion['user_id'] as String? ?? _currentUserId,

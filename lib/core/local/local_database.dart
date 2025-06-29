@@ -74,7 +74,6 @@ class LocalDatabase {
         habit_id TEXT NOT NULL,
         user_id TEXT NOT NULL DEFAULT 'local_user',
         completed_at TEXT NOT NULL,
-        xp_awarded INTEGER DEFAULT 0,
         completion_count INTEGER DEFAULT 1,
         notes TEXT,
         FOREIGN KEY (habit_id) REFERENCES habits (id) ON DELETE CASCADE
@@ -138,7 +137,6 @@ class LocalDatabase {
   Future<void> insertCompletion({
     required String habitId,
     required DateTime completedAt,
-    int xpAwarded = 0,
     int completionCount = 1,
     String? notes,
     String userId = 'local_user',
@@ -151,7 +149,6 @@ class LocalDatabase {
       'habit_id': habitId,
       'user_id': userId,
       'completed_at': completedAt.toIso8601String(),
-      'xp_awarded': xpAwarded,
       'completion_count': completionCount,
       'notes': notes,
     });
