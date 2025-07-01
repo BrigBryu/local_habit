@@ -47,11 +47,6 @@ const CompletionCollectionSchema = CollectionSchema(
       id: 5,
       name: r'userId',
       type: IsarType.string,
-    ),
-    r'xpAwarded': PropertySchema(
-      id: 6,
-      name: r'xpAwarded',
-      type: IsarType.long,
     )
   },
   estimateSize: _completionCollectionEstimateSize,
@@ -98,7 +93,6 @@ void _completionCollectionSerialize(
   writer.writeString(offsets[3], object.id);
   writer.writeString(offsets[4], object.notes);
   writer.writeString(offsets[5], object.userId);
-  writer.writeLong(offsets[6], object.xpAwarded);
 }
 
 CompletionCollection _completionCollectionDeserialize(
@@ -115,7 +109,6 @@ CompletionCollection _completionCollectionDeserialize(
   object.isarId = id;
   object.notes = reader.readStringOrNull(offsets[4]);
   object.userId = reader.readString(offsets[5]);
-  object.xpAwarded = reader.readLong(offsets[6]);
   return object;
 }
 
@@ -138,8 +131,6 @@ P _completionCollectionDeserializeProp<P>(
       return (reader.readStringOrNull(offset)) as P;
     case 5:
       return (reader.readString(offset)) as P;
-    case 6:
-      return (reader.readLong(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -979,62 +970,6 @@ extension CompletionCollectionQueryFilter on QueryBuilder<CompletionCollection,
       ));
     });
   }
-
-  QueryBuilder<CompletionCollection, CompletionCollection,
-      QAfterFilterCondition> xpAwardedEqualTo(int value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'xpAwarded',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<CompletionCollection, CompletionCollection,
-      QAfterFilterCondition> xpAwardedGreaterThan(
-    int value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'xpAwarded',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<CompletionCollection, CompletionCollection,
-      QAfterFilterCondition> xpAwardedLessThan(
-    int value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'xpAwarded',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<CompletionCollection, CompletionCollection,
-      QAfterFilterCondition> xpAwardedBetween(
-    int lower,
-    int upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'xpAwarded',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
-    });
-  }
 }
 
 extension CompletionCollectionQueryObject on QueryBuilder<CompletionCollection,
@@ -1126,20 +1061,6 @@ extension CompletionCollectionQuerySortBy
       sortByUserIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'userId', Sort.desc);
-    });
-  }
-
-  QueryBuilder<CompletionCollection, CompletionCollection, QAfterSortBy>
-      sortByXpAwarded() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'xpAwarded', Sort.asc);
-    });
-  }
-
-  QueryBuilder<CompletionCollection, CompletionCollection, QAfterSortBy>
-      sortByXpAwardedDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'xpAwarded', Sort.desc);
     });
   }
 }
@@ -1243,20 +1164,6 @@ extension CompletionCollectionQuerySortThenBy
       return query.addSortBy(r'userId', Sort.desc);
     });
   }
-
-  QueryBuilder<CompletionCollection, CompletionCollection, QAfterSortBy>
-      thenByXpAwarded() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'xpAwarded', Sort.asc);
-    });
-  }
-
-  QueryBuilder<CompletionCollection, CompletionCollection, QAfterSortBy>
-      thenByXpAwardedDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'xpAwarded', Sort.desc);
-    });
-  }
 }
 
 extension CompletionCollectionQueryWhereDistinct
@@ -1300,13 +1207,6 @@ extension CompletionCollectionQueryWhereDistinct
       distinctByUserId({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'userId', caseSensitive: caseSensitive);
-    });
-  }
-
-  QueryBuilder<CompletionCollection, CompletionCollection, QDistinct>
-      distinctByXpAwarded() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'xpAwarded');
     });
   }
 }
@@ -1357,13 +1257,6 @@ extension CompletionCollectionQueryProperty on QueryBuilder<
       userIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'userId');
-    });
-  }
-
-  QueryBuilder<CompletionCollection, int, QQueryOperations>
-      xpAwardedProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'xpAwarded');
     });
   }
 }

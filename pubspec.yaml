@@ -1,6 +1,7 @@
 name: habit_level_up
 description: Habit Level Up Flutter application
 version: 1.0.0+1
+publish_to: none
 
 environment:
   sdk: ^3.5.0

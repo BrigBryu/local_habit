@@ -2,11 +2,16 @@ import 'dart:async';
 import 'package:domain/domain.dart';
 import 'package:rxdart/rxdart.dart';
 import '../local/local_database.dart';
+import '../services/streak_reward_service.dart';
+import '../services/shop_service.dart';
+import '../database/database_service.dart';
+import '../../providers/streak_points_provider.dart';
 import 'habits_repository.dart';
 
 class LocalHabitsRepository implements HabitsRepository {
   final LocalDatabase _database;
   final BehaviorSubject<List<Habit>> _ownHabitsSubject = BehaviorSubject<List<Habit>>.seeded([]);
+  final BehaviorSubject<StreakRewardData?> _lastStreakRewardSubject = BehaviorSubject<StreakRewardData?>();
   String _currentUserId = 'local_user';
 
   LocalHabitsRepository({LocalDatabase? database}) 
@@ -53,10 +58,14 @@ class LocalHabitsRepository implements HabitsRepository {
   @override
   Future<String?> completeHabit(String habitId, {int xpAwarded = 0}) async {
     try {
+      await DatabaseService.instance.initialize();
+      
       final habit = await _database.getHabitById(habitId);
       if (habit == null) {
         return 'Habit not found';
       }
+
+      final completedAt = DateTime.now();
 
       // Complete the habit (this updates streak, completion count, etc.)
       final completedHabit = habit.complete();
@@ -67,9 +76,25 @@ class LocalHabitsRepository implements HabitsRepository {
       // Record the completion
       await _database.insertCompletion(
         habitId: habitId,
-        completedAt: DateTime.now(),
+        completedAt: completedAt,
         userId: _currentUserId,
       );
+
+      // Process streak rewards
+      final pointsAwarded = await StreakRewardService.instance.processStreakReward(
+        habitId: habitId,
+        userId: _currentUserId,
+        completedAt: completedAt,
+      );
+
+      if (pointsAwarded != null && pointsAwarded > 0) {
+        final rewardData = StreakRewardData(
+          points: pointsAwarded,
+          streakLength: completedHabit.currentStreak,
+          habitName: completedHabit.name,
+        );
+        _lastStreakRewardSubject.add(rewardData);
+      }
       
       await _refreshOwnHabits();
       return null; // Success
@@ -224,12 +249,34 @@ class LocalHabitsRepository implements HabitsRepository {
   @override
   Future<void> initialize() async {
     // Initialize the database and load initial data
+    await DatabaseService.instance.initialize();
     await _refreshOwnHabits();
+    
+    // Initialize shop with seed data
+    try {
+      final shopService = ShopService.instance;
+      await shopService.seedShopItems();
+    } catch (e) {
+      print('Warning: Failed to seed shop items: $e');
+    }
   }
 
   @override
   Future<void> dispose() async {
     await _ownHabitsSubject.close();
+    await _lastStreakRewardSubject.close();
+  }
+
+  // Streak points related methods
+  Stream<StreakRewardData?> get lastStreakReward => _lastStreakRewardSubject.stream;
+
+  Future<int> getWalletBalance() async {
+    await DatabaseService.instance.initialize();
+    return await StreakRewardService.instance.getWalletBalance(_currentUserId);
+  }
+
+  Stream<int> watchWalletBalance() {
+    return StreakRewardService.instance.watchWalletBalance(_currentUserId);
   }
 
   // Private helper methods
@@ -325,5 +372,10 @@ class LocalHabitsRepository implements HabitsRepository {
     } catch (e) {
       return 'Failed to clear data: $e';
     }
+  }
+
+  /// Get all habits as a list (for bundle service)
+  List<Habit> getAllHabits() {
+    return _ownHabitsSubject.value;
   }
 }

@@ -1,27 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
-import '../core/theme/flexible_theme_system.dart';
+import '../core/theme/theme_controller.dart';
 import '../core/auth/username_auth_service.dart';
 import '../core/auth/auth_wrapper.dart';
 import '../providers/repository_init_provider.dart';
-import 'theme_settings_screen.dart';
-import 'partner_settings_screen.dart';
+import '../features/shop/presentation/pages/shop_screen.dart';
+import '../features/shop/presentation/widgets/balance_chip.dart';
+import 'theme_gallery_page.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final colors = ref.watchColors;
+    final palette = ref.watch(currentPaletteProvider);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Settings'),
-        backgroundColor: colors.draculaCurrentLine,
-        foregroundColor: colors.draculaForeground,
+        backgroundColor: palette.surface,
+        foregroundColor: palette.onSurface,
       ),
-      backgroundColor: colors.draculaBackground,
+      backgroundColor: palette.background,
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -32,14 +33,14 @@ class SettingsScreen extends ConsumerWidget {
               borderRadius: BorderRadius.circular(12),
               gradient: LinearGradient(
                 colors: [
-                  colors.draculaPurple.withOpacity(0.1),
-                  colors.draculaPink.withOpacity(0.1),
+                  palette.primary.withValues(alpha: 0.1),
+                  palette.secondary.withValues(alpha: 0.1),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               border: Border.all(
-                color: colors.draculaPurple.withOpacity(0.3),
+                color: palette.primary.withValues(alpha: 0.3),
                 width: 2,
               ),
             ),
@@ -48,7 +49,7 @@ class SettingsScreen extends ConsumerWidget {
                 Icon(
                   Icons.settings,
                   size: 48,
-                  color: colors.draculaPurple,
+                  color: palette.primary,
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -56,23 +57,25 @@ class SettingsScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Habit Level Up',
+                        'Local Habit',
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
-                          color: colors.draculaPurple,
+                          color: palette.primary,
                         ),
                       ),
                       Text(
                         'Customize your experience',
                         style: TextStyle(
                           fontSize: 14,
-                          color: colors.draculaComment,
+                          color: palette.disabled,
                         ),
                       ),
                     ],
                   ),
                 ),
+                const SizedBox(width: 8),
+                const BalanceChip(showLabel: false),
               ],
             ),
           ),
@@ -80,6 +83,28 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: 24),
 
           // Settings sections
+          _buildSettingsSection(
+            context,
+            ref,
+            'Streak Points',
+            [
+              _buildSettingsTile(
+                context,
+                ref,
+                icon: Icons.diamond,
+                title: 'Streak Shop',
+                subtitle: 'Spend your points on themes and rewards',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const ShopScreen(),
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 16),
+
           _buildSettingsSection(
             context,
             ref,
@@ -93,7 +118,7 @@ class SettingsScreen extends ConsumerWidget {
                 subtitle: 'Change colors and appearance',
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (context) => const ThemeSettingsScreen(),
+                    builder: (context) => const ThemeGalleryPage(),
                   ),
                 ),
               ),
@@ -102,27 +127,6 @@ class SettingsScreen extends ConsumerWidget {
 
           const SizedBox(height: 16),
 
-          _buildSettingsSection(
-            context,
-            ref,
-            'Social',
-            [
-              _buildSettingsTile(
-                context,
-                ref,
-                icon: Icons.people,
-                title: 'Partner Settings',
-                subtitle: 'Connect with accountability partners',
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const PartnerSettingsScreen(),
-                  ),
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 16),
 
           _buildSettingsSection(
             context,
@@ -170,7 +174,7 @@ class SettingsScreen extends ConsumerWidget {
     String title,
     List<Widget> children,
   ) {
-    final colors = ref.watchColors;
+    final palette = ref.watch(currentPaletteProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -182,7 +186,7 @@ class SettingsScreen extends ConsumerWidget {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: colors.draculaCyan,
+              color: palette.accent,
             ),
           ),
         ),
@@ -190,7 +194,7 @@ class SettingsScreen extends ConsumerWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: colors.draculaCurrentLine,
+              color: palette.divider,
               width: 1,
             ),
           ),
@@ -208,12 +212,12 @@ class SettingsScreen extends ConsumerWidget {
     required String subtitle,
     VoidCallback? onTap,
   }) {
-    final colors = ref.watchColors;
+    final palette = ref.watch(currentPaletteProvider);
     final isClickable = onTap != null;
 
     return Container(
       decoration: BoxDecoration(
-        color: colors.draculaCurrentLine.withOpacity(0.3),
+        color: palette.surface,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Material(
@@ -229,16 +233,16 @@ class SettingsScreen extends ConsumerWidget {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: colors.draculaPurple.withOpacity(0.1),
+                    color: palette.primary.withOpacity(0.1),
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: colors.draculaPurple.withOpacity(0.3),
+                      color: palette.primary.withValues(alpha: 0.3),
                       width: 2,
                     ),
                   ),
                   child: Icon(
                     icon,
-                    color: colors.draculaPurple,
+                    color: palette.primary,
                     size: 24,
                   ),
                 ),
@@ -252,7 +256,7 @@ class SettingsScreen extends ConsumerWidget {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: colors.draculaForeground,
+                          color: palette.onSurface,
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -260,7 +264,7 @@ class SettingsScreen extends ConsumerWidget {
                         subtitle,
                         style: TextStyle(
                           fontSize: 13,
-                          color: colors.draculaComment,
+                          color: palette.disabled,
                         ),
                       ),
                     ],
@@ -269,7 +273,7 @@ class SettingsScreen extends ConsumerWidget {
                 if (isClickable)
                   Icon(
                     Icons.chevron_right,
-                    color: colors.draculaComment,
+                    color: palette.disabled,
                     size: 24,
                   ),
               ],
@@ -281,7 +285,7 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   Widget _buildSignOutTile(BuildContext context, WidgetRef ref) {
-    final colors = ref.watchColors;
+    final palette = ref.watch(currentPaletteProvider);
 
     return InkWell(
       borderRadius: BorderRadius.circular(12),
@@ -351,10 +355,10 @@ class SettingsScreen extends ConsumerWidget {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.1),
+                color: Colors.red.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: Colors.red.withOpacity(0.3),
+                  color: Colors.red.withValues(alpha: 0.3),
                   width: 2,
                 ),
               ),
@@ -382,7 +386,7 @@ class SettingsScreen extends ConsumerWidget {
                     'Sign out of your account',
                     style: TextStyle(
                       fontSize: 13,
-                      color: colors.draculaComment,
+                      color: palette.disabled,
                     ),
                   ),
                 ],
@@ -390,7 +394,7 @@ class SettingsScreen extends ConsumerWidget {
             ),
             Icon(
               Icons.chevron_right,
-              color: colors.draculaComment,
+              color: palette.disabled,
               size: 24,
             ),
           ],

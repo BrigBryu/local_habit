@@ -4,6 +4,11 @@ import 'package:logger/logger.dart';
 
 import 'habit_collection.dart';
 import 'completion_collection.dart';
+import 'weather_cache_collection.dart';
+import 'wallet_collection.dart';
+import 'ledger_collection.dart';
+import 'shop_item_collection.dart';
+import 'owned_item_collection.dart';
 
 class DatabaseService {
   static DatabaseService? _instance;
@@ -37,9 +42,14 @@ class DatabaseService {
         [
           HabitCollectionSchema,
           CompletionCollectionSchema,
+          WeatherCacheCollectionSchema,
+          WalletCollectionSchema,
+          LedgerCollectionSchema,
+          ShopItemCollectionSchema,
+          OwnedItemCollectionSchema,
         ],
         directory: dir.path,
-        name: 'habit_level_up',
+        name: 'local_habit',
       );
 
       _logger.i('Database initialized successfully');
