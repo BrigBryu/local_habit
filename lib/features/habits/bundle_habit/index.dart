@@ -1,7 +1,7 @@
 // Export all bundle habit components
 export 'add_bundle_habit_screen.dart';
 export 'bundle_habit_tile.dart';
-export 'partner_bundle_habit_tile.dart';
+// export 'partner_bundle_habit_tile.dart'; // TODO: Implement partner functionality
 export 'providers.dart';
 
 // TODO: Future bundle habit components

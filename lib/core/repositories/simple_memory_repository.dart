@@ -295,6 +295,16 @@ class SimpleMemoryRepository implements HabitsRepository {
   }
 
   @override
+  Future<String?> completeBundle(String bundleId) async {
+    return 'Bundle completion not implemented in simple memory repository';
+  }
+
+  @override
+  Future<String?> addHabitToBundle(String bundleId, String habitId) async {
+    return 'Add habit to bundle not implemented in simple memory repository';
+  }
+
+  @override
   Future<void> dispose() async {
     await _ownHabitsController.close();
     await _partnerHabitsController.close();

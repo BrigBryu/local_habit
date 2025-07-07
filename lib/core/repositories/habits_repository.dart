@@ -24,6 +24,12 @@ abstract class HabitsRepository {
   /// Record a failure for an avoidance habit
   Future<String?> recordFailure(String habitId);
 
+  /// Complete all children in a bundle habit
+  Future<String?> completeBundle(String bundleId);
+
+  /// Add a habit to an existing bundle
+  Future<String?> addHabitToBundle(String bundleId, String habitId);
+
   /// Get the current user ID
   String getCurrentUserId();
 

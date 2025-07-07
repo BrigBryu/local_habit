@@ -564,6 +564,24 @@ class Habit {
         displayOrder: json['displayOrder'] as int? ?? 999999,
       );
 
+  /// Calculate XP reward for completing this habit
+  int calculateXPReward() {
+    switch (type) {
+      case HabitType.basic:
+        return 1;
+      case HabitType.avoidance:
+        return 2;
+      case HabitType.bundle:
+        return (bundleChildIds?.length ?? 0) * 2;
+      case HabitType.stack:
+        return 3;
+      case HabitType.interval:
+        return intervalDays ?? 1;
+      case HabitType.weekly:
+        return 5;
+    }
+  }
+
   @override
   String toString() =>
       'Habit(id: $id, name: $name, type: ${type.displayName}, streak: $currentStreak)';

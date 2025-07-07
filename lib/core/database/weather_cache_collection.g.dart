@@ -18,34 +18,24 @@ const WeatherCacheCollectionSchema = CollectionSchema(
   name: r'WeatherCacheCollection',
   id: 4386510115388283076,
   properties: {
-    r'cachedAt': PropertySchema(
+    r'cacheKey': PropertySchema(
       id: 0,
-      name: r'cachedAt',
-      type: IsarType.dateTime,
+      name: r'cacheKey',
+      type: IsarType.string,
     ),
-    r'latitude': PropertySchema(
+    r'lastUpdated': PropertySchema(
       id: 1,
-      name: r'latitude',
-      type: IsarType.double,
+      name: r'lastUpdated',
+      type: IsarType.dateTime,
     ),
     r'locationKey': PropertySchema(
       id: 2,
       name: r'locationKey',
       type: IsarType.string,
     ),
-    r'locationName': PropertySchema(
+    r'weatherData': PropertySchema(
       id: 3,
-      name: r'locationName',
-      type: IsarType.string,
-    ),
-    r'longitude': PropertySchema(
-      id: 4,
-      name: r'longitude',
-      type: IsarType.double,
-    ),
-    r'weatherDataJson': PropertySchema(
-      id: 5,
-      name: r'weatherDataJson',
+      name: r'weatherData',
       type: IsarType.string,
     )
   },
@@ -55,14 +45,14 @@ const WeatherCacheCollectionSchema = CollectionSchema(
   deserializeProp: _weatherCacheCollectionDeserializeProp,
   idName: r'id',
   indexes: {
-    r'locationKey': IndexSchema(
-      id: 1950685211417560871,
-      name: r'locationKey',
-      unique: true,
+    r'cacheKey': IndexSchema(
+      id: 5885332021012296610,
+      name: r'cacheKey',
+      unique: false,
       replace: false,
       properties: [
         IndexPropertySchema(
-          name: r'locationKey',
+          name: r'cacheKey',
           type: IndexType.hash,
           caseSensitive: true,
         )
@@ -83,9 +73,9 @@ int _weatherCacheCollectionEstimateSize(
   Map<Type, List<int>> allOffsets,
 ) {
   var bytesCount = offsets.last;
+  bytesCount += 3 + object.cacheKey.length * 3;
   bytesCount += 3 + object.locationKey.length * 3;
-  bytesCount += 3 + object.locationName.length * 3;
-  bytesCount += 3 + object.weatherDataJson.length * 3;
+  bytesCount += 3 + object.weatherData.length * 3;
   return bytesCount;
 }
 
@@ -95,12 +85,10 @@ void _weatherCacheCollectionSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeDateTime(offsets[0], object.cachedAt);
-  writer.writeDouble(offsets[1], object.latitude);
+  writer.writeString(offsets[0], object.cacheKey);
+  writer.writeDateTime(offsets[1], object.lastUpdated);
   writer.writeString(offsets[2], object.locationKey);
-  writer.writeString(offsets[3], object.locationName);
-  writer.writeDouble(offsets[4], object.longitude);
-  writer.writeString(offsets[5], object.weatherDataJson);
+  writer.writeString(offsets[3], object.weatherData);
 }
 
 WeatherCacheCollection _weatherCacheCollectionDeserialize(
@@ -110,13 +98,11 @@ WeatherCacheCollection _weatherCacheCollectionDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = WeatherCacheCollection();
-  object.cachedAt = reader.readDateTime(offsets[0]);
+  object.cacheKey = reader.readString(offsets[0]);
   object.id = id;
-  object.latitude = reader.readDouble(offsets[1]);
+  object.lastUpdated = reader.readDateTime(offsets[1]);
   object.locationKey = reader.readString(offsets[2]);
-  object.locationName = reader.readString(offsets[3]);
-  object.longitude = reader.readDouble(offsets[4]);
-  object.weatherDataJson = reader.readString(offsets[5]);
+  object.weatherData = reader.readString(offsets[3]);
   return object;
 }
 
@@ -128,16 +114,12 @@ P _weatherCacheCollectionDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readDateTime(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 1:
-      return (reader.readDouble(offset)) as P;
+      return (reader.readDateTime(offset)) as P;
     case 2:
       return (reader.readString(offset)) as P;
     case 3:
-      return (reader.readString(offset)) as P;
-    case 4:
-      return (reader.readDouble(offset)) as P;
-    case 5:
       return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -156,65 +138,6 @@ List<IsarLinkBase<dynamic>> _weatherCacheCollectionGetLinks(
 void _weatherCacheCollectionAttach(
     IsarCollection<dynamic> col, Id id, WeatherCacheCollection object) {
   object.id = id;
-}
-
-extension WeatherCacheCollectionByIndex
-    on IsarCollection<WeatherCacheCollection> {
-  Future<WeatherCacheCollection?> getByLocationKey(String locationKey) {
-    return getByIndex(r'locationKey', [locationKey]);
-  }
-
-  WeatherCacheCollection? getByLocationKeySync(String locationKey) {
-    return getByIndexSync(r'locationKey', [locationKey]);
-  }
-
-  Future<bool> deleteByLocationKey(String locationKey) {
-    return deleteByIndex(r'locationKey', [locationKey]);
-  }
-
-  bool deleteByLocationKeySync(String locationKey) {
-    return deleteByIndexSync(r'locationKey', [locationKey]);
-  }
-
-  Future<List<WeatherCacheCollection?>> getAllByLocationKey(
-      List<String> locationKeyValues) {
-    final values = locationKeyValues.map((e) => [e]).toList();
-    return getAllByIndex(r'locationKey', values);
-  }
-
-  List<WeatherCacheCollection?> getAllByLocationKeySync(
-      List<String> locationKeyValues) {
-    final values = locationKeyValues.map((e) => [e]).toList();
-    return getAllByIndexSync(r'locationKey', values);
-  }
-
-  Future<int> deleteAllByLocationKey(List<String> locationKeyValues) {
-    final values = locationKeyValues.map((e) => [e]).toList();
-    return deleteAllByIndex(r'locationKey', values);
-  }
-
-  int deleteAllByLocationKeySync(List<String> locationKeyValues) {
-    final values = locationKeyValues.map((e) => [e]).toList();
-    return deleteAllByIndexSync(r'locationKey', values);
-  }
-
-  Future<Id> putByLocationKey(WeatherCacheCollection object) {
-    return putByIndex(r'locationKey', object);
-  }
-
-  Id putByLocationKeySync(WeatherCacheCollection object,
-      {bool saveLinks = true}) {
-    return putByIndexSync(r'locationKey', object, saveLinks: saveLinks);
-  }
-
-  Future<List<Id>> putAllByLocationKey(List<WeatherCacheCollection> objects) {
-    return putAllByIndex(r'locationKey', objects);
-  }
-
-  List<Id> putAllByLocationKeySync(List<WeatherCacheCollection> objects,
-      {bool saveLinks = true}) {
-    return putAllByIndexSync(r'locationKey', objects, saveLinks: saveLinks);
-  }
 }
 
 extension WeatherCacheCollectionQueryWhereSort
@@ -298,44 +221,44 @@ extension WeatherCacheCollectionQueryWhere on QueryBuilder<
   }
 
   QueryBuilder<WeatherCacheCollection, WeatherCacheCollection,
-      QAfterWhereClause> locationKeyEqualTo(String locationKey) {
+      QAfterWhereClause> cacheKeyEqualTo(String cacheKey) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'locationKey',
-        value: [locationKey],
+        indexName: r'cacheKey',
+        value: [cacheKey],
       ));
     });
   }
 
   QueryBuilder<WeatherCacheCollection, WeatherCacheCollection,
-      QAfterWhereClause> locationKeyNotEqualTo(String locationKey) {
+      QAfterWhereClause> cacheKeyNotEqualTo(String cacheKey) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'locationKey',
+              indexName: r'cacheKey',
               lower: [],
-              upper: [locationKey],
+              upper: [cacheKey],
               includeUpper: false,
             ))
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'locationKey',
-              lower: [locationKey],
+              indexName: r'cacheKey',
+              lower: [cacheKey],
               includeLower: false,
               upper: [],
             ));
       } else {
         return query
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'locationKey',
-              lower: [locationKey],
+              indexName: r'cacheKey',
+              lower: [cacheKey],
               includeLower: false,
               upper: [],
             ))
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'locationKey',
+              indexName: r'cacheKey',
               lower: [],
-              upper: [locationKey],
+              upper: [cacheKey],
               includeUpper: false,
             ));
       }
@@ -346,57 +269,139 @@ extension WeatherCacheCollectionQueryWhere on QueryBuilder<
 extension WeatherCacheCollectionQueryFilter on QueryBuilder<
     WeatherCacheCollection, WeatherCacheCollection, QFilterCondition> {
   QueryBuilder<WeatherCacheCollection, WeatherCacheCollection,
-      QAfterFilterCondition> cachedAtEqualTo(DateTime value) {
+      QAfterFilterCondition> cacheKeyEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'cachedAt',
+        property: r'cacheKey',
         value: value,
+        caseSensitive: caseSensitive,
       ));
     });
   }
 
   QueryBuilder<WeatherCacheCollection, WeatherCacheCollection,
-      QAfterFilterCondition> cachedAtGreaterThan(
-    DateTime value, {
+      QAfterFilterCondition> cacheKeyGreaterThan(
+    String value, {
     bool include = false,
+    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'cachedAt',
+        property: r'cacheKey',
         value: value,
+        caseSensitive: caseSensitive,
       ));
     });
   }
 
   QueryBuilder<WeatherCacheCollection, WeatherCacheCollection,
-      QAfterFilterCondition> cachedAtLessThan(
-    DateTime value, {
+      QAfterFilterCondition> cacheKeyLessThan(
+    String value, {
     bool include = false,
+    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'cachedAt',
+        property: r'cacheKey',
         value: value,
+        caseSensitive: caseSensitive,
       ));
     });
   }
 
   QueryBuilder<WeatherCacheCollection, WeatherCacheCollection,
-      QAfterFilterCondition> cachedAtBetween(
-    DateTime lower,
-    DateTime upper, {
+      QAfterFilterCondition> cacheKeyBetween(
+    String lower,
+    String upper, {
     bool includeLower = true,
     bool includeUpper = true,
+    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'cachedAt',
+        property: r'cacheKey',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
         includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<WeatherCacheCollection, WeatherCacheCollection,
+      QAfterFilterCondition> cacheKeyStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'cacheKey',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<WeatherCacheCollection, WeatherCacheCollection,
+      QAfterFilterCondition> cacheKeyEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'cacheKey',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<WeatherCacheCollection, WeatherCacheCollection,
+          QAfterFilterCondition>
+      cacheKeyContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'cacheKey',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<WeatherCacheCollection, WeatherCacheCollection,
+          QAfterFilterCondition>
+      cacheKeyMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'cacheKey',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<WeatherCacheCollection, WeatherCacheCollection,
+      QAfterFilterCondition> cacheKeyIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'cacheKey',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<WeatherCacheCollection, WeatherCacheCollection,
+      QAfterFilterCondition> cacheKeyIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'cacheKey',
+        value: '',
       ));
     });
   }
@@ -458,67 +463,57 @@ extension WeatherCacheCollectionQueryFilter on QueryBuilder<
   }
 
   QueryBuilder<WeatherCacheCollection, WeatherCacheCollection,
-      QAfterFilterCondition> latitudeEqualTo(
-    double value, {
-    double epsilon = Query.epsilon,
-  }) {
+      QAfterFilterCondition> lastUpdatedEqualTo(DateTime value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'latitude',
+        property: r'lastUpdated',
         value: value,
-        epsilon: epsilon,
       ));
     });
   }
 
   QueryBuilder<WeatherCacheCollection, WeatherCacheCollection,
-      QAfterFilterCondition> latitudeGreaterThan(
-    double value, {
+      QAfterFilterCondition> lastUpdatedGreaterThan(
+    DateTime value, {
     bool include = false,
-    double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'latitude',
+        property: r'lastUpdated',
         value: value,
-        epsilon: epsilon,
       ));
     });
   }
 
   QueryBuilder<WeatherCacheCollection, WeatherCacheCollection,
-      QAfterFilterCondition> latitudeLessThan(
-    double value, {
+      QAfterFilterCondition> lastUpdatedLessThan(
+    DateTime value, {
     bool include = false,
-    double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'latitude',
+        property: r'lastUpdated',
         value: value,
-        epsilon: epsilon,
       ));
     });
   }
 
   QueryBuilder<WeatherCacheCollection, WeatherCacheCollection,
-      QAfterFilterCondition> latitudeBetween(
-    double lower,
-    double upper, {
+      QAfterFilterCondition> lastUpdatedBetween(
+    DateTime lower,
+    DateTime upper, {
     bool includeLower = true,
     bool includeUpper = true,
-    double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'latitude',
+        property: r'lastUpdated',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
         includeUpper: includeUpper,
-        epsilon: epsilon,
       ));
     });
   }
@@ -662,13 +657,13 @@ extension WeatherCacheCollectionQueryFilter on QueryBuilder<
   }
 
   QueryBuilder<WeatherCacheCollection, WeatherCacheCollection,
-      QAfterFilterCondition> locationNameEqualTo(
+      QAfterFilterCondition> weatherDataEqualTo(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'locationName',
+        property: r'weatherData',
         value: value,
         caseSensitive: caseSensitive,
       ));
@@ -676,7 +671,7 @@ extension WeatherCacheCollectionQueryFilter on QueryBuilder<
   }
 
   QueryBuilder<WeatherCacheCollection, WeatherCacheCollection,
-      QAfterFilterCondition> locationNameGreaterThan(
+      QAfterFilterCondition> weatherDataGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -684,7 +679,7 @@ extension WeatherCacheCollectionQueryFilter on QueryBuilder<
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'locationName',
+        property: r'weatherData',
         value: value,
         caseSensitive: caseSensitive,
       ));
@@ -692,7 +687,7 @@ extension WeatherCacheCollectionQueryFilter on QueryBuilder<
   }
 
   QueryBuilder<WeatherCacheCollection, WeatherCacheCollection,
-      QAfterFilterCondition> locationNameLessThan(
+      QAfterFilterCondition> weatherDataLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -700,7 +695,7 @@ extension WeatherCacheCollectionQueryFilter on QueryBuilder<
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'locationName',
+        property: r'weatherData',
         value: value,
         caseSensitive: caseSensitive,
       ));
@@ -708,7 +703,7 @@ extension WeatherCacheCollectionQueryFilter on QueryBuilder<
   }
 
   QueryBuilder<WeatherCacheCollection, WeatherCacheCollection,
-      QAfterFilterCondition> locationNameBetween(
+      QAfterFilterCondition> weatherDataBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -717,7 +712,7 @@ extension WeatherCacheCollectionQueryFilter on QueryBuilder<
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'locationName',
+        property: r'weatherData',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -728,13 +723,13 @@ extension WeatherCacheCollectionQueryFilter on QueryBuilder<
   }
 
   QueryBuilder<WeatherCacheCollection, WeatherCacheCollection,
-      QAfterFilterCondition> locationNameStartsWith(
+      QAfterFilterCondition> weatherDataStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'locationName',
+        property: r'weatherData',
         value: value,
         caseSensitive: caseSensitive,
       ));
@@ -742,13 +737,13 @@ extension WeatherCacheCollectionQueryFilter on QueryBuilder<
   }
 
   QueryBuilder<WeatherCacheCollection, WeatherCacheCollection,
-      QAfterFilterCondition> locationNameEndsWith(
+      QAfterFilterCondition> weatherDataEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'locationName',
+        property: r'weatherData',
         value: value,
         caseSensitive: caseSensitive,
       ));
@@ -757,10 +752,10 @@ extension WeatherCacheCollectionQueryFilter on QueryBuilder<
 
   QueryBuilder<WeatherCacheCollection, WeatherCacheCollection,
           QAfterFilterCondition>
-      locationNameContains(String value, {bool caseSensitive = true}) {
+      weatherDataContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
-        property: r'locationName',
+        property: r'weatherData',
         value: value,
         caseSensitive: caseSensitive,
       ));
@@ -769,10 +764,10 @@ extension WeatherCacheCollectionQueryFilter on QueryBuilder<
 
   QueryBuilder<WeatherCacheCollection, WeatherCacheCollection,
           QAfterFilterCondition>
-      locationNameMatches(String pattern, {bool caseSensitive = true}) {
+      weatherDataMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
-        property: r'locationName',
+        property: r'weatherData',
         wildcard: pattern,
         caseSensitive: caseSensitive,
       ));
@@ -780,224 +775,20 @@ extension WeatherCacheCollectionQueryFilter on QueryBuilder<
   }
 
   QueryBuilder<WeatherCacheCollection, WeatherCacheCollection,
-      QAfterFilterCondition> locationNameIsEmpty() {
+      QAfterFilterCondition> weatherDataIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'locationName',
+        property: r'weatherData',
         value: '',
       ));
     });
   }
 
   QueryBuilder<WeatherCacheCollection, WeatherCacheCollection,
-      QAfterFilterCondition> locationNameIsNotEmpty() {
+      QAfterFilterCondition> weatherDataIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'locationName',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<WeatherCacheCollection, WeatherCacheCollection,
-      QAfterFilterCondition> longitudeEqualTo(
-    double value, {
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'longitude',
-        value: value,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<WeatherCacheCollection, WeatherCacheCollection,
-      QAfterFilterCondition> longitudeGreaterThan(
-    double value, {
-    bool include = false,
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'longitude',
-        value: value,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<WeatherCacheCollection, WeatherCacheCollection,
-      QAfterFilterCondition> longitudeLessThan(
-    double value, {
-    bool include = false,
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'longitude',
-        value: value,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<WeatherCacheCollection, WeatherCacheCollection,
-      QAfterFilterCondition> longitudeBetween(
-    double lower,
-    double upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'longitude',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<WeatherCacheCollection, WeatherCacheCollection,
-      QAfterFilterCondition> weatherDataJsonEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'weatherDataJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<WeatherCacheCollection, WeatherCacheCollection,
-      QAfterFilterCondition> weatherDataJsonGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'weatherDataJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<WeatherCacheCollection, WeatherCacheCollection,
-      QAfterFilterCondition> weatherDataJsonLessThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'weatherDataJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<WeatherCacheCollection, WeatherCacheCollection,
-      QAfterFilterCondition> weatherDataJsonBetween(
-    String lower,
-    String upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'weatherDataJson',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<WeatherCacheCollection, WeatherCacheCollection,
-      QAfterFilterCondition> weatherDataJsonStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'weatherDataJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<WeatherCacheCollection, WeatherCacheCollection,
-      QAfterFilterCondition> weatherDataJsonEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'weatherDataJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<WeatherCacheCollection, WeatherCacheCollection,
-          QAfterFilterCondition>
-      weatherDataJsonContains(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'weatherDataJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<WeatherCacheCollection, WeatherCacheCollection,
-          QAfterFilterCondition>
-      weatherDataJsonMatches(String pattern, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'weatherDataJson',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<WeatherCacheCollection, WeatherCacheCollection,
-      QAfterFilterCondition> weatherDataJsonIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'weatherDataJson',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<WeatherCacheCollection, WeatherCacheCollection,
-      QAfterFilterCondition> weatherDataJsonIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'weatherDataJson',
+        property: r'weatherData',
         value: '',
       ));
     });
@@ -1013,30 +804,30 @@ extension WeatherCacheCollectionQueryLinks on QueryBuilder<
 extension WeatherCacheCollectionQuerySortBy
     on QueryBuilder<WeatherCacheCollection, WeatherCacheCollection, QSortBy> {
   QueryBuilder<WeatherCacheCollection, WeatherCacheCollection, QAfterSortBy>
-      sortByCachedAt() {
+      sortByCacheKey() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'cachedAt', Sort.asc);
+      return query.addSortBy(r'cacheKey', Sort.asc);
     });
   }
 
   QueryBuilder<WeatherCacheCollection, WeatherCacheCollection, QAfterSortBy>
-      sortByCachedAtDesc() {
+      sortByCacheKeyDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'cachedAt', Sort.desc);
+      return query.addSortBy(r'cacheKey', Sort.desc);
     });
   }
 
   QueryBuilder<WeatherCacheCollection, WeatherCacheCollection, QAfterSortBy>
-      sortByLatitude() {
+      sortByLastUpdated() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'latitude', Sort.asc);
+      return query.addSortBy(r'lastUpdated', Sort.asc);
     });
   }
 
   QueryBuilder<WeatherCacheCollection, WeatherCacheCollection, QAfterSortBy>
-      sortByLatitudeDesc() {
+      sortByLastUpdatedDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'latitude', Sort.desc);
+      return query.addSortBy(r'lastUpdated', Sort.desc);
     });
   }
 
@@ -1055,44 +846,16 @@ extension WeatherCacheCollectionQuerySortBy
   }
 
   QueryBuilder<WeatherCacheCollection, WeatherCacheCollection, QAfterSortBy>
-      sortByLocationName() {
+      sortByWeatherData() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'locationName', Sort.asc);
+      return query.addSortBy(r'weatherData', Sort.asc);
     });
   }
 
   QueryBuilder<WeatherCacheCollection, WeatherCacheCollection, QAfterSortBy>
-      sortByLocationNameDesc() {
+      sortByWeatherDataDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'locationName', Sort.desc);
-    });
-  }
-
-  QueryBuilder<WeatherCacheCollection, WeatherCacheCollection, QAfterSortBy>
-      sortByLongitude() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'longitude', Sort.asc);
-    });
-  }
-
-  QueryBuilder<WeatherCacheCollection, WeatherCacheCollection, QAfterSortBy>
-      sortByLongitudeDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'longitude', Sort.desc);
-    });
-  }
-
-  QueryBuilder<WeatherCacheCollection, WeatherCacheCollection, QAfterSortBy>
-      sortByWeatherDataJson() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'weatherDataJson', Sort.asc);
-    });
-  }
-
-  QueryBuilder<WeatherCacheCollection, WeatherCacheCollection, QAfterSortBy>
-      sortByWeatherDataJsonDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'weatherDataJson', Sort.desc);
+      return query.addSortBy(r'weatherData', Sort.desc);
     });
   }
 }
@@ -1100,16 +863,16 @@ extension WeatherCacheCollectionQuerySortBy
 extension WeatherCacheCollectionQuerySortThenBy on QueryBuilder<
     WeatherCacheCollection, WeatherCacheCollection, QSortThenBy> {
   QueryBuilder<WeatherCacheCollection, WeatherCacheCollection, QAfterSortBy>
-      thenByCachedAt() {
+      thenByCacheKey() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'cachedAt', Sort.asc);
+      return query.addSortBy(r'cacheKey', Sort.asc);
     });
   }
 
   QueryBuilder<WeatherCacheCollection, WeatherCacheCollection, QAfterSortBy>
-      thenByCachedAtDesc() {
+      thenByCacheKeyDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'cachedAt', Sort.desc);
+      return query.addSortBy(r'cacheKey', Sort.desc);
     });
   }
 
@@ -1128,16 +891,16 @@ extension WeatherCacheCollectionQuerySortThenBy on QueryBuilder<
   }
 
   QueryBuilder<WeatherCacheCollection, WeatherCacheCollection, QAfterSortBy>
-      thenByLatitude() {
+      thenByLastUpdated() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'latitude', Sort.asc);
+      return query.addSortBy(r'lastUpdated', Sort.asc);
     });
   }
 
   QueryBuilder<WeatherCacheCollection, WeatherCacheCollection, QAfterSortBy>
-      thenByLatitudeDesc() {
+      thenByLastUpdatedDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'latitude', Sort.desc);
+      return query.addSortBy(r'lastUpdated', Sort.desc);
     });
   }
 
@@ -1156,44 +919,16 @@ extension WeatherCacheCollectionQuerySortThenBy on QueryBuilder<
   }
 
   QueryBuilder<WeatherCacheCollection, WeatherCacheCollection, QAfterSortBy>
-      thenByLocationName() {
+      thenByWeatherData() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'locationName', Sort.asc);
+      return query.addSortBy(r'weatherData', Sort.asc);
     });
   }
 
   QueryBuilder<WeatherCacheCollection, WeatherCacheCollection, QAfterSortBy>
-      thenByLocationNameDesc() {
+      thenByWeatherDataDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'locationName', Sort.desc);
-    });
-  }
-
-  QueryBuilder<WeatherCacheCollection, WeatherCacheCollection, QAfterSortBy>
-      thenByLongitude() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'longitude', Sort.asc);
-    });
-  }
-
-  QueryBuilder<WeatherCacheCollection, WeatherCacheCollection, QAfterSortBy>
-      thenByLongitudeDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'longitude', Sort.desc);
-    });
-  }
-
-  QueryBuilder<WeatherCacheCollection, WeatherCacheCollection, QAfterSortBy>
-      thenByWeatherDataJson() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'weatherDataJson', Sort.asc);
-    });
-  }
-
-  QueryBuilder<WeatherCacheCollection, WeatherCacheCollection, QAfterSortBy>
-      thenByWeatherDataJsonDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'weatherDataJson', Sort.desc);
+      return query.addSortBy(r'weatherData', Sort.desc);
     });
   }
 }
@@ -1201,16 +936,16 @@ extension WeatherCacheCollectionQuerySortThenBy on QueryBuilder<
 extension WeatherCacheCollectionQueryWhereDistinct
     on QueryBuilder<WeatherCacheCollection, WeatherCacheCollection, QDistinct> {
   QueryBuilder<WeatherCacheCollection, WeatherCacheCollection, QDistinct>
-      distinctByCachedAt() {
+      distinctByCacheKey({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'cachedAt');
+      return query.addDistinctBy(r'cacheKey', caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<WeatherCacheCollection, WeatherCacheCollection, QDistinct>
-      distinctByLatitude() {
+      distinctByLastUpdated() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'latitude');
+      return query.addDistinctBy(r'lastUpdated');
     });
   }
 
@@ -1222,24 +957,9 @@ extension WeatherCacheCollectionQueryWhereDistinct
   }
 
   QueryBuilder<WeatherCacheCollection, WeatherCacheCollection, QDistinct>
-      distinctByLocationName({bool caseSensitive = true}) {
+      distinctByWeatherData({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'locationName', caseSensitive: caseSensitive);
-    });
-  }
-
-  QueryBuilder<WeatherCacheCollection, WeatherCacheCollection, QDistinct>
-      distinctByLongitude() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'longitude');
-    });
-  }
-
-  QueryBuilder<WeatherCacheCollection, WeatherCacheCollection, QDistinct>
-      distinctByWeatherDataJson({bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'weatherDataJson',
-          caseSensitive: caseSensitive);
+      return query.addDistinctBy(r'weatherData', caseSensitive: caseSensitive);
     });
   }
 }
@@ -1252,17 +972,17 @@ extension WeatherCacheCollectionQueryProperty on QueryBuilder<
     });
   }
 
-  QueryBuilder<WeatherCacheCollection, DateTime, QQueryOperations>
-      cachedAtProperty() {
+  QueryBuilder<WeatherCacheCollection, String, QQueryOperations>
+      cacheKeyProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'cachedAt');
+      return query.addPropertyName(r'cacheKey');
     });
   }
 
-  QueryBuilder<WeatherCacheCollection, double, QQueryOperations>
-      latitudeProperty() {
+  QueryBuilder<WeatherCacheCollection, DateTime, QQueryOperations>
+      lastUpdatedProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'latitude');
+      return query.addPropertyName(r'lastUpdated');
     });
   }
 
@@ -1274,23 +994,9 @@ extension WeatherCacheCollectionQueryProperty on QueryBuilder<
   }
 
   QueryBuilder<WeatherCacheCollection, String, QQueryOperations>
-      locationNameProperty() {
+      weatherDataProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'locationName');
-    });
-  }
-
-  QueryBuilder<WeatherCacheCollection, double, QQueryOperations>
-      longitudeProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'longitude');
-    });
-  }
-
-  QueryBuilder<WeatherCacheCollection, String, QQueryOperations>
-      weatherDataJsonProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'weatherDataJson');
+      return query.addPropertyName(r'weatherData');
     });
   }
 }

@@ -225,6 +225,13 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.2.0"
+  data_local:
+    dependency: "direct main"
+    description:
+      path: "packages/data_local"
+      relative: true
+    source: path
+    version: "1.0.0"
   domain:
     dependency: "direct main"
     description:

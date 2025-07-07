@@ -27,14 +27,13 @@ final homeHabitsProvider = Provider<List<Habit>>((ref) {
       [];
 });
 
-/// Provider for level state
+/// Provider for level state - simplified for offline mode
 final levelStateProvider = Provider<Map<String, dynamic>>((ref) {
-  final levelService = LevelService();
   return {
-    'currentLevel': levelService.currentLevel,
-    'currentXP': levelService.currentXP,
-    'nextLevelXP': levelService.xpForNextLevel,
-    'progress': levelService.currentXP / levelService.xpForNextLevel,
+    'currentLevel': 1,
+    'currentXP': 0,
+    'nextLevelXP': 100,
+    'progress': 0.0,
   };
 });
 

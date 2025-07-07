@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../providers/streak_points_provider.dart';
 import '../../../../providers/habits_provider.dart';
+import '../../../../providers/repository_init_provider.dart';
 import '../../../../core/repositories/local_habits_repository.dart';
 import 'streak_points_notification.dart';
 
@@ -24,20 +25,22 @@ class _StreakNotificationListenerState extends ConsumerState<StreakNotificationL
     
     // Listen to streak rewards from the repository
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final repository = ref.read(habitsRepositoryProvider);
-      if (repository is LocalHabitsRepository) {
-        repository.lastStreakReward.listen((rewardData) {
-          if (rewardData != null && mounted) {
-            StreakPointsNotification.show(
-              context,
-              ref,
-              points: rewardData.points,
-              streakLength: rewardData.streakLength,
-              habitName: rewardData.habitName,
-            );
-          }
-        });
-      }
+      final repositoryAsync = ref.read(activeRepositoryProvider);
+      repositoryAsync.whenData((repository) {
+        if (repository is LocalHabitsRepository) {
+          repository.lastStreakReward.listen((rewardData) {
+            if (rewardData != null && mounted) {
+              StreakPointsNotification.show(
+                context,
+                ref,
+                points: rewardData.points,
+                streakLength: rewardData.streakLength,
+                habitName: rewardData.habitName,
+              );
+            }
+          });
+        }
+      });
     });
   }
 

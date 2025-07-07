@@ -236,6 +236,148 @@ class LocalHabitsRepository implements HabitsRepository {
   }
 
   @override
+  Future<String?> completeBundle(String bundleId) async {
+    try {
+      final bundle = await _database.getHabitById(bundleId);
+      if (bundle == null) {
+        return 'Bundle not found';
+      }
+
+      if (bundle.type != HabitType.bundle) {
+        return 'Habit is not a bundle type';
+      }
+
+      final childIds = bundle.bundleChildIds ?? [];
+      if (childIds.isEmpty) {
+        return 'Bundle has no children';
+      }
+
+      // Complete all incomplete child habits
+      for (final childId in childIds) {
+        final child = await _database.getHabitById(childId);
+        if (child != null && !isHabitCompletedToday(child)) {
+          final result = await completeHabit(childId);
+          if (result != null) {
+            return result; // Return error if any child fails
+          }
+        }
+      }
+
+      // Complete the bundle itself if not already completed today
+      if (!isHabitCompletedToday(bundle)) {
+        await completeHabit(bundleId);
+      }
+
+      await _refreshOwnHabits();
+      return null; // Success
+    } catch (e) {
+      return 'Failed to complete bundle: $e';
+    }
+  }
+
+  @override
+  Future<String?> addHabitToBundle(String bundleId, String habitId) async {
+    try {
+      final bundle = await _database.getHabitById(bundleId);
+      if (bundle == null) {
+        return 'Bundle not found';
+      }
+
+      if (bundle.type != HabitType.bundle) {
+        return 'Habit is not a bundle type';
+      }
+
+      final habit = await _database.getHabitById(habitId);
+      if (habit == null) {
+        return 'Habit to add not found';
+      }
+
+      if (habit.parentBundleId != null) {
+        return 'Habit already belongs to another bundle';
+      }
+
+      // Update the bundle to include the new child
+      final currentChildIds = List<String>.from(bundle.bundleChildIds ?? []);
+      if (currentChildIds.contains(habitId)) {
+        return 'Habit is already in this bundle';
+      }
+      
+      currentChildIds.add(habitId);
+      
+      final updatedBundle = Habit(
+        id: bundle.id,
+        name: bundle.name,
+        description: bundle.description,
+        type: bundle.type,
+        stackedOnHabitId: bundle.stackedOnHabitId,
+        bundleChildIds: currentChildIds,
+        parentBundleId: bundle.parentBundleId,
+        parentStackId: bundle.parentStackId,
+        stackChildIds: bundle.stackChildIds,
+        currentChildIndex: bundle.currentChildIndex,
+        timeoutMinutes: bundle.timeoutMinutes,
+        availableDays: bundle.availableDays,
+        createdAt: bundle.createdAt,
+        lastCompleted: bundle.lastCompleted,
+        lastAlarmTriggered: bundle.lastAlarmTriggered,
+        sessionStartTime: bundle.sessionStartTime,
+        lastSessionStarted: bundle.lastSessionStarted,
+        sessionCompletedToday: bundle.sessionCompletedToday,
+        dailyCompletionCount: bundle.dailyCompletionCount,
+        lastCompletionCountReset: bundle.lastCompletionCountReset,
+        dailyFailureCount: bundle.dailyFailureCount,
+        lastFailureCountReset: bundle.lastFailureCountReset,
+        avoidanceSuccessToday: bundle.avoidanceSuccessToday,
+        currentStreak: bundle.currentStreak,
+        intervalDays: bundle.intervalDays,
+        weekdayMask: bundle.weekdayMask,
+        lastCompletionDate: bundle.lastCompletionDate,
+        displayOrder: bundle.displayOrder,
+      );
+
+      // Update the habit to set its parent bundle
+      final updatedHabit = Habit(
+        id: habit.id,
+        name: habit.name,
+        description: habit.description,
+        type: habit.type,
+        stackedOnHabitId: habit.stackedOnHabitId,
+        bundleChildIds: habit.bundleChildIds,
+        parentBundleId: bundleId,
+        parentStackId: habit.parentStackId,
+        stackChildIds: habit.stackChildIds,
+        currentChildIndex: habit.currentChildIndex,
+        timeoutMinutes: habit.timeoutMinutes,
+        availableDays: habit.availableDays,
+        createdAt: habit.createdAt,
+        lastCompleted: habit.lastCompleted,
+        lastAlarmTriggered: habit.lastAlarmTriggered,
+        sessionStartTime: habit.sessionStartTime,
+        lastSessionStarted: habit.lastSessionStarted,
+        sessionCompletedToday: habit.sessionCompletedToday,
+        dailyCompletionCount: habit.dailyCompletionCount,
+        lastCompletionCountReset: habit.lastCompletionCountReset,
+        dailyFailureCount: habit.dailyFailureCount,
+        lastFailureCountReset: habit.lastFailureCountReset,
+        avoidanceSuccessToday: habit.avoidanceSuccessToday,
+        currentStreak: habit.currentStreak,
+        intervalDays: habit.intervalDays,
+        weekdayMask: habit.weekdayMask,
+        lastCompletionDate: habit.lastCompletionDate,
+        displayOrder: habit.displayOrder,
+      );
+
+      await _database.updateHabit(updatedBundle);
+      await _database.updateHabit(updatedHabit);
+      
+      await _refreshOwnHabits();
+      return null; // Success
+    } catch (e) {
+      return 'Failed to add habit to bundle: $e';
+    }
+  }
+
+  @override
   String getCurrentUserId() {
     return _currentUserId;
   }

@@ -42,6 +42,8 @@ dependencies:
   # Local packages
   domain:
     path: packages/domain
+  data_local:
+    path: packages/data_local
 
 dev_dependencies:
   flutter_test:

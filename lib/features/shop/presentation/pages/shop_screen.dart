@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/flexible_theme_system.dart';
 import '../../../../core/database/shop_item_collection.dart';
 import '../../../../providers/streak_points_provider.dart';
-import '../../../../providers/habits_provider.dart';
+import '../../../../providers/repository_init_provider.dart';
 import '../widgets/shop_item_card.dart';
 
 class ShopScreen extends ConsumerStatefulWidget {
@@ -32,8 +32,8 @@ class _ShopScreenState extends ConsumerState<ShopScreen>
   @override
   Widget build(BuildContext context) {
     final colors = ref.watchColors;
-    final habitsRepository = ref.watch(habitsRepositoryProvider);
-    final userId = habitsRepository.getCurrentUserId();
+    // Mock user ID for offline mode
+    const userId = 'local_user';
 
     return Scaffold(
       body: SafeArea(

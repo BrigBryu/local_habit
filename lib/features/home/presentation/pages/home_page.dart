@@ -6,8 +6,6 @@ import '../../../habits/basic_habit/index.dart';
 import '../../../habits/basic_habit/basic_habit_info_screen.dart';
 import '../../../habits/bundle_habit/bundle_habit_tile.dart';
 import '../../../../providers/habits_provider.dart';
-import '../../../../screens/theme_settings_screen.dart';
-import '../../../../screens/partner_settings_screen.dart';
 import '../../../../core/theme/app_colors.dart';
 
 class HomePage extends ConsumerWidget {
@@ -188,19 +186,11 @@ class HomePage extends ConsumerWidget {
   }
 
   void _navigateToThemeSettings(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const ThemeSettingsScreen(),
-      ),
-    );
+    _showPlaceholder(context, 'Theme Settings', 'Theme settings moved to Shop tab');
   }
 
   void _navigateToPartnerSettings(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const PartnerSettingsScreen(),
-      ),
-    );
+    _showPlaceholder(context, 'Partner Settings', 'Partner features removed for offline mode');
   }
 
   void _showPlaceholder(BuildContext context, String title, String message) {

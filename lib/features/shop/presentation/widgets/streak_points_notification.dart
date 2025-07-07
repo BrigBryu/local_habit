@@ -10,7 +10,7 @@ class StreakPointsNotification {
     required int streakLength,
     required String habitName,
   }) {
-    final colors = ref.read(colorsProvider);
+    final colors = ref.read(flexibleColorsProvider);
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -102,7 +102,7 @@ class StreakPointsNotification {
     required String habitName,
     required int lostStreak,
   }) {
-    final colors = ref.read(colorsProvider);
+    final colors = ref.read(flexibleColorsProvider);
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
