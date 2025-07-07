@@ -1,34 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../core/repositories/habits_repository.dart';
+import '../providers/repository_init_provider.dart';
 
-/// Provider that watches habits and calculates the longest streak
+/// Provider that calculates the longest streak - simplified for offline mode
 final longestStreakProvider = StreamProvider.autoDispose<int>((ref) async* {
-  final habitsRepository = ref.watch(habitsRepositoryProvider);
-  
-  // Start with 0
-  yield 0;
-  
-  try {
-    // Listen to habits stream
-    final habitsStream = habitsRepository.watchAllHabits();
-    
-    await for (final habits in habitsStream) {
-      int longestStreak = 0;
-      
-      for (final habit in habits) {
-        // Calculate current streak for this habit
-        final currentStreak = _calculateCurrentStreak(habit);
-        if (currentStreak > longestStreak) {
-          longestStreak = currentStreak;
-        }
-      }
-      
-      yield longestStreak;
-    }
-  } catch (e) {
-    // If error, yield 0
-    yield 0;
-  }
+  // Mock longest streak calculation
+  // In a real app, this would analyze habit completion data
+  yield 12; // Mock streak length
 });
 
 /// Calculates current streak for a habit

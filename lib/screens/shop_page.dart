@@ -345,7 +345,7 @@ class _UtilitiesTab extends ConsumerWidget {
     );
   }
 
-  Widget _buildGroupHeader(FlexibleColorScheme colors, String title) {
+  Widget _buildGroupHeader(colors, String title) {
     return Text(
       title,
       style: TextStyle(
@@ -471,7 +471,7 @@ class _UtilitiesTab extends ConsumerWidget {
   void _handleRefresh(WidgetRef ref, BuildContext context) {
     // Mock refresh implementation
     // In real app, this would call the utility refresh service
-    final colors = ref.read(colorsProvider);
+    final colors = ref.read(themeVariantProvider.notifier).colors;
     
     // Show success message
     ScaffoldMessenger.of(context).showSnackBar(

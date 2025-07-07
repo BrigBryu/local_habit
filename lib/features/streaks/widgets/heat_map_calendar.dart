@@ -47,7 +47,7 @@ class HeatMapCalendar extends ConsumerWidget {
     );
   }
 
-  Widget _buildCalendarGrid(FlexibleColorScheme colors) {
+  Widget _buildCalendarGrid(colors) {
     // Generate 7 weeks of data (49 days)
     final weeks = <Widget>[];
     
@@ -68,7 +68,7 @@ class HeatMapCalendar extends ConsumerWidget {
     return Column(children: weeks);
   }
 
-  Widget _buildDayCell(FlexibleColorScheme colors, double intensity) {
+  Widget _buildDayCell(colors, double intensity) {
     Color cellColor;
     
     if (intensity == 0) {
@@ -98,7 +98,7 @@ class HeatMapCalendar extends ConsumerWidget {
     );
   }
 
-  Widget _buildLegend(FlexibleColorScheme colors) {
+  Widget _buildLegend(colors) {
     return Row(
       children: [
         Text(
