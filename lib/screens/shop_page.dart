@@ -471,7 +471,7 @@ class _UtilitiesTab extends ConsumerWidget {
   void _handleRefresh(WidgetRef ref, BuildContext context) {
     // Mock refresh implementation
     // In real app, this would call the utility refresh service
-    final colors = ref.read(themeVariantProvider.notifier).colors;
+    final colors = ref.read(flexibleColorsProvider);
     
     // Show success message
     ScaffoldMessenger.of(context).showSnackBar(
