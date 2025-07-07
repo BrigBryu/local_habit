@@ -1,170 +1,138 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
-import '../core/theme/theme_controller.dart';
-import '../core/auth/username_auth_service.dart';
-import '../core/auth/auth_wrapper.dart';
+import '../core/theme/flexible_theme_system.dart';
 import '../providers/repository_init_provider.dart';
-import '../features/shop/presentation/pages/shop_screen.dart';
-import '../features/shop/presentation/widgets/balance_chip.dart';
-import 'theme_gallery_page.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final palette = ref.watch(currentPaletteProvider);
+    final colors = ref.watchColors;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-        backgroundColor: palette.surface,
-        foregroundColor: palette.onSurface,
-      ),
-      backgroundColor: palette.background,
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          // Header section
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              gradient: LinearGradient(
-                colors: [
-                  palette.primary.withValues(alpha: 0.1),
-                  palette.secondary.withValues(alpha: 0.1),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              border: Border.all(
-                color: palette.primary.withValues(alpha: 0.3),
-                width: 2,
-              ),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.settings,
-                  size: 48,
-                  color: palette.primary,
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Local Habit',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: palette.primary,
-                        ),
-                      ),
-                      Text(
-                        'Customize your experience',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: palette.disabled,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                const BalanceChip(showLabel: false),
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        // Header section
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            gradient: LinearGradient(
+              colors: [
+                colors.draculaPink.withValues(alpha: 0.1),
+                colors.draculaPurple.withValues(alpha: 0.1),
               ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            border: Border.all(
+              color: colors.draculaPink.withValues(alpha: 0.3),
+              width: 2,
             ),
           ),
-
-          const SizedBox(height: 24),
-
-          // Settings sections
-          _buildSettingsSection(
-            context,
-            ref,
-            'Streak Points',
-            [
-              _buildSettingsTile(
-                context,
-                ref,
-                icon: Icons.diamond,
-                title: 'Streak Shop',
-                subtitle: 'Spend your points on themes and rewards',
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const ShopScreen(),
-                  ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.settings,
+                size: 48,
+                color: colors.draculaPink,
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Local Habit',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: colors.draculaPink,
+                      ),
+                    ),
+                    Text(
+                      'Customize your experience',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: colors.draculaComment,
+                      ),
+                    ),
+                  ],
                 ),
               ),
+              const SizedBox(width: 8),
+              // Balance display removed for simplified offline experience
             ],
           ),
+        ),
 
-          const SizedBox(height: 16),
+        const SizedBox(height: 24),
 
-          _buildSettingsSection(
-            context,
-            ref,
-            'Appearance',
-            [
-              _buildSettingsTile(
-                context,
-                ref,
-                icon: Icons.palette,
-                title: 'Theme Settings',
-                subtitle: 'Change colors and appearance',
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const ThemeGalleryPage(),
-                  ),
-                ),
-              ),
-            ],
-          ),
+        // Settings sections
+        _buildSettingsSection(
+          context,
+          ref,
+          'Data & Privacy',
+          [
+            _buildSettingsTile(
+              context,
+              ref,
+              icon: Icons.storage,
+              title: 'Database Info',
+              subtitle: 'View local database information',
+              onTap: null,
+            ),
+            _buildSettingsTile(
+              context,
+              ref,
+              icon: Icons.privacy_tip,
+              title: 'Privacy',
+              subtitle: 'Local-only data storage',
+              onTap: null,
+            ),
+          ],
+        ),
 
-          const SizedBox(height: 16),
+        const SizedBox(height: 16),
 
+        _buildSettingsSection(
+          context,
+          ref,
+          'About',
+          [
+            _buildSettingsTile(
+              context,
+              ref,
+              icon: Icons.info_outline,
+              title: 'App Version',
+              subtitle: 'v1.0.0 - Local Development',
+              onTap: null,
+            ),
+            _buildSettingsTile(
+              context,
+              ref,
+              icon: Icons.code,
+              title: 'Repository Mode',
+              subtitle: 'Simple Memory Repository',
+              onTap: null,
+            ),
+          ],
+        ),
 
-          _buildSettingsSection(
-            context,
-            ref,
-            'About',
-            [
-              _buildSettingsTile(
-                context,
-                ref,
-                icon: Icons.info_outline,
-                title: 'App Version',
-                subtitle: 'v1.0.0 - Local Development',
-                onTap: null,
-              ),
-              _buildSettingsTile(
-                context,
-                ref,
-                icon: Icons.code,
-                title: 'Repository Mode',
-                subtitle: 'Simple Memory Repository',
-                onTap: null,
-              ),
-            ],
-          ),
+        const SizedBox(height: 24),
 
-          const SizedBox(height: 24),
-
-          // Sign Out section
-          _buildSettingsSection(
-            context,
-            ref,
-            'Account',
-            [
-              _buildSignOutTile(context, ref),
-            ],
-          ),
-        ],
-      ),
+        // Sign Out section
+        _buildSettingsSection(
+          context,
+          ref,
+          'Account',
+          [
+            _buildSignOutTile(context, ref),
+          ],
+        ),
+      ],
     );
   }
 
@@ -174,7 +142,7 @@ class SettingsScreen extends ConsumerWidget {
     String title,
     List<Widget> children,
   ) {
-    final palette = ref.watch(currentPaletteProvider);
+    final colors = ref.watchColors;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -186,7 +154,7 @@ class SettingsScreen extends ConsumerWidget {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: palette.accent,
+              color: colors.draculaCyan,
             ),
           ),
         ),
@@ -194,7 +162,7 @@ class SettingsScreen extends ConsumerWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: palette.divider,
+              color: colors.draculaComment,
               width: 1,
             ),
           ),
@@ -212,12 +180,12 @@ class SettingsScreen extends ConsumerWidget {
     required String subtitle,
     VoidCallback? onTap,
   }) {
-    final palette = ref.watch(currentPaletteProvider);
+    final colors = ref.watchColors;
     final isClickable = onTap != null;
 
     return Container(
       decoration: BoxDecoration(
-        color: palette.surface,
+        color: colors.draculaCurrentLine,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Material(
@@ -233,16 +201,16 @@ class SettingsScreen extends ConsumerWidget {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: palette.primary.withOpacity(0.1),
+                    color: colors.draculaPink.withOpacity(0.1),
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: palette.primary.withValues(alpha: 0.3),
+                      color: colors.draculaPink.withValues(alpha: 0.3),
                       width: 2,
                     ),
                   ),
                   child: Icon(
                     icon,
-                    color: palette.primary,
+                    color: colors.draculaPink,
                     size: 24,
                   ),
                 ),
@@ -256,7 +224,7 @@ class SettingsScreen extends ConsumerWidget {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: palette.onSurface,
+                          color: colors.draculaForeground,
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -264,7 +232,7 @@ class SettingsScreen extends ConsumerWidget {
                         subtitle,
                         style: TextStyle(
                           fontSize: 13,
-                          color: palette.disabled,
+                          color: colors.draculaComment,
                         ),
                       ),
                     ],
@@ -273,7 +241,7 @@ class SettingsScreen extends ConsumerWidget {
                 if (isClickable)
                   Icon(
                     Icons.chevron_right,
-                    color: palette.disabled,
+                    color: colors.draculaComment,
                     size: 24,
                   ),
               ],
@@ -285,7 +253,7 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   Widget _buildSignOutTile(BuildContext context, WidgetRef ref) {
-    final palette = ref.watch(currentPaletteProvider);
+    final colors = ref.watchColors;
 
     return InkWell(
       borderRadius: BorderRadius.circular(12),
@@ -315,16 +283,8 @@ class SettingsScreen extends ConsumerWidget {
           logger.i('=== SIGNING OUT USER ===');
 
           try {
-            // Sign out from auth service
-            await UsernameAuthService.instance.signOut();
-            logger.i('Username auth service signed out');
-
-            // Reset the stream listener and force refresh auth state
-            ref.read(authStateNotifierProvider.notifier).resetStreamListener();
-            
-            // Add a small delay and refresh again to ensure state propagation
-            await Future.delayed(const Duration(milliseconds: 100));
-            ref.read(authStateNotifierProvider.notifier).refresh();
+            // Simplified offline sign out
+            logger.i('Clearing local data for offline app');
 
             // Invalidate all providers to clear user data
             ref.invalidate(repositoryProvider);
@@ -336,11 +296,9 @@ class SettingsScreen extends ConsumerWidget {
               logger.i('Settings screen closed');
             }
 
-            logger.i('Sign out completed successfully');
+            logger.i('Local data cleared successfully');
           } catch (e) {
-            logger.e('Error during sign out: $e');
-            // Force refresh auth state even on error
-            ref.read(authStateNotifierProvider.notifier).refresh();
+            logger.e('Error during local data clear: $e');
             if (context.mounted) {
               Navigator.of(context).pop();
             }
@@ -386,7 +344,7 @@ class SettingsScreen extends ConsumerWidget {
                     'Sign out of your account',
                     style: TextStyle(
                       fontSize: 13,
-                      color: palette.disabled,
+                      color: colors.draculaComment,
                     ),
                   ),
                 ],
@@ -394,7 +352,7 @@ class SettingsScreen extends ConsumerWidget {
             ),
             Icon(
               Icons.chevron_right,
-              color: palette.disabled,
+              color: colors.draculaComment,
               size: 24,
             ),
           ],
