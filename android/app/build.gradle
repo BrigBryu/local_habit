@@ -14,7 +14,6 @@ if (keystoreFile.exists()) {
 android {
     namespace = "com.example.habit_level_up.habit_level_up"
     compileSdk = 35
-    ndkVersion = "26.3.11579264"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
