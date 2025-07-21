@@ -286,6 +286,28 @@ fvm dart run melos run test:unit    # Pure Dart packages
 fvm dart run melos run test         # All packages
 ```
 
+## 🔔 Claude Code Notifications
+
+For enhanced development workflow, use the included notification script that alerts you when Claude Code operations complete:
+
+```bash
+# Use the cc helper instead of claude code directly
+./scripts/cc_notify.zsh "your prompt here"
+
+# Or create a shell alias (add to ~/.zshrc):
+alias cc='./scripts/cc_notify.zsh'
+```
+
+The script will:
+- Run Claude Code with your arguments
+- Monitor output in real-time
+- Post a macOS notification when "✓ done" appears
+- Play a system sound to alert you
+
+**Setup requirements:**
+- macOS (for notifications)
+- `terminal-notifier` (auto-installed via Homebrew)
+
 ## 🔧 Troubleshooting
 
 #### **Build Issues**

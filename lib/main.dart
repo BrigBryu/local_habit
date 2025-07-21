@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'core/theme/flexible_theme_system.dart';
+import 'core/theme/theme_controller.dart';
 import 'widgets/app_scaffold.dart';
-import 'features/shop/presentation/widgets/streak_notification_listener.dart';
+import 'core/database/database_service.dart';
+import 'core/services/time_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize services
+  await DatabaseService.initialize();
+  await TimeService.instance.initialize();
 
   debugPrint('Local-only app startup completed - launching UI');
 
@@ -18,28 +23,13 @@ class LocalHabitApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final colors = ref.watchColors;
+    final themeData = ref.watch(currentThemeDataProvider);
 
-    return StreakNotificationListener(
-      child: MaterialApp(
-        title: 'Local Habit',
-        theme: ThemeData(
-          brightness: Brightness.dark,
-          scaffoldBackgroundColor: colors.draculaBackground,
-          primaryColor: colors.draculaPink,
-          colorScheme: ColorScheme.dark(
-            primary: colors.draculaPink,
-            secondary: colors.draculaPurple,
-            surface: colors.draculaCurrentLine,
-          ),
-          appBarTheme: AppBarTheme(
-            backgroundColor: colors.draculaBackground,
-            foregroundColor: colors.draculaForeground,
-          ),
-        ),
-        home: const AppScaffold(),
-        debugShowCheckedModeBanner: false,
-      ),
+    return MaterialApp(
+      title: 'Local Habit',
+      theme: themeData,
+      home: const AppScaffold(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }

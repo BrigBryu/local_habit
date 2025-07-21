@@ -4,7 +4,7 @@ import 'package:domain/domain.dart';
 import 'package:data_local/repositories/bundle_service.dart' as bundle_service;
 import '../../../providers/habits_provider.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/flexible_theme_system.dart';
+import '../../../core/theme/theme_controller.dart';
 import 'providers.dart';
 import 'bundle_info_screen.dart';
 

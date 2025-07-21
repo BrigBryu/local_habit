@@ -25,6 +25,10 @@ android {
         jvmTarget = '1.8'
     }
 
+    buildFeatures {
+        buildConfig true
+    }
+
     signingConfigs {
         release {
             keyAlias keystoreProperties['keyAlias']
@@ -45,6 +49,10 @@ android {
     }
 
     buildTypes {
+        debug {
+            // Disable EGL emulation debug logging
+            buildConfigField "boolean", "DISABLE_EGL_DEBUG", "true"
+        }
         release {
             signingConfig signingConfigs.release
             minifyEnabled false   // ok to leave off for now

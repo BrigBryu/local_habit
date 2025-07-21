@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../pages/daily_habits_page.dart';
 import '../screens/settings_screen.dart';
-import '../core/theme/flexible_theme_system.dart';
+import '../core/theme/theme_controller.dart';
 import '../providers/repository_init_provider.dart';
 
 class HomeTabScaffold extends ConsumerWidget {

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:domain/domain.dart';
 import '../../../providers/habits_provider.dart';
-import '../../../core/theme/flexible_theme_system.dart';
+import '../../../core/theme/theme_controller.dart';
 
 /// Tile for displaying avoidance habits with success/failure buttons
 class AvoidanceHabitTile extends ConsumerWidget {

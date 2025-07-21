@@ -1,151 +1,154 @@
 import 'package:flutter/material.dart';
-import 'app_colors.dart';
+import 'color_palette.dart';
 
-/// Centralized theme configuration for the app
 class AppTheme {
-  AppTheme._(); // Private constructor
-
-  static ThemeData get lightTheme {
-    return ThemeData(
-      useMaterial3: true,
-      colorScheme: AppColorSchemes.lightColorScheme,
-
-      // App bar theme
-      appBarTheme: AppBarTheme(
-        backgroundColor: AppColorSchemes.lightColorScheme.inversePrimary,
-        foregroundColor: AppColors.textPrimary,
-        elevation: 0,
-        titleTextStyle: const TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
-          color: AppColors.textPrimary,
-        ),
-      ),
-
-      // Card theme
-      cardTheme: CardTheme(
-        color: AppColors.cardBackground,
-        elevation: 3,
-        shadowColor: AppColors.borderMedium.withOpacity(0.3),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: BorderSide(
-            color: AppColors.borderMedium,
-            width: 1,
-          ),
-        ),
-      ),
-
-      // Elevated button theme
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primaryPurple,
-          foregroundColor: AppColors.textLight,
-          elevation: 2,
-          shadowColor: AppColors.primaryPurple.withOpacity(0.3),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        ),
-      ),
-
-      // Floating action button theme
-      floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: AppColors.primaryPurple,
-        foregroundColor: AppColors.textLight,
-        elevation: 4,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-      ),
-
-      // Snackbar theme
-      snackBarTheme: SnackBarThemeData(
-        backgroundColor: AppColors.primaryPurple,
-        contentTextStyle: const TextStyle(
-          color: AppColors.textLight,
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-        behavior: SnackBarBehavior.floating,
-      ),
-
-      // Extensions for custom colors
-      extensions: const [],
+  static ThemeData fromColorPalette(ColorPalette palette) {
+    final brightness = _getBrightnessFromPalette(palette);
+    final colorScheme = ColorScheme.fromSeed(
+      seedColor: palette.primary,
+      brightness: brightness,
+    ).copyWith(
+      primary: palette.primary,
+      secondary: palette.secondary,
+      surface: palette.surface,
+      error: palette.error,
+      onPrimary: palette.onPrimary,
+      onSecondary: palette.onSecondary,
+      onSurface: palette.onSurface,
+      onError: palette.onError,
+      outline: palette.divider,
+      shadow: palette.shadow,
     );
-  }
 
-  static ThemeData get darkTheme {
     return ThemeData(
       useMaterial3: true,
-      colorScheme: AppColorSchemes.darkColorScheme,
-
-      // App bar theme
-      appBarTheme: AppBarTheme(
-        backgroundColor: AppColorSchemes.darkColorScheme.inversePrimary,
-        foregroundColor: AppColors.textLight,
-        elevation: 0,
-        titleTextStyle: const TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
-          color: AppColors.textLight,
-        ),
+      colorScheme: colorScheme,
+      scaffoldBackgroundColor: palette.background,
+      canvasColor: palette.background,
+      dividerColor: palette.divider,
+      shadowColor: palette.shadow,
+      disabledColor: palette.disabled,
+      hintColor: palette.hint,
+      dialogTheme: DialogThemeData(backgroundColor: palette.surface),
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: palette.surface,
+        surfaceTintColor: Colors.transparent,
       ),
-
+      
+      // AppBar theme
+      appBarTheme: AppBarTheme(
+        backgroundColor: palette.surface,
+        foregroundColor: palette.onSurface,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+      ),
+      
       // Card theme
-      cardTheme: CardTheme(
-        color: AppColors.cardBackgroundDark,
-        elevation: 4,
-        shadowColor: Colors.black54,
+      cardTheme: CardThemeData(
+        color: palette.surface,
+        elevation: 1,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
       ),
-
-      // Elevated button theme
+      
+      // Button themes
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.lightPurple,
-          foregroundColor: AppColors.textPrimary,
-          elevation: 2,
-          shadowColor: AppColors.lightPurple.withOpacity(0.3),
+          backgroundColor: palette.primary,
+          foregroundColor: palette.onPrimary,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(8),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         ),
       ),
-
-      // Floating action button theme
+      
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: palette.primary,
+        ),
+      ),
+      
+      // Input decoration theme
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: palette.surface,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: palette.divider),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: palette.divider),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: palette.primary, width: 2),
+        ),
+        labelStyle: TextStyle(color: palette.hint),
+        hintStyle: TextStyle(color: palette.hint),
+      ),
+      
+      // Icon theme
+      iconTheme: IconThemeData(
+        color: palette.onSurface,
+      ),
+      
+      // FAB theme
       floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: AppColors.lightPurple,
-        foregroundColor: AppColors.textPrimary,
-        elevation: 4,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        backgroundColor: palette.accent,
+        foregroundColor: palette.onPrimary,
       ),
-
-      // Snackbar theme
+      
+      // SnackBar theme with smooth slide animations
       snackBarTheme: SnackBarThemeData(
-        backgroundColor: AppColors.lightPurple,
-        contentTextStyle: const TextStyle(
-          color: AppColors.textPrimary,
-          fontSize: 14,
+        backgroundColor: palette.surface,
+        contentTextStyle: TextStyle(
+          color: palette.onSurface,
           fontWeight: FontWeight.w500,
         ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        actionTextColor: palette.primary,
         behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        elevation: 8,
+        dismissDirection: DismissDirection.down,
+        // Improved margins for better slide effect
+        insetPadding: const EdgeInsets.all(16),
+        // Better spacing for content
+        actionOverflowThreshold: 0.25,
       ),
-
-      // Extensions for custom colors
-      extensions: const [],
+      
+      // Text theme
+      textTheme: TextTheme(
+        headlineLarge: TextStyle(color: palette.onSurface),
+        headlineMedium: TextStyle(color: palette.onSurface),
+        headlineSmall: TextStyle(color: palette.onSurface),
+        titleLarge: TextStyle(color: palette.onSurface),
+        titleMedium: TextStyle(color: palette.onSurface),
+        titleSmall: TextStyle(color: palette.onSurface),
+        bodyLarge: TextStyle(color: palette.onSurface),
+        bodyMedium: TextStyle(color: palette.onSurface),
+        bodySmall: TextStyle(color: palette.hint),
+        labelLarge: TextStyle(color: palette.onSurface),
+        labelMedium: TextStyle(color: palette.onSurface),
+        labelSmall: TextStyle(color: palette.hint),
+      ),
     );
   }
+
+  static Brightness _getBrightnessFromPalette(ColorPalette palette) {
+    // Calculate luminance of surface color to determine brightness
+    final luminance = palette.surface.computeLuminance();
+    return luminance > 0.5 ? Brightness.light : Brightness.dark;
+  }
+
+  // Common theme extensions for custom colors
+  static Color accentColor(BuildContext context, ColorPalette palette) => palette.accent;
+  static Color dividerColor(BuildContext context, ColorPalette palette) => palette.divider;
+  static Color shadowColor(BuildContext context, ColorPalette palette) => palette.shadow;
+  static Color disabledColor(BuildContext context, ColorPalette palette) => palette.disabled;
+  static Color hintColor(BuildContext context, ColorPalette palette) => palette.hint;
 }
+

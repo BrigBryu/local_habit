@@ -1,0 +1,20 @@
+{
+  "name": "Dracula Light",
+  "primary": "#6d28d9",
+  "primaryVariant": "#5b21b6",
+  "secondary": "#be185d",
+  "secondaryVariant": "#9d174d",
+  "surface": "#ffffff",
+  "background": "#f8f8f2",
+  "error": "#dc2626",
+  "onPrimary": "#ffffff",
+  "onSecondary": "#ffffff",
+  "onSurface": "#1f2937",
+  "onBackground": "#374151",
+  "onError": "#ffffff",
+  "accent": "#059669",
+  "divider": "#e5e7eb",
+  "shadow": "#6b7280",
+  "disabled": "#9ca3af",
+  "hint": "#6b7280"
+}

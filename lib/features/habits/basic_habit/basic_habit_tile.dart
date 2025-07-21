@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:domain/domain.dart';
+import '../../../core/models/habit.dart';
 import '../../../providers/habits_provider.dart';
-import '../../../core/theme/flexible_theme_system.dart';
+import '../../../core/theme/theme_controller.dart';
 import 'basic_habit_info_screen.dart';
 
 class HabitTile extends ConsumerWidget {
@@ -17,7 +17,7 @@ class HabitTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isCompleted = isHabitCompletedToday(habit);
+    final isCompleted = habit.isCompletedToday;
     final colors = ref.watchColors;
 
     return Container(
@@ -140,20 +140,15 @@ class HabitTile extends ConsumerWidget {
   String _buildSubtitleText() {
     switch (habit.type) {
       case HabitType.basic:
-        final count =
-            isHabitCompletedToday(habit) ? habit.dailyCompletionCount : 0;
-        if (count > 0) {
-          return 'Basic Habit · $count completed today';
+        if (habit.isCompletedToday) {
+          return 'Basic Habit · Completed today';
         }
         // Show description if available, otherwise show basic habit type
         return habit.description.isNotEmpty ? habit.description : 'Basic Habit';
 
       case HabitType.avoidance:
-        final failures = habit.dailyFailureCount;
-        if (habit.avoidanceSuccessToday) {
+        if (habit.isCompletedToday) {
           return 'Avoidance · Success today';
-        } else if (failures > 0) {
-          return 'Avoidance · $failures failure(s) today';
         }
         return 'Avoidance · In progress';
 
@@ -161,35 +156,18 @@ class HabitTile extends ConsumerWidget {
         final childCount = habit.bundleChildIds?.length ?? 0;
         return 'Bundle · $childCount habits';
 
-      // TODO(bridger): Disabled time-based habit types
-      // case HabitType.alarmHabit:
-      //   final timeStr = habit.alarmTime?.format24Hour() ?? 'No time set';
-      //   return 'Alarm · $timeStr';
-      //
-      // case HabitType.timeWindow:
-      // case HabitType.dailyTimeWindow:
-      //   final start = habit.windowStartTime?.format24Hour() ?? '';
-      //   final end = habit.windowEndTime?.format24Hour() ?? '';
-      //   return 'Time Window · $start - $end';
-      //
-      // case HabitType.timedSession:
-      //   final minutes = habit.timeoutMinutes ?? 0;
-      //   return 'Timed Session · ${minutes}min';
-
       case HabitType.stack:
         return 'Habit Stack';
       
       case HabitType.interval:
-        final count = isHabitCompletedToday(habit) ? habit.dailyCompletionCount : 0;
         final intervalDays = habit.intervalDays ?? 1;
-        if (count > 0) {
+        if (habit.isCompletedToday) {
           return 'Interval ($intervalDays days) · Completed today';
         }
         return habit.description.isNotEmpty ? habit.description : 'Interval Habit';
       
       case HabitType.weekly:
-        final count = isHabitCompletedToday(habit) ? habit.dailyCompletionCount : 0;
-        if (count > 0) {
+        if (habit.isCompletedToday) {
           return 'Weekly · Completed today';
         }
         return habit.description.isNotEmpty ? habit.description : 'Weekly Habit';
@@ -200,7 +178,7 @@ class HabitTile extends ConsumerWidget {
     return HomeHabitCheckButton(habit: habit);
   }
 
-  Color _getHabitTypeColor(FlexibleColors colors) {
+  Color _getHabitTypeColor(colors) {
     switch (habit.type) {
       case HabitType.basic:
         return colors.basicHabit;
@@ -251,7 +229,7 @@ class HomeHabitCheckButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isCompleted = isHabitCompletedToday(habit);
+    final isCompleted = habit.isCompletedToday;
     final colors = ref.watchColors;
 
     if (isCompleted) {
@@ -278,7 +256,9 @@ class HomeHabitCheckButton extends ConsumerWidget {
     }
 
     return GestureDetector(
-      onTap: () => _completeHabit(context, ref),
+      onTap: habit.type == HabitType.basic && isCompleted
+          ? null  // Disable tap for completed basic habits
+          : () => _completeHabit(context, ref),
       child: Container(
         width: 40,
         height: 40,
@@ -308,14 +288,14 @@ class HomeHabitCheckButton extends ConsumerWidget {
 
   Future<void> _completeHabit(BuildContext context, WidgetRef ref) async {
     final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
-    final result = await habitsNotifier.completeHabit(habit.id);
+    final result = await habitsNotifier.toggleComplete(habit);
 
-    final colors = ref.read(flexibleColorsProvider);
+    final colors = ref.read(flexibleColorsProviderBridged);
     if (result != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(result),
-          backgroundColor: colors.success,
+          backgroundColor: colors.error,
           behavior: SnackBarBehavior.floating,
           duration: const Duration(seconds: 2),
         ),
@@ -323,8 +303,18 @@ class HomeHabitCheckButton extends ConsumerWidget {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content:
-              Text('${habit.name} completed! +${habit.calculateXPReward()} XP'),
+          content: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.check_circle,
+                color: Colors.white,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Expanded(child: Text('${habit.name} completed!')),
+            ],
+          ),
           backgroundColor: colors.success,
           behavior: SnackBarBehavior.floating,
           duration: const Duration(seconds: 2),

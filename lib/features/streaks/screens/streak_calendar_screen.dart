@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:table_calendar/table_calendar.dart';
-import '../../../core/theme/flexible_theme_system.dart';
+import '../../../core/theme/theme_controller.dart';
 import '../widgets/day_detail_bottom_sheet.dart';
 
 enum CalendarView { calendar, stats }

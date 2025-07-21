@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:domain/domain.dart';
 import 'package:data_local/repositories/habit_relationship_service.dart';
-import '../core/theme/flexible_theme_system.dart';
+import '../core/theme/theme_controller.dart';
 import '../core/theme/app_colors.dart';
 
 /// Reusable widget for selecting habits to add to groups

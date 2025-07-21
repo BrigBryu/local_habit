@@ -1,0 +1,8 @@
+• Upgrade result: 'GEN FAIL (fallback retained)' - Isar 3.1.0+1 still cannot generate query extensions
+• Table modifications:
+  | /tmp/isar_gen_report.txt | created |
+  | lib/core/utils/isar_query_helpers.dart | retained |
+  | ALL services using .findFirstSafe()/.findAllSafe() | retained |
+• flutter test summary: 13 tests PASSED, 2 tests FAILED (Isar DB init issues)
+• Query generation: Still missing for ALL collections after upgrade attempt
+• Fallback system: MUST be retained

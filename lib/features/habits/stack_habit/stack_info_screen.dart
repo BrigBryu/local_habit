@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:domain/domain.dart';
 import '../../../providers/habits_provider.dart';
-import '../../../core/theme/flexible_theme_system.dart';
+import '../../../core/theme/theme_controller.dart';
 import '../../../core/services/stack_progress_service.dart';
 
 class StackInfoScreen extends ConsumerStatefulWidget {
@@ -34,8 +34,6 @@ class _StackInfoScreenState extends ConsumerState<StackInfoScreen> {
         _stackService.isStackComplete(currentStack, widget.allHabits);
     final children =
         _stackService.getStackChildren(currentStack, widget.allHabits);
-    final currentChild =
-        _stackService.getCurrentChild(currentStack, widget.allHabits);
     final colors = ref.watchColors;
 
     return Scaffold(
@@ -50,462 +48,228 @@ class _StackInfoScreenState extends ConsumerState<StackInfoScreen> {
           IconButton(
             icon: Icon(Icons.edit, color: colors.draculaPink),
             onPressed: () => _showEditDialog(),
-            tooltip: 'Edit Stack',
+            tooltip: 'Organize Stack',
+          ),
+          IconButton(
+            onPressed: () => _showAddHabitDialog(context, ref),
+            icon: Icon(Icons.add, color: colors.draculaGreen),
+            tooltip: 'Add Habit',
           ),
         ],
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              colors.draculaBackground,
-              colors.draculaCurrentLine.withOpacity(0.5),
-            ],
-          ),
-        ),
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildStackHeader(currentStack, progress, isCompleted, colors),
-              const SizedBox(height: 24),
-              _buildProgressSection(
-                  progress, isCompleted, currentChild, colors),
-              const SizedBox(height: 24),
-              _buildChildrenSection(children, currentStack, colors),
-              if (children.isEmpty) ...[
-                const SizedBox(height: 24),
-                _buildEmptyState(colors),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStackHeader(Habit stack, StackProgress progress,
-      bool isCompleted, FlexibleColors colors) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        gradient: LinearGradient(
-          colors: [
-            isCompleted
-                ? colors.draculaGreen.withOpacity(0.15)
-                : colors.stackHabit.withOpacity(0.1),
-            isCompleted
-                ? colors.draculaGreen.withOpacity(0.08)
-                : colors.stackHabit.withOpacity(0.05),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        border: Border.all(
-          color: isCompleted ? colors.draculaGreen : colors.stackHabit,
-          width: 2,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  color: colors.stackHabit.withOpacity(0.15),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: colors.stackHabit.withOpacity(0.3),
-                    width: 2,
-                  ),
-                ),
-                child: Icon(
-                  Icons.layers,
-                  color: colors.stackHabit,
-                  size: 32,
-                ),
+      backgroundColor: colors.draculaBackground,
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Name
+            Text(
+              widget.stack.name,
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: colors.draculaPurple,
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      stack.name,
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: isCompleted
-                            ? colors.draculaGreen
-                            : colors.draculaPurple,
-                        decoration:
-                            isCompleted ? TextDecoration.lineThrough : null,
-                      ),
-                    ),
-                    if (stack.description.isNotEmpty) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        stack.description,
-                        style: TextStyle(
-                          color: colors.draculaCyan,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: 8),
-                    Text(
-                      _stackService.getStackStatus(stack, widget.allHabits),
-                      style: TextStyle(
-                        color: isCompleted
-                            ? colors.draculaGreen
-                            : colors.stackHabit,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProgressSection(StackProgress progress, bool isCompleted,
-      Habit? currentChild, FlexibleColors colors) {
-    final progressPercent =
-        progress.total > 0 ? progress.completed / progress.total : 0.0;
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        color: colors.draculaCurrentLine.withOpacity(0.3),
-        border: Border.all(
-          color: colors.draculaComment.withOpacity(0.3),
-          width: 1,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Progress',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: colors.draculaPurple,
-                ),
-              ),
-              Text(
-                '${progress.completed}/${progress.total}',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: colors.stackHabit,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          LinearProgressIndicator(
-            value: progressPercent,
-            backgroundColor: colors.draculaComment.withOpacity(0.3),
-            valueColor: AlwaysStoppedAnimation(
-              isCompleted ? colors.draculaGreen : colors.stackHabit,
             ),
-            minHeight: 8,
-          ),
-          if (currentChild != null && !isCompleted) ...[
             const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                color: colors.stackHabit.withOpacity(0.1),
-                border: Border.all(
-                  color: colors.stackHabit.withOpacity(0.3),
-                  width: 1,
+            
+            // Description
+            if (widget.stack.description.isNotEmpty) ...[
+              Text(
+                widget.stack.description,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: colors.draculaCyan,
                 ),
               ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.play_arrow,
-                    color: colors.stackHabit,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Current: ${currentChild.name}',
-                      style: TextStyle(
-                        color: colors.stackHabit,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                  ElevatedButton(
-                    onPressed: () => _completeCurrentChild(currentChild),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: colors.stackHabit,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: const Text('Complete'),
-                  ),
-                ],
+              const SizedBox(height: 16),
+            ],
+            
+            // Habit Type
+            Text(
+              'Type: Stack Habit',
+              style: TextStyle(
+                fontSize: 16,
+                color: colors.draculaYellow,
               ),
             ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildChildrenSection(
-      List<Habit> children, Habit stack, FlexibleColors colors) {
-    if (children.isEmpty) return const SizedBox.shrink();
-
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        color: colors.draculaCurrentLine.withOpacity(0.3),
-        border: Border.all(
-          color: colors.draculaComment.withOpacity(0.3),
-          width: 1,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Stack Steps',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: colors.draculaPurple,
-                  ),
-                ),
-                Text(
-                  '${children.length} steps',
-                  style: TextStyle(
-                    color: colors.draculaComment,
-                    fontSize: 14,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          ...children.asMap().entries.map((entry) {
-            final index = entry.key;
-            final child = entry.value;
-            final isCompleted = isHabitCompletedToday(child);
-            final isCurrent = index == stack.currentChildIndex;
-            final isPastCurrent = index < stack.currentChildIndex;
-
-            return Container(
-              margin: const EdgeInsets.only(bottom: 1),
-              decoration: BoxDecoration(
-                color: isCurrent
-                    ? colors.stackHabit.withOpacity(0.1)
-                    : isPastCurrent
-                        ? colors.draculaGreen.withOpacity(0.05)
-                        : colors.draculaCurrentLine.withOpacity(0.05),
-                border: Border(
-                  left: BorderSide(
-                    color: isCurrent
-                        ? colors.stackHabit
-                        : isPastCurrent
-                            ? colors.draculaGreen
-                            : colors.draculaComment.withOpacity(0.3),
-                    width: 4,
-                  ),
-                  bottom: index < children.length - 1
-                      ? BorderSide(
-                          color: colors.draculaComment.withOpacity(0.1),
-                          width: 0.5,
-                        )
-                      : BorderSide.none,
-                ),
+            const SizedBox(height: 16),
+            
+            // Status
+            Text(
+              'Status: ${isCompleted ? 'Completed' : 'Not completed'}',
+              style: TextStyle(
+                fontSize: 16,
+                color: isCompleted ? colors.draculaGreen : colors.draculaOrange,
               ),
-              child: ListTile(
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                leading: Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: isCompleted
-                        ? colors.draculaGreen
-                        : isCurrent
-                            ? colors.stackHabit
-                            : colors.draculaComment.withOpacity(0.3),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: isCompleted
-                        ? const Icon(Icons.check, color: Colors.white, size: 18)
-                        : Text(
-                            '${index + 1}',
+            ),
+            const SizedBox(height: 16),
+            
+            // Streak
+            Text(
+              'Streak: ${currentStack.currentStreak} days',
+              style: TextStyle(
+                fontSize: 16,
+                color: colors.draculaPink,
+              ),
+            ),
+            const SizedBox(height: 16),
+            
+            // Coins award for next completion
+            Text(
+              'Coins award for next completion: ${_getCoinsForNextCompletion(currentStack)}',
+              style: TextStyle(
+                fontSize: 16,
+                color: colors.draculaCyan,
+              ),
+            ),
+            const SizedBox(height: 16),
+            
+            // Progress
+            Text(
+              'Progress: ${progress.completed}/${progress.total} steps completed',
+              style: TextStyle(
+                fontSize: 16,
+                color: colors.draculaForeground,
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Children List
+            Expanded(
+              child: children.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.layers_clear,
+                            size: 64,
+                            color: colors.draculaComment,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'No habits in this stack yet',
                             style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
+                              fontSize: 18,
+                              color: colors.draculaComment,
                             ),
                           ),
-                  ),
-                ),
-                title: Text(
-                  child.name,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    color: isCompleted
-                        ? colors.draculaGreen
-                        : isCurrent
-                            ? colors.stackHabit
-                            : colors.draculaPurple,
-                    decoration: isCompleted ? TextDecoration.lineThrough : null,
-                  ),
-                ),
-                subtitle: child.description.isNotEmpty
-                    ? Text(
-                        child.description,
-                        style: TextStyle(
-                          color: colors.draculaCyan,
-                          fontSize: 12,
-                        ),
-                      )
-                    : null,
-                trailing: isCurrent && !isCompleted
-                    ? IconButton(
-                        onPressed: () => _completeCurrentChild(child),
-                        icon: Icon(
-                          Icons.play_circle_filled,
-                          color: colors.stackHabit,
-                          size: 28,
-                        ),
-                        tooltip: 'Complete this step',
-                      )
-                    : isCompleted
-                        ? Icon(
-                            Icons.check_circle,
-                            color: colors.draculaGreen,
-                            size: 24,
-                          )
-                        : Icon(
-                            Icons.radio_button_unchecked,
-                            color: colors.draculaComment,
-                            size: 24,
+                          const SizedBox(height: 8),
+                          Text(
+                            'Add some habits to get started',
+                            style: TextStyle(
+                              color: colors.draculaComment,
+                            ),
                           ),
-              ),
-            );
-          }),
-        ],
+                        ],
+                      ),
+                    )
+                  : ListView.builder(
+                      itemCount: children.length,
+                      itemBuilder: (context, index) {
+                        final child = children[index];
+                        final isChildCompleted = _isHabitCompletedToday(child);
+                        final isCurrent = index == currentStack.currentChildIndex;
+                        
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: isCurrent ? colors.draculaOrange : colors.draculaCyan.withOpacity(0.3),
+                              width: isCurrent ? 2 : 1,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 24,
+                                height: 24,
+                                decoration: BoxDecoration(
+                                  color: isChildCompleted ? colors.draculaGreen : colors.draculaComment.withOpacity(0.3),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Center(
+                                  child: isChildCompleted
+                                      ? Icon(Icons.check, color: Colors.white, size: 16)
+                                      : Text(
+                                          '${index + 1}',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      child.name,
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: colors.draculaPurple,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Status: ${isChildCompleted ? 'Completed' : 'Not completed'}${isCurrent ? ' (Current)' : ''}',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: isChildCompleted ? colors.draculaGreen : colors.draculaOrange,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              IconButton(
+                                onPressed: () => _removeHabitFromStack(context, ref, child.id),
+                                icon: Icon(Icons.remove_circle, color: colors.draculaRed),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildEmptyState(FlexibleColors colors) {
-    return Container(
-      padding: const EdgeInsets.all(32),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        color: colors.draculaCurrentLine.withOpacity(0.3),
-        border: Border.all(
-          color: colors.draculaComment.withOpacity(0.3),
-          width: 1,
-        ),
-      ),
-      child: Column(
-        children: [
-          Icon(
-            Icons.layers_clear,
-            color: colors.draculaComment,
-            size: 64,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Empty Stack',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: colors.draculaComment,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'This stack has no steps yet. Add some habits to get started!',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: colors.draculaComment,
-              fontSize: 14,
-            ),
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton.icon(
-            onPressed: _showEditDialog,
-            icon: const Icon(Icons.add),
-            label: const Text('Add Steps'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: colors.stackHabit,
-              foregroundColor: Colors.white,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _completeCurrentChild(Habit child) async {
-    final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
-    final result = await habitsNotifier.completeHabit(child.id);
-    final colors = ref.read(flexibleColorsProvider);
-
-    if (result != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result),
-          backgroundColor: colors.error,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    } else {
-      // Check if stack is now complete for bonus XP
-      final isNowComplete =
-          _stackService.isStackComplete(widget.stack, widget.allHabits);
-      final xpText = isNowComplete
-          ? '+${child.calculateXPReward()} XP + 1 XP Stack Bonus!'
-          : '+${child.calculateXPReward()} XP';
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('${child.name} completed! $xpText'),
-          backgroundColor: colors.success,
-          behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 3),
-        ),
-      );
+  int _getCoinsForNextCompletion(Habit habit) {
+    // Calculate coins based on streak length + 1 (capped at 30)
+    final nextStreak = habit.currentStreak + 1;
+    final baseAward = nextStreak.clamp(1, 30);
+    
+    // Calculate milestone bonuses
+    int milestoneBonus = 0;
+    if (nextStreak == 7) {
+      milestoneBonus = 10;
+    } else if (nextStreak == 30) {
+      milestoneBonus = 25;
+    } else if (nextStreak == 100) {
+      milestoneBonus = 75;
     }
+    
+    return baseAward + milestoneBonus;
+  }
+
+  bool _isHabitCompletedToday(Habit habit) {
+    if (habit.lastCompleted == null) return false;
+    final now = DateTime.now();
+    final lastCompleted = habit.lastCompleted!;
+    return now.year == lastCompleted.year &&
+        now.month == lastCompleted.month &&
+        now.day == lastCompleted.day;
   }
 
   void _showEditDialog() {
@@ -521,14 +285,14 @@ class _StackInfoScreenState extends ConsumerState<StackInfoScreen> {
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                'Edit Stack',
+                'Organize Stack',
                 style: TextStyle(color: colors.draculaPurple),
               ),
             ),
           ],
         ),
         content: Text(
-          'Stack editing is not yet implemented. You can delete and recreate the stack if needed.',
+          'Stack organization is not yet implemented. You can delete and recreate the stack if needed.',
           style: TextStyle(color: colors.draculaCyan),
         ),
         actions: [
@@ -540,5 +304,82 @@ class _StackInfoScreenState extends ConsumerState<StackInfoScreen> {
       ),
     );
   }
-}
 
+  void _showAddHabitDialog(BuildContext context, WidgetRef ref) {
+    final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
+    final availableHabits = habitsNotifier.getAvailableHabitsForBundle();
+
+    if (availableHabits.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+              'No available habits to add. Create some individual habits first!'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            const Icon(Icons.add_circle, color: Colors.blue),
+            const SizedBox(width: 8),
+            Expanded(child: Text('Add to ${widget.stack.name}')),
+          ],
+        ),
+        content: SizedBox(
+          width: double.maxFinite,
+          height: 300,
+          child: ListView.builder(
+            itemCount: availableHabits.length,
+            itemBuilder: (context, index) {
+              final habit = availableHabits[index];
+              return Card(
+                child: ListTile(
+                  title: Text(habit.displayName),
+                  subtitle: Text(habit.description),
+                  trailing: const Icon(Icons.arrow_forward_ios),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    _addHabitToStack(context, ref, habit.id);
+                  },
+                ),
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _addHabitToStack(
+      BuildContext context, WidgetRef ref, String habitId) async {
+    // This would need to be implemented in the habits provider
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Add to stack functionality not yet implemented'),
+        backgroundColor: Colors.orange,
+      ),
+    );
+  }
+
+  Future<void> _removeHabitFromStack(
+      BuildContext context, WidgetRef ref, String habitId) async {
+    // This would need to be implemented in the habits provider
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Remove from stack functionality not yet implemented'),
+        backgroundColor: Colors.orange,
+      ),
+    );
+  }
+}

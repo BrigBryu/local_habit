@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import '../pages/daily_habits_page.dart';
 
 /// Navigator for Home tab with internal routing

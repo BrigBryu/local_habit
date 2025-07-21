@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:domain/domain.dart';
+import '../../../core/models/habit.dart';
 import '../../../providers/habits_provider.dart';
-import '../../../core/theme/flexible_theme_system.dart';
+import '../../../core/theme/theme_controller.dart';
+import '../../../core/adapters/notification_adapter.dart';
+import '../../../shared/notifications/notifications.dart';
 
 /// A wrapper widget that adds delete functionality to any habit tile
 class DeletableHabitTile extends ConsumerWidget {
@@ -18,6 +20,8 @@ class DeletableHabitTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = ref.watchColors;
+    // Initialize notification adapter
+    ref.watch(notificationAdapterWatcherProvider);
 
     return Dismissible(
       key: Key('delete_${habit.id}'),
@@ -59,7 +63,7 @@ class DeletableHabitTile extends ConsumerWidget {
   }
 
   Future<bool?> _showDeleteConfirmation(BuildContext context, WidgetRef ref) async {
-    final colors = ref.read(flexibleColorsProvider);
+    final colors = ref.read(flexibleColorsProviderBridged);
     
     return showDialog<bool>(
       context: context,
@@ -103,34 +107,30 @@ class DeletableHabitTile extends ConsumerWidget {
 
   Future<void> _deleteHabit(BuildContext context, WidgetRef ref) async {
     final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
-    final colors = ref.read(flexibleColorsProvider);
     
-    final result = await habitsNotifier.removeHabit(habit.id);
+    final result = await habitsNotifier.removeHabit(habit);
     
     if (!context.mounted) return;
     
     if (result != null) {
-      // Show error
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result),
-          backgroundColor: colors.error,
-          behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 3),
-        ),
-      );
+      // Show error notification
+      Notifications.error(context, result);
     } else {
-      // Show success with undo option
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Habit "${habit.name}" deleted'),
-          backgroundColor: colors.success,
-          behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 4),
-          action: SnackBarAction(
-            label: 'Undo',
-            textColor: Colors.white,
-            onPressed: () => _undoDelete(ref),
+      // Show success notification with undo action
+      Notifications.success(
+        context,
+        'Habit "${habit.name}" deleted',
+        action: TextButton(
+          onPressed: () {
+            Notifications.dismiss();
+            _undoDelete(ref);
+          },
+          child: const Text(
+            'Undo',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
       );

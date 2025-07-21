@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:domain/domain.dart';
 import '../../../providers/habits_provider.dart';
 import '../../../core/services/due_date_service.dart';
-import '../../../core/theme/flexible_theme_system.dart';
+import '../../../core/theme/theme_controller.dart';
 import 'weekly_habit_info_screen.dart';
 
 class WeeklyHabitTile extends ConsumerWidget {
@@ -327,8 +327,7 @@ class WeeklyHabitCheckButton extends ConsumerWidget {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content:
-              Text('${habit.name} completed! +${habit.calculateXPReward()} XP'),
+          content: Text('${habit.name} completed!'),
           backgroundColor: colors.success,
           behavior: SnackBarBehavior.floating,
           duration: const Duration(seconds: 2),

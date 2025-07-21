@@ -1,0 +1,229 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'color_palette.dart';
+import 'app_theme.dart';
+import 'theme_registry.dart';
+import 'flexible_theme_system.dart';
+
+class ThemeState {
+  final ColorPalette palette;
+  final ThemeData themeData;
+  final bool isLoading;
+
+  const ThemeState({
+    required this.palette,
+    required this.themeData,
+    this.isLoading = false,
+  });
+
+  ThemeState copyWith({
+    ColorPalette? palette,
+    ThemeData? themeData,
+    bool? isLoading,
+  }) {
+    return ThemeState(
+      palette: palette ?? this.palette,
+      themeData: themeData ?? this.themeData,
+      isLoading: isLoading ?? this.isLoading,
+    );
+  }
+}
+
+class ThemeController extends StateNotifier<ThemeState> {
+  static const String _themePreferenceKey = 'selected_theme';
+  static const String _defaultThemeId = 'dracula';
+
+  ThemeController() : super(ThemeState(
+    palette: _getDefaultPalette(),
+    themeData: AppTheme.fromColorPalette(_getDefaultPalette()),
+    isLoading: true,
+  )) {
+    _loadTheme();
+  }
+
+  static ColorPalette _getDefaultPalette() {
+    // Fallback palette in case assets fail to load
+    return const ColorPalette(
+      name: 'Fallback',
+      primary: Color(0xFF2563eb),
+      primaryVariant: Color(0xFF1d4ed8),
+      secondary: Color(0xFF7c3aed),
+      secondaryVariant: Color(0xFF6d28d9),
+      surface: Color(0xFFffffff),
+      background: Color(0xFFf8fafc),
+      error: Color(0xFFdc2626),
+      onPrimary: Color(0xFFffffff),
+      onSecondary: Color(0xFFffffff),
+      onSurface: Color(0xFF1e293b),
+      onBackground: Color(0xFF334155),
+      onError: Color(0xFFffffff),
+      accent: Color(0xFF059669),
+      divider: Color(0xFFe2e8f0),
+      shadow: Color(0xFF64748b),
+      disabled: Color(0xFF94a3b8),
+      hint: Color(0xFF64748b),
+    );
+  }
+
+  Future<void> _loadTheme() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedThemeId = prefs.getString(_themePreferenceKey) ?? _defaultThemeId;
+      
+      await loadById(savedThemeId, persist: false);
+    } catch (e) {
+      // Fallback to default if loading fails
+      final defaultPalette = _getDefaultPalette();
+      state = ThemeState(
+        palette: defaultPalette,
+        themeData: AppTheme.fromColorPalette(defaultPalette),
+        isLoading: false,
+      );
+    }
+  }
+
+  Future<void> loadById(String themeId, {bool persist = true}) async {
+    final themeInfo = kThemeRegistry.firstWhere(
+      (theme) => theme.id == themeId,
+      orElse: () => kThemeRegistry.firstWhere((theme) => theme.id == _defaultThemeId),
+    );
+
+    try {
+      state = state.copyWith(isLoading: true);
+      
+      final palette = await ColorPalette.fromAsset(themeInfo.assetPath);
+      final themeData = AppTheme.fromColorPalette(palette);
+
+      // Save preference if requested
+      if (persist) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(_themePreferenceKey, themeId);
+      }
+
+      state = ThemeState(
+        palette: palette,
+        themeData: themeData,
+        isLoading: false,
+      );
+    } catch (e) {
+      // Revert loading state on error
+      state = state.copyWith(isLoading: false);
+      rethrow;
+    }
+  }
+
+  @deprecated
+  Future<void> setTheme(String themeKey) async {
+    // Backward compatibility mapping
+    await loadById(themeKey);
+  }
+
+  Future<void> setCustomPalette(ColorPalette palette) async {
+    try {
+      state = state.copyWith(isLoading: true);
+      
+      final themeData = AppTheme.fromColorPalette(palette);
+      
+      state = ThemeState(
+        palette: palette,
+        themeData: themeData,
+        isLoading: false,
+      );
+    } catch (e) {
+      state = state.copyWith(isLoading: false);
+    }
+  }
+
+  String get currentThemeId {
+    for (final themeInfo in kThemeRegistry) {
+      if (themeInfo.assetPath.contains(state.palette.name.toLowerCase().replaceAll(' ', '-'))) {
+        return themeInfo.id;
+      }
+    }
+    return _defaultThemeId;
+  }
+
+  String get currentThemeName {
+    return state.palette.name;
+  }
+
+  @deprecated
+  String get currentThemeKey => currentThemeId;
+
+  bool get isDarkTheme {
+    return state.palette.background.computeLuminance() < 0.5;
+  }
+
+  ThemeVariant get currentThemeVariant {
+    // Map theme IDs to ThemeVariant enum
+    switch (currentThemeId) {
+      case 'dracula':
+        return ThemeVariant.dracula;
+      case 'dracula-light':
+        return ThemeVariant.draculaLight;
+      case 'gruvbox-dark':
+        return ThemeVariant.gruvboxDark;
+      case 'gruvbox-light':
+        return ThemeVariant.gruvboxLight;
+      case 'nord':
+        return ThemeVariant.nord;
+      case 'solarized-dark':
+        return ThemeVariant.solarizedDark;
+      case 'solarized-light':
+        return ThemeVariant.solarizedLight;
+      case 'monokai':
+        return ThemeVariant.monokai;
+      case 'one-dark':
+        return ThemeVariant.oneDark;
+      case 'tokyo-night-storm':
+        return ThemeVariant.tokyoNightStorm;
+      case 'catppuccin-mocha':
+        return ThemeVariant.catppuccinMocha;
+      case 'vampire':
+        return ThemeVariant.vampire;
+      default:
+        return ThemeVariant.dracula;
+    }
+  }
+}
+
+// Providers
+final themeControllerProvider = StateNotifierProvider<ThemeController, ThemeState>((ref) {
+  return ThemeController();
+});
+
+// Convenience providers
+final currentPaletteProvider = Provider<ColorPalette>((ref) {
+  return ref.watch(themeControllerProvider).palette;
+});
+
+final currentThemeDataProvider = Provider<ThemeData>((ref) {
+  return ref.watch(themeControllerProvider).themeData;
+});
+
+final isThemeLoadingProvider = Provider<bool>((ref) {
+  return ref.watch(themeControllerProvider).isLoading;
+});
+
+// Bridge provider that syncs the new theme system with the existing flexible theme system
+final bridgedThemeVariantProvider = Provider<ThemeVariant>((ref) {
+  final themeController = ref.watch(themeControllerProvider.notifier);
+  return themeController.currentThemeVariant;
+});
+
+// Override the existing flexible colors provider to use the new theme system
+final flexibleColorsProviderBridged = Provider<FlexibleColors>((ref) {
+  final variant = ref.watch(bridgedThemeVariantProvider);
+  final palette = ref.watch(currentPaletteProvider);
+  return FlexibleColors.of(variant, palette);
+});
+
+// Extension for easy access to theme-aware colors (updated to use bridge)
+extension ThemeAwareColors on WidgetRef {
+  /// Get theme-aware colors (preserves your existing color design)
+  FlexibleColors get colors => read(flexibleColorsProviderBridged);
+
+  /// Watch theme-aware colors for rebuilds
+  FlexibleColors get watchColors => watch(flexibleColorsProviderBridged);
+}

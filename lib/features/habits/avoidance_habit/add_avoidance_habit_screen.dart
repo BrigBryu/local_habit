@@ -6,7 +6,7 @@ import '../shared/base_add_habit_screen.dart';
 import '../basic_habit/add_basic_habit_screen.dart';
 import '../bundle_habit/add_bundle_habit_screen.dart';
 import '../stack_habit/add_stack_habit_screen.dart';
-import '../../../core/theme/flexible_theme_system.dart';
+import '../../../core/theme/theme_controller.dart';
 
 class AddAvoidanceHabitScreen extends BaseAddHabitScreen {
   const AddAvoidanceHabitScreen({super.key});

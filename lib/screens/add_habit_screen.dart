@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:domain/domain.dart';
+import '../core/models/habit.dart';
 import '../providers/habits_provider.dart';
-import '../core/theme/app_colors.dart';
+import '../core/theme/theme_controller.dart';
+import '../core/adapters/notification_adapter.dart';
+import '../shared/notifications/notifications.dart';
 
 class AddHabitScreen extends ConsumerStatefulWidget {
   const AddHabitScreen({super.key});
@@ -25,79 +27,76 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = ref.watchColors;
+    // Initialize notification adapter
+    ref.watch(notificationAdapterWatcherProvider);
+    
     return Scaffold(
       appBar: AppBar(
         title: const Text('Add New Habit'),
-        backgroundColor: AppColors.draculaBackground,
-        foregroundColor: AppColors.draculaForeground,
+        backgroundColor: colors.draculaBackground,
+        foregroundColor: colors.draculaForeground,
       ),
-      backgroundColor: AppColors.backgroundDark,
+      backgroundColor: colors.draculaBackground,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
             TextField(
               controller: _nameController,
-              style: TextStyle(color: AppColors.draculaForeground),
+              style: TextStyle(color: colors.draculaForeground),
               decoration: InputDecoration(
                 labelText: 'Habit Name',
-                labelStyle: TextStyle(color: AppColors.draculaComment),
+                labelStyle: TextStyle(color: colors.draculaComment),
                 enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: AppColors.draculaComment),
+                  borderSide: BorderSide(color: colors.draculaComment),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: AppColors.primaryPurple),
+                  borderSide: BorderSide(color: colors.draculaPink),
                 ),
                 filled: true,
-                fillColor: AppColors.cardBackgroundDark,
+                fillColor: colors.draculaCurrentLine,
               ),
             ),
             const SizedBox(height: 16),
             TextField(
               controller: _descriptionController,
-              style: TextStyle(color: AppColors.draculaForeground),
+              style: TextStyle(color: colors.draculaForeground),
               decoration: InputDecoration(
                 labelText: 'Description (Optional)',
-                labelStyle: TextStyle(color: AppColors.draculaComment),
+                labelStyle: TextStyle(color: colors.draculaComment),
                 enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: AppColors.draculaComment),
+                  borderSide: BorderSide(color: colors.draculaComment),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: AppColors.primaryPurple),
+                  borderSide: BorderSide(color: colors.draculaPink),
                 ),
                 filled: true,
-                fillColor: AppColors.cardBackgroundDark,
+                fillColor: colors.draculaCurrentLine,
               ),
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<HabitType>(
               value: _selectedType,
-              style: TextStyle(color: AppColors.draculaForeground),
+              style: TextStyle(color: colors.draculaForeground),
               decoration: InputDecoration(
                 labelText: 'Habit Type',
-                labelStyle: TextStyle(color: AppColors.draculaComment),
+                labelStyle: TextStyle(color: colors.draculaComment),
                 enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: AppColors.draculaComment),
+                  borderSide: BorderSide(color: colors.draculaComment),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: AppColors.primaryPurple),
+                  borderSide: BorderSide(color: colors.draculaPink),
                 ),
                 filled: true,
-                fillColor: AppColors.cardBackgroundDark,
+                fillColor: colors.draculaCurrentLine,
               ),
-              dropdownColor: AppColors.cardBackgroundDark,
-              items: [
-                DropdownMenuItem(
-                  value: HabitType.basic,
-                  child: Text('Basic Habit',
-                      style: TextStyle(color: AppColors.draculaForeground)),
-                ),
-                DropdownMenuItem(
-                  value: HabitType.avoidance,
-                  child: Text('Avoidance Habit',
-                      style: TextStyle(color: AppColors.draculaForeground)),
-                ),
-              ],
+              dropdownColor: colors.draculaCurrentLine,
+              items: [HabitType.basic].map((type) => DropdownMenuItem(
+                value: type,
+                child: Text(type.displayName,
+                    style: TextStyle(color: colors.draculaForeground)),
+              )).toList(),
               onChanged: (value) {
                 if (value != null) {
                   setState(() => _selectedType = value);
@@ -108,7 +107,7 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
             ElevatedButton(
               onPressed: _saveHabit,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryPurple,
+                backgroundColor: colors.draculaPink,
                 foregroundColor: Colors.white,
                 minimumSize: const Size(double.infinity, 48),
               ),
@@ -122,30 +121,20 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
 
   Future<void> _saveHabit() async {
     if (_nameController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a habit name')),
-      );
+      context.showError('Please enter a habit name');
       return;
     }
 
     final habit = Habit.create(
       name: _nameController.text.trim(),
-      description: _descriptionController.text.trim(),
       type: _selectedType,
     );
+    habit.description = _descriptionController.text.trim();
 
     final habitsNotifier = ref.read(habitsNotifierProvider.notifier);
-    final error = await habitsNotifier.addHabit(habit);
+    await habitsNotifier.addHabit(habit);
 
-    if (error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $error')),
-      );
-    } else {
-      Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Habit created successfully!')),
-      );
-    }
+    Navigator.of(context).pop();
+    context.showSuccess('Habit created successfully!');
   }
 }

@@ -2,13 +2,7 @@ import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:logger/logger.dart';
 
-import 'habit_collection.dart';
-import 'completion_collection.dart';
-import 'weather_cache_collection.dart';
-import 'wallet_collection.dart';
-import 'ledger_collection.dart';
-import 'shop_item_collection.dart';
-import 'owned_item_collection.dart';
+import '../models/habit.dart';
 
 class DatabaseService {
   static DatabaseService? _instance;
@@ -29,32 +23,29 @@ class DatabaseService {
     return _isar!;
   }
 
-  Future<void> initialize() async {
-    if (_isar != null && _isar!.isOpen) {
-      _logger.d('Database already initialized');
-      return;
+  /// Initialize database - safe to call multiple times
+  static Future<Isar> initialize() async {
+    final service = DatabaseService.instance;
+    if (service._isar != null && service._isar!.isOpen) {
+      service._logger.d('Database already initialized');
+      return service._isar!;
     }
 
     try {
       final dir = await getApplicationDocumentsDirectory();
 
-      _isar = await Isar.open(
+      service._isar = await Isar.open(
         [
-          HabitCollectionSchema,
-          CompletionCollectionSchema,
-          WeatherCacheCollectionSchema,
-          WalletCollectionSchema,
-          LedgerCollectionSchema,
-          ShopItemCollectionSchema,
-          OwnedItemCollectionSchema,
+          HabitSchema,
         ],
         directory: dir.path,
         name: 'local_habit',
       );
 
-      _logger.i('Database initialized successfully');
+      service._logger.i('Database initialized successfully');
+      return service._isar!;
     } catch (e, stackTrace) {
-      _logger.e('Failed to initialize database',
+      service._logger.e('Failed to initialize database',
           error: e, stackTrace: stackTrace);
       rethrow;
     }
@@ -73,5 +64,10 @@ class DatabaseService {
       await isar.clear();
     });
     _logger.w('All database data cleared');
+  }
+
+  /// Test helper - set a test database instance
+  void setTestIsar(Isar testIsar) {
+    _isar = testIsar;
   }
 }

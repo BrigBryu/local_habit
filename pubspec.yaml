@@ -23,9 +23,6 @@ dependencies:
   json_annotation: ^4.8.1
   logger: ^2.0.2+1
   
-  # Local SQLite Database
-  sqflite: ^2.3.0
-  uuid: ^4.4.0
   
   # State management & async
   rxdart: ^0.27.7
@@ -39,12 +36,8 @@ dependencies:
   # Calendar
   table_calendar: ^3.1.2
   
-  # Local packages
-  domain:
-    path: packages/domain
-  data_local:
-    path: packages/data_local
 
+  pedantic: any
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -67,4 +60,5 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   
-  # No assets needed for offline app
+  assets:
+    - assets/themes/

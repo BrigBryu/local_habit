@@ -17,7 +17,7 @@ class ValidationService {
     }
 
     final trimmed = username.trim();
-    if (trimmed.length < 1 || trimmed.length > 32) {
+    if (trimmed.isEmpty || trimmed.length > 32) {
       return ValidationResult.error('Username must be 1-32 characters');
     }
 

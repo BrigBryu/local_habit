@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:domain/domain.dart';
 import '../../../core/services/stack_progress_service.dart';
 import '../../../providers/habits_provider.dart';
-import '../../../core/theme/flexible_theme_system.dart';
+import '../../../core/theme/theme_controller.dart';
 import 'stack_info_screen.dart';
 
 class StackHabitTile extends ConsumerWidget {
@@ -223,7 +223,7 @@ class StackHabitTile extends ConsumerWidget {
               ),
             ),
           );
-        }).toList(),
+        }),
         if (children.length > maxStepsToShow) ...[
           const SizedBox(width: 4),
           Text(
@@ -242,7 +242,7 @@ class StackHabitTile extends ConsumerWidget {
   String _buildSubtitleText(
       StackProgress progress, Habit? currentChild, bool isCompleted) {
     if (isCompleted) {
-      return 'Stack Complete! ✅ +1 XP Bonus';
+      return 'Stack Complete! ✅';
     }
 
     if (progress.total == 0) {
@@ -351,18 +351,9 @@ class StackHabitTile extends ConsumerWidget {
         ),
       );
     } else {
-      // Check if stack is now complete for bonus XP
-      final stackProgressService = StackProgressService();
-      final isNowComplete = stackProgressService.isStackComplete(habit, allHabits);
-      final currentChild = stackProgressService.getCurrentChild(habit, allHabits);
-      
-      final xpText = isNowComplete
-          ? '+${currentChild?.calculateXPReward() ?? 20} XP + 1 XP Stack Bonus!'
-          : '+${currentChild?.calculateXPReward() ?? 20} XP';
-
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Stack step completed! $xpText'),
+          content: Text('Stack step completed!'),
           backgroundColor: colors.success,
           behavior: SnackBarBehavior.floating,
           duration: const Duration(seconds: 3),

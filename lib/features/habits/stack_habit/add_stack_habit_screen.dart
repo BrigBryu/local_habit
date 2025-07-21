@@ -4,7 +4,7 @@ import 'package:domain/domain.dart';
 import '../../../providers/habits_provider.dart';
 import '../../../core/services/stack_progress_service.dart';
 import '../shared/base_add_habit_screen.dart';
-import '../../../core/theme/flexible_theme_system.dart';
+import '../../../core/theme/theme_controller.dart';
 
 class AddStackHabitScreen extends BaseAddHabitScreen {
   const AddStackHabitScreen({super.key});
